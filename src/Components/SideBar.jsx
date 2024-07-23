@@ -13,7 +13,7 @@ import {
   ShoppingCart,
   AreaChart,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 
 const SupplierMenuItems = [
   { label: "Inventory", icon: Package, href: "/dashboard/inventory" },
