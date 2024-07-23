@@ -16,8 +16,8 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+} from "@/Components/ui/card";
+import { Alert, AlertDescription } from "@/Components/ui/alert";
 import { Mail, Lock, LogIn } from "lucide-react";
 
 export default function LoginPage() {
