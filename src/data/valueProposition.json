@@ -1,0 +1,17 @@
+[
+  {
+    "icon": "ShoppingCart",
+    "title": "Direct Sourcing",
+    "description": "Buy directly from manufacturers and local suppliers, ensuring the best prices and quality without middlemen."
+  },
+  {
+    "icon": "Package",
+    "title": "Wide Product Range",
+    "description": "Access a diverse catalog of products to meet all your retail needs, from everyday essentials to unique items."
+  },
+  {
+    "icon": "Shield",
+    "title": "Secure Transactions",
+    "description": "Enjoy peace of mind with our secure payment gateway, protecting your transactions and personal information."
+  }
+]

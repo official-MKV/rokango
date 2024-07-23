@@ -1,0 +1,84 @@
+{
+  "common": [
+    {
+      "label": "Dashboard",
+      "href": "/dashboard"
+    },
+    {
+      "label": "Profile",
+      "href": "/profile"
+    }
+  ],
+  "admin": [
+    {
+      "label": "User Management",
+      "href": "/users"
+    },
+    {
+      "label": "Settings",
+      "dropdown": [
+        {
+          "label": "General Settings",
+          "href": "/settings/general"
+        },
+        {
+          "label": "Security Settings",
+          "href": "/settings/security"
+        },
+        {
+          "label": "Billing Settings",
+          "href": "/settings/billing"
+        }
+      ]
+    },
+    {
+      "label": "Analytics",
+      "href": "/analytics"
+    }
+  ],
+  "supplier": [
+    {
+      "label": "Inventory",
+      "href": "/inventory"
+    },
+    {
+      "label": "Orders",
+      "dropdown": [
+        {
+          "label": "New Orders",
+          "href": "/orders/new"
+        },
+        {
+          "label": "Processing Orders",
+          "href": "/orders/processing"
+        },
+        {
+          "label": "Shipped Orders",
+          "href": "/orders/shipped"
+        }
+      ]
+    },
+    {
+      "label": "Reports",
+      "href": "/reports"
+    }
+  ],
+  "retailer": [
+    {
+      "label": "Products",
+      "href": "/products"
+    },
+    {
+      "label": "Cart",
+      "href": "/cart"
+    },
+    {
+      "label": "Orders",
+      "href": "/my-orders"
+    },
+    {
+      "label": "Wishlist",
+      "href": "/wishlist"
+    }
+  ]
+}
