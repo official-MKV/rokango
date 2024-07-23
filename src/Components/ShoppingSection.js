@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useFirebaseQuery } from "@/hooks/firebase";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/Components/ui/input";
 import { useCart } from "@/hooks/firebase";
 import {
   Select,
@@ -9,7 +9,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/Components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,8 +18,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+} from "@/Components/ui/alert-dialog";
+import { Button } from "@/Components/ui/button";
 import { PackageSearch, ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 

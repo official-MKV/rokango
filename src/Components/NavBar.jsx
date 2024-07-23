@@ -7,7 +7,7 @@ import { useState } from "react";
 import navItems from "@/data/navItems.json";
 import { useAuth } from "@/hooks/firebase";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 import { Button } from "./ui/button";
 import { useCart } from "@/hooks/firebase";
 import { PackageSearch, ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
