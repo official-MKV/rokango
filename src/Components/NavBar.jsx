@@ -106,7 +106,7 @@ export function NavBar() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="w-full  py-[10px] px-[20px] flex">
+      <div className="w-full  py-[10px] md:px-[20px] flex">
         <div
           className="relative h-16 cursor-pointer"
           id="logo"
@@ -120,7 +120,7 @@ export function NavBar() {
             className="w-full h-full cursor-pointer"
           />
         </div>
-        <div className="w-full px-[20px] gap-x-4 flex items-center">
+        <div className="w-full px-[20px] gap-x-4 md:flex items-center hidden">
           {allNavItems.map((item, key) => {
             return <NavLink item={item} />;
           })}
@@ -152,7 +152,7 @@ export function NavBar() {
                   />
                   <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
-                <div className="px-[10px] py-[3px]  text-[12px] font-medium flex gap-5 rounded-full bg-[#faf0e4] text-nowrap">
+                <div className="px-[10px] py-[3px] hidden   text-[12px] font-medium md:flex gap-5 rounded-full bg-[#faf0e4] text-nowrap">
                   {user.retailerName}
                 </div>
               </div>

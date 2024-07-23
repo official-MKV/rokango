@@ -30,9 +30,9 @@ const ProductCard = ({ product, onAddToCart }) => {
       onClick={() => {
         router.push(`/product/${product.id}`);
       }}
-      className="w-[300px] h-auto cursor-pointer flex flex-col gap-5 relative hover:-translate-y-4 hover:shadow-md px-[5px] py-[3px] rounded-[10px] transition-all duration-200 "
+      className="md:w-[300px] w-[150px] md:h-auto h-auto cursor-pointer flex flex-col gap-5 relative hover:-translate-y-4 hover:shadow-md px-[5px] py-[3px] rounded-[10px] transition-all duration-200 "
     >
-      <div className="w-full h-[250px] overflow-hidden rounded-[10px]">
+      <div className="size-[150px] md:h-[250px] overflow-hidden rounded-[10px]">
         <img
           src={product.image}
           alt={product.name}
@@ -50,8 +50,8 @@ const ProductCard = ({ product, onAddToCart }) => {
           </span>
         </div>
 
-        <div className="text-[12px] flex flex-col font-light gap-2">
-          <span className="flex items-center">
+        <div className="text-[12px] md:flex flex-col font-light gap-2 hidden ">
+          <span className="flex items-center ">
             Brand:
             <span className="px-[10px] py-[3px] font-medium flex gap-5 rounded-full bg-[#faf0e4]">
               {product.brand}
@@ -163,7 +163,7 @@ export default function ShoppingSection({ user }) {
         </Select>
       </div>
       {filteredProducts?.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 space-y-[30px]">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 space-y-[30px]">
           {filteredProducts.map((product) => (
             <ProductCard
               key={product.id}

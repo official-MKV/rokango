@@ -18,34 +18,42 @@ const page = () => {
       <div className=" flex flex-col  gap-[50px]">
         <section
           id="hero__Banner"
-          className="w-full h-[50vh]  bg-[#faf0e4] flex px-[30px] py-[30px]"
+          className="w-full md:h-[50vh] h-[70vh] overflow-hidden  bg-[#faf0e4] flex flex-col md:flex-row md:px-[30px] px-[10px] py-[20px] md:py-[30px]"
         >
-          <div className="w-1/2 h-full relative text-wrap flex flex-col gap-4">
-            <div className="w-full gap-2 relative ">
-              <p className="text-5xl font-bold leading-tight ">
+          <div className="md:w-1/2 w-full h-full relative text-wrap flex flex-col gap-4">
+            <div className="w-full gap-2 relative text-center flex flex-col items-center justify-center ">
+              <p className="md:text-5xl text-3xl font-bold leading-tight ">
                 Connect Directly with Manufacturers & Local Suppliers
               </p>
-              <p className="w-[80%] text-[15px] font-light">
+              <p className="md:w-[80%] w-full text-[15px] font-light">
                 Streamline your supply chain and discover quality products at
                 competitive prices.
               </p>
             </div>
 
-            <div className="flex">
+            <div className=" w-full flex items-center justify-center">
               <div className="font-medium mt-[10px] px-[20px] py-[10px] bg-[#ffa459] text-[white] cursor-pointer hover:bg-[#ff8f33] hover:rounded-[10px] transition-all duration-500 ease-in-out">
                 Shop Now
               </div>
             </div>
           </div>
-          <div className="w-1/2 h-full relative"></div>
+          <div className="md:w-1/2 w-full   relative ">
+            <div className="relative w-full h-full items-center justify-center mb-[100px]">
+              <img
+                src="/heroimg.png"
+                className="relative w-full h-full"
+                style={{ objecFit: "contain" }}
+              />
+            </div>
+          </div>
         </section>
         <section id="value__Proposition">
-          <div className="relative w-full flex items-center justify-center gap-[50px]">
+          <div className="relative w-full flex  flex-wrap items-center justify-center  gap-[10px] md:gap-[50px]">
             {value.map((item) => {
               const IconComponent = icons[item.icon];
               return (
                 <MagicCard
-                  className=" w-[300px] h-[300px] cursor-pointer flex-col  shadow-2xl flex items-center justify-center   py-[30px] px-[30px]"
+                  className=" md:size-[300px] size-[250px] cursor-pointer flex-col  shadow-2xl flex items-center justify-center   py-[30px] px-[30px]"
                   gradientColor={"#ffa459"}
                   gradientSize={100}
                   gradientOpacity={50}
