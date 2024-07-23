@@ -85,9 +85,9 @@ const ProductPage = () => {
     : 0;
   return (
     <div className="relative w-full min-h-screen p-8">
-      <div className="w-full flex mb-12">
-        <div className="w-2/3 pr-8">
-          <div className="w-full h-[70vh] relative rounded-[30px] flex items-center justify-center bg-[#faf0e4]">
+      <div className="w-full flex md:flex-row flex-col mb-12">
+        <div className="md:w-2/3 relative h-[50vh] w-full pr-8">
+          <div className="w-full h-[50vh] relative rounded-[30px] flex items-center justify-center bg-[#faf0e4]">
             <img
               src={product.image || "/assets/earphones_b_1.webp"}
               alt={product.name}
@@ -95,7 +95,7 @@ const ProductPage = () => {
             />
           </div>
         </div>
-        <div className="w-1/3 flex flex-col justify-between">
+        <div className="md:w-1/3 relative  w-full flex flex-col justify-between">
           <div>
             <span className="text-sm text-gray-500">{product.brand}</span>
             <span className="ml-4 text-sm text-gray-500">ID: {product.id}</span>
