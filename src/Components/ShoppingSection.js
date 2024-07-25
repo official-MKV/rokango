@@ -84,7 +84,32 @@ export default function ShoppingSection({ user }) {
   const [showAddToCartPopup, setShowAddToCartPopup] = useState(false);
   const [showViewOrderButton, setShowViewOrderButton] = useState(false);
   const [showOrderPopup, setShowOrderPopup] = useState(false);
+  const handleCheckout = async () => {
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: "vemmaks84@gmail.com",
+          amount: 100000,
+          order_id: "ORD0005",
+        }),
+      });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(data);
+      return data;
+    } catch (error) {
+      console.error("There was a problem with the fetch operation:", error);
+      throw error;
+    }
+  };
   const {
     data: products,
     isLoading: productLoading,
@@ -241,7 +266,10 @@ export default function ShoppingSection({ user }) {
             </AlertDialogAction>
             <AlertDialogAction
               className="bg-[#ffa459] hover:bg-[#ff7c11]"
-              onClick={() => setShowOrderPopup(false)}
+              onClick={() => {
+                setShowOrderPopup(false);
+                handleCheckout();
+              }}
             >
               CheckOut
             </AlertDialogAction>
