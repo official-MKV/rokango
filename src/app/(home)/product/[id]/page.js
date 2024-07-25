@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useFirebaseQuery, useCart } from "@/hooks/firebase";
-import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
+import { useToast } from "@/Components/ui/use-toast";
+import { Button } from "@/Components/ui/button";
 import { Plus, Minus, Star } from "lucide-react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
