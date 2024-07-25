@@ -1,9 +1,9 @@
 "use client";
 import React from "react";
-import { MagicCard } from "@/Components/magicui/magic-card";
+import { MagicCard } from "@/components/magicui/magic-card";
 import value from "@/data/valueProposition.json";
 import { ShoppingCart, Package, Shield } from "lucide-react";
-import ShoppingSection from "../../Components/ShoppingSection";
+import ShoppingSection from "../../components/ShoppingSection";
 import { useAuth } from "@/hooks/firebase";
 
 const page = () => {

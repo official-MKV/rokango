@@ -15,7 +15,7 @@ import { onAuthStateChanged } from "firebase/auth";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useToast } from "@/Components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { db, auth } from "@/lib/firebase";
 
 export function useFirebaseQuery(collectionName, filters = {}) {

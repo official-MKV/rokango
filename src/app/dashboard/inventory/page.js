@@ -1,11 +1,11 @@
 "use client";
 import React, { useState } from "react";
-import { Input } from "@/Components/ui/input";
-import { Button } from "@/Components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { db, storage } from "@/lib/firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { toast } from "@/Components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { MultiSelect } from "react-multi-select-component";
 import {
   Table,
@@ -14,18 +14,18 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/Components/ui/table";
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/Components/ui/dialog";
-import { Label } from "@/Components/ui/label";
-import { Checkbox } from "@/Components/ui/checkbox";
-import { Badge } from "@/Components/ui/badge";
-import { Textarea } from "@/Components/ui/textarea";
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth, useFirebaseQuery } from "@/hooks/firebase";
 import { useQueryClient } from "@tanstack/react-query";
 import { Categories } from "../../../data/Categories";
