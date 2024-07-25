@@ -32,7 +32,7 @@ const ProductCard = ({ product, onAddToCart }) => {
       }}
       className="md:w-[300px] w-[150px] md:h-auto h-auto cursor-pointer flex flex-col gap-5 relative hover:-translate-y-4 hover:shadow-md px-[5px] py-[3px] rounded-[10px] transition-all duration-200 "
     >
-      <div className="size-[150px] md:h-[250px] overflow-hidden rounded-[10px]">
+      <div className="size-[150px] md:h-[250px] md:w-full overflow-hidden rounded-[10px]">
         <img
           src={product.image}
           alt={product.name}

@@ -31,6 +31,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-multi-select-component": "^4.3.4",
+    "react-paystack": "^5.0.0",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7"
   },
