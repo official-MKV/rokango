@@ -15,5 +15,18 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "(?!rokango\\.ng).*"
+        }
+      ],
+      "destination": "https://rokango.ng/:path*",
+      "permanent": true
+    }
   ]
 }
