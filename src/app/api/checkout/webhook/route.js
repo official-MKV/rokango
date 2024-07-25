@@ -1,12 +1,6 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
-export const config = {
-  api: {
-    bodyParser: false, // Disable the default body parser
-  },
-};
-
 export async function POST(req) {
   const secret = process.env.PAYSTACK_SECRET_KEY;
 
