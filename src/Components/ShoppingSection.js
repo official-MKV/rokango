@@ -84,9 +84,10 @@ export default function ShoppingSection({ user }) {
   const [showAddToCartPopup, setShowAddToCartPopup] = useState(false);
   const [showViewOrderButton, setShowViewOrderButton] = useState(false);
   const [showOrderPopup, setShowOrderPopup] = useState(false);
+  const url = process.env.VERCEL_URL;
   const handleCheckout = async () => {
     try {
-      const response = await fetch("/api/checkout", {
+      const response = await fetch(`${url}/api/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
