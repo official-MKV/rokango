@@ -123,12 +123,13 @@ export default function ShoppingSection({ user }) {
     0
   );
   const handleCheckout = async () => {
-    console.log(cart);
-    console.log(`${user.email},
-    amount:${totalPrice},
-     `);
+    if (!user.email || !totalPrice || !cart.id) {
+      console.error("Missing required checkout information");
+      return { error: "Missing required checkout information" };
+    }
+
     try {
-      const response = await fetch(`https://rokango.ng/api/checkout`, {
+      const response = await fetch(`/api/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -136,21 +137,26 @@ export default function ShoppingSection({ user }) {
         body: JSON.stringify({
           email: user.email,
           amount: totalPrice,
-          ref: "#AB6hho*Hm!",
+          order_id: cart.id,
+          ref: `ORDER_${Date.now()}_${Math.random().toString(36).substring(7)}`, // Generate a unique reference
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(
+          `HTTP error! status: ${response.status}, message: ${errorData.error}`
+        );
       }
 
       const data = await response.json();
 
-      if (!data.authorization_url) {
+      if (!data.data || !data.data.authorization_url) {
         throw new Error("Authorization URL not received from server");
       }
 
-      router.push(data.authorization_url);
+      // Redirect to Paystack's payment page
+      window.location.href = data.data.authorization_url;
     } catch (error) {
       console.error("There was a problem with the checkout process:", error);
       return { error: error.message };
