@@ -20,9 +20,6 @@ export async function POST(req) {
       amount: Math.round(body.amount * 100), // Paystack expects amount in kobo (smallest currency unit)
       currency: "NGN",
       ref: body.ref,
-      metadata: {
-        order_id: body.order_id,
-      },
     };
 
     const res = await fetch(PAYSTACK_API_URL, {
@@ -41,14 +38,14 @@ export async function POST(req) {
     } else {
       console.error("Paystack API error:", data);
       return NextResponse.json(
-        { error: "Failed to initialize transaction" },
+        { error: "Failed to initialize transaction", details: data },
         { status: res.status }
       );
     }
   } catch (error) {
     console.error("Server error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal server error", details: error.message },
       { status: 500 }
     );
   }

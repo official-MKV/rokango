@@ -123,12 +123,12 @@ export default function ShoppingSection({ user }) {
     0
   );
   const handleCheckout = async () => {
-    if (!user.email || !totalPrice || !cart.id) {
-      console.error("Missing required checkout information");
-      return { error: "Missing required checkout information" };
-    }
+    console.log(cart);
+    console.log(`${user.email},
+    amount:${totalPrice},
+     `);
     try {
-      const response = await fetch(`https://www.rokango.ng/api/checkout`, {
+      const response = await fetch(`https://rokango.ng/api/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -136,7 +136,7 @@ export default function ShoppingSection({ user }) {
         body: JSON.stringify({
           email: user.email,
           amount: totalPrice,
-          ref: cart.id,
+          ref: "#AB6hho*Hm!",
         }),
       });
 
