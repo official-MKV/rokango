@@ -80,37 +80,11 @@ const ProductCard = ({ product, onAddToCart }) => {
 export default function ShoppingSection({ user }) {
   const [filters, setFilters] = useState({ supplier: "", brand: "" });
   const [searchTerm, setSearchTerm] = useState("");
-  // const [cart, setCart] = useState([]);
+  const router = useRouter();
   const [showAddToCartPopup, setShowAddToCartPopup] = useState(false);
   const [showViewOrderButton, setShowViewOrderButton] = useState(false);
   const [showOrderPopup, setShowOrderPopup] = useState(false);
-  const url = process.env.VERCEL_URL;
-  const handleCheckout = async () => {
-    try {
-      const response = await fetch(`${url}/api/checkout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: "vemmaks84@gmail.com",
-          amount: 100000,
-          order_id: "ORD0005",
-        }),
-      });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log(data);
-      return data;
-    } catch (error) {
-      console.error("There was a problem with the fetch operation:", error);
-      throw error;
-    }
-  };
   const {
     data: products,
     isLoading: productLoading,
@@ -148,7 +122,40 @@ export default function ShoppingSection({ user }) {
     (total, item) => total + item.price * item.quantity,
     0
   );
+  const handleCheckout = async () => {
+    if (!user.email || !totalPrice || !cart.id) {
+      console.error("Missing required checkout information");
+      return { error: "Missing required checkout information" };
+    }
+    try {
+      const response = await fetch(`https://www.rokango.ng/api/checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: user.email,
+          amount: totalPrice,
+          ref: cart.id,
+        }),
+      });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.authorization_url) {
+        throw new Error("Authorization URL not received from server");
+      }
+
+      router.push(data.authorization_url);
+    } catch (error) {
+      console.error("There was a problem with the checkout process:", error);
+      return { error: error.message };
+    }
+  };
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
 
