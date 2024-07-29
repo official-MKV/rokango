@@ -84,6 +84,7 @@ export default function ShoppingSection({ user }) {
   const [showAddToCartPopup, setShowAddToCartPopup] = useState(false);
   const [showViewOrderButton, setShowViewOrderButton] = useState(false);
   const [showOrderPopup, setShowOrderPopup] = useState(false);
+  const [checkingOut, setCheckingOut] = useState(false);
 
   const {
     data: products,
@@ -123,7 +124,8 @@ export default function ShoppingSection({ user }) {
     0
   );
   const handleCheckout = async () => {
-    if (!user.email || !totalPrice || !cart.id) {
+    setCheckingOut(true);
+    if (!user.email || !totalPrice) {
       console.error("Missing required checkout information");
       return { error: "Missing required checkout information" };
     }
@@ -137,7 +139,7 @@ export default function ShoppingSection({ user }) {
         body: JSON.stringify({
           email: user.email,
           amount: totalPrice,
-          order_id: cart.id,
+
           ref: `ORDER_${Date.now()}_${Math.random().toString(36).substring(7)}`, // Generate a unique reference
         }),
       });
@@ -279,9 +281,10 @@ export default function ShoppingSection({ user }) {
               Close
             </AlertDialogAction>
             <AlertDialogAction
+              disabled={checkingOut}
               className="bg-[#ffa459] hover:bg-[#ff7c11]"
               onClick={() => {
-                setShowOrderPopup(false);
+                // setShowOrderPopup(false);
                 handleCheckout();
               }}
             >

@@ -8,7 +8,7 @@ export async function POST(req) {
     const body = await req.json();
 
     // Validate required fields
-    if (!body.email || !body.amount || !body.order_id) {
+    if (!body.email || !body.amount) {
       return NextResponse.json(
         { error: "Missing required fields: email, amount, or order_id" },
         { status: 400 }
