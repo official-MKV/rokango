@@ -131,7 +131,7 @@ export default function ShoppingSection({ user }) {
     }
 
     try {
-      const response = await fetch(`/api/checkout`, {
+      const response = await fetch(`https://www.rokango.ng/api/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
