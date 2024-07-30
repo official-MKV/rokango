@@ -76,7 +76,11 @@ export const useCart = (userId) => {
     queryKey: ["cart", userId],
     queryFn: async () => {
       const cartsRef = collection(db, "carts");
-      const q = query(cartsRef, where("userId", "==", userId));
+      const q = query(
+        cartsRef,
+        where("userId", "==", userId),
+        where("ordered", "==", false)
+      );
       const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
         const cartDoc = querySnapshot.docs[0];

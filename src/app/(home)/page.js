@@ -5,6 +5,8 @@ import value from "@/data/valueProposition.json";
 import { ShoppingCart, Package, Shield } from "lucide-react";
 import ShoppingSection from "../../Components/ShoppingSection";
 import { useAuth } from "@/hooks/firebase";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
 
 const page = () => {
   const icons = {
@@ -12,7 +14,60 @@ const page = () => {
     Package,
     Shield,
   };
+  const router = useRouter();
+  const { toast } = useToast();
   const { user, loading } = useAuth();
+  useEffect(() => {
+    const verifyPayment = async () => {
+      const { verify, reference } = router.query;
+
+      if (verify === "true" && reference) {
+        try {
+          const transactionRef = doc(db, "transactions", reference);
+          const transactionSnap = await getDoc(transactionRef);
+
+          if (transactionSnap.exists()) {
+            const transactionData = transactionSnap.data();
+
+            if (transactionData.status === "success") {
+              toast({
+                title: "Payment Successful",
+                description: "You can track your order on the orders page.",
+                duration: 5000,
+              });
+
+              // Wait for a short time to ensure the toast is visible before redirecting
+              setTimeout(() => {
+                router.push("/profile/orders");
+              }, 2000);
+            } else {
+              toast({
+                title: "Payment Unsuccessful",
+                description:
+                  "There was an issue with your payment. Please try again.",
+                variant: "destructive",
+                duration: 5000,
+              });
+            }
+          } else {
+            throw new Error("Transaction not found");
+          }
+        } catch (error) {
+          console.error("Error verifying payment:", error);
+          toast({
+            title: "Error",
+            description:
+              "There was an error verifying your payment. Please contact support.",
+            variant: "destructive",
+            duration: 5000,
+          });
+        }
+      }
+    };
+
+    verifyPayment();
+  }, [router.query]);
+
   return (
     <div>
       <div className=" flex flex-col  gap-[50px]">

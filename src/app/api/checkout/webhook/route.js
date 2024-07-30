@@ -40,6 +40,7 @@ export async function POST(req) {
           if (cartSnap.exists()) {
             const cartData = cartSnap.data();
             const items = cartData.items || [];
+            await updateDoc(cartRef, { ordered: true });
             const itemsBySupplier = items.reduce((acc, item) => {
               if (!acc[item.supplier]) {
                 acc[item.supplier] = [];
