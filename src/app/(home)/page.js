@@ -8,6 +8,9 @@ import ShoppingSection from "../../Components/ShoppingSection";
 import { useAuth } from "@/hooks/firebase";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
+import Verified from "@/Components/Verified";
+import { Button } from "@/components/ui/button";
+import { CheckCircle2, ArrowRight } from "lucide-react";
 
 const page = () => {
   const icons = {
@@ -135,8 +138,82 @@ const page = () => {
           </div>
         </section>
         <section id="brand_category_suppliers_Display"></section>
-        <section id="shopping_Section">
+        {/* <section id="shopping_Section">
           {user && <ShoppingSection user={user} />}
+        </section> */}
+        <section id="call_to_action" className="w-full py-16 ">
+          <div className="container mx-auto px-4">
+            <div className="rounded-[30px] bg-[#e7822f] overflow-hidden shadow-lg">
+              <div className="flex flex-col md:flex-row">
+                <div className="w-full md:w-2/3 p-8 md:p-12">
+                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                    Find a marketplace for your products
+                  </h2>
+                  <h3 className="text-2xl md:text-3xl font-semibold text-white mb-6">
+                    Become a Rokango{" "}
+                    <span className="inline-flex items-center leading-0">
+                      <span className=" text-4xl font-bold font-serif mr-1">
+                        V
+                      </span>
+                      erified
+                      <CheckCircle2 className="w-8 h-8 ml-2 text-white fill-green-500" />
+                    </span>{" "}
+                    supplier
+                  </h3>
+                  <p className="text-white text-lg mb-8">
+                    Stand out in the market by becoming a Rokango verified
+                    supplier. Showcase your commitment to quality and
+                    trustworthiness, and enjoy the benefits of connecting with
+                    customers who prioritize reliability.
+                  </p>
+                  <Button className="bg-white text-[#ffa459] hover:bg-gray-100 font-semibold py-2 px-6 rounded-full inline-flex items-center">
+                    Get Verified
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </Button>
+                </div>
+                <div className="w-full md:w-1/3 bg-white  flex items-center justify-center">
+                  <img
+                    src="/supplier.jpg"
+                    alt="Rokango Verified Supplier"
+                    className="rounded-lg shadow-md w-full h-full relative"
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="mt-12 text-center">
+              <h3 className="text-2xl font-semibold mb-4">
+                Why become a Rokango supplier?
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {[
+                  {
+                    title: "Increased Visibility",
+                    description:
+                      "Get your products in front of more potential buyers",
+                  },
+                  {
+                    title: "Trust and Credibility",
+                    description:
+                      "Earn the trust of customers with our verification badge",
+                  },
+                  {
+                    title: "Growth Opportunities",
+                    description: "Expand your business and reach new markets",
+                  },
+                ].map((item, index) => (
+                  <div
+                    key={index}
+                    className="bg-white p-6 rounded-lg shadow-md"
+                  >
+                    <CheckCircle2 className="w-12 h-12 text-[#ffa459] mx-auto mb-4" />
+                    <h4 className="font-semibold text-lg mb-2">{item.title}</h4>
+                    <p className="text-gray-600">{item.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </section>
       </div>
     </div>
