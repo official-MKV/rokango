@@ -109,12 +109,12 @@ const page = () => {
           </div>
         </section>
         <section id="value__Proposition">
-          <div className="relative w-full flex  flex-wrap items-center justify-center  gap-[10px] md:gap-[50px]">
+          <div className="relative w-full flex  flex-wrap items-center justify-center  gap-[10px] md:gap-[50px] px-[10px]">
             {value.map((item) => {
               const IconComponent = icons[item.icon];
               return (
                 <MagicCard
-                  className=" md:size-[300px] size-[250px] cursor-pointer flex-col  shadow-2xl flex items-center justify-center   py-[30px] px-[30px]"
+                  className=" md:size-[300px] w-full  cursor-pointer flex-col  shadow-2xl flex items-center justify-center   py-[30px] px-[30px]"
                   gradientColor={"#ffa459"}
                   gradientSize={100}
                   gradientOpacity={50}
