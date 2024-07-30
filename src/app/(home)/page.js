@@ -3,6 +3,7 @@ import React from "react";
 import { MagicCard } from "@/Components/magicui/magic-card";
 import value from "@/data/valueProposition.json";
 import { ShoppingCart, Package, Shield } from "lucide-react";
+import { useEffect } from "react";
 import ShoppingSection from "../../Components/ShoppingSection";
 import { useAuth } from "@/hooks/firebase";
 import { useRouter } from "next/navigation";
