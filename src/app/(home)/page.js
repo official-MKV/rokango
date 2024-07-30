@@ -7,9 +7,9 @@ import { useEffect } from "react";
 import ShoppingSection from "../../Components/ShoppingSection";
 import { useAuth } from "@/hooks/firebase";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/Components/ui/use-toast";
 import Verified from "@/Components/Verified";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 
 const page = () => {
