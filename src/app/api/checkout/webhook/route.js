@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { doc, getDoc, updateDoc, collection, addDoc } from "firebase/firestore";
 
 export async function POST(req) {
   const secret = process.env.PAYSTACK_SECRET_KEY;
@@ -23,20 +24,57 @@ export async function POST(req) {
     .createHmac("sha512", secret)
     .update(rawBody)
     .digest("hex");
+  try {
+    if (hash === signature) {
+      const { event, data } = JSON.parse(rawBody.toString());
+      if (event === "charge.success") {
+        const transactionRef = doc(db, "transactions", data.reference);
+        const transactionSnap = await getDoc(transactionRef);
 
-  if (hash === signature) {
-    // Signature is valid, process the webhook
-    const event = JSON.parse(rawBody.toString());
+        if (transactionSnap.exists()) {
+          const transactionData = transactionSnap.data();
+          await updateDoc(transactionRef, { status: "success" });
+          const cartRef = doc(db, "carts", transactionData.cart_id);
+          const cartSnap = await getDoc(cartRef);
 
-    // TODO: Do something with the event
-    console.log("Received valid webhook:", event);
+          if (cartSnap.exists()) {
+            const cartData = cartSnap.data();
+            const items = cartData.items || [];
+            const itemsBySupplier = items.reduce((acc, item) => {
+              if (!acc[item.supplier]) {
+                acc[item.supplier] = [];
+              }
+              acc[item.supplier].push(item);
+              return acc;
+            }, {});
 
-    return NextResponse.json({
-      message: "Webhook received and processed successfully",
-    });
-  } else {
-    // Invalid signature
-    return NextResponse.json({ message: "Invalid signature" }, { status: 400 });
+            for (const [supplier, supplierItems] of Object.entries(
+              itemsBySupplier
+            )) {
+              await addDoc(collection(db, "orders"), {
+                order_id: transactionData.cart_id,
+                supplier: supplier,
+                items: supplierItems,
+                status: "pending",
+                created_at: new Date(),
+                user_email: transactionData.user_email,
+              });
+            }
+          }
+        }
+      } else if (event === "charge.failed") {
+        const transactionRef = doc(db, "transactions", data.reference);
+        await updateDoc(transactionRef, { status: "failed" });
+      }
+
+      return NextResponse.json({ received: true }, { status: 200 });
+    }
+  } catch (error) {
+    console.error("Webhook error:", error);
+    return NextResponse.json(
+      { error: "Webhook processing failed" },
+      { status: 500 }
+    );
   }
 }
 

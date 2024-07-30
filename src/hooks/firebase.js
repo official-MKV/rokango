@@ -72,7 +72,6 @@ export function useAuth() {
 export const useCart = (userId) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  console.log(userId);
   const cartQuery = useQuery({
     queryKey: ["cart", userId],
     queryFn: async () => {
@@ -185,6 +184,7 @@ export const useCart = (userId) => {
 
   return {
     cart: cartQuery.data?.items || [],
+    cartId: cartQuery.data?.id,
     isLoading: cartQuery.isLoading,
     isError: cartQuery.isError,
     addToCart,

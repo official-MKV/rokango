@@ -22,6 +22,8 @@ import {
 import { Button } from "@/Components/ui/button";
 import { PackageSearch, ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const ProductCard = ({ product, onAddToCart }) => {
   const router = useRouter();
@@ -92,8 +94,15 @@ export default function ShoppingSection({ user }) {
     error,
   } = useFirebaseQuery("products", filters);
 
-  const { cart, isLoading, isError, addToCart, updateQuantity, removeItem } =
-    useCart(user.uid);
+  const {
+    cart,
+    cartId,
+    isLoading,
+    isError,
+    addToCart,
+    updateQuantity,
+    removeItem,
+  } = useCart(user.uid);
 
   useEffect(() => {
     if (cart.length > 0) {
@@ -131,6 +140,13 @@ export default function ShoppingSection({ user }) {
     }
 
     try {
+      const transactionRef = await addDoc(collection(db, "transactions"), {
+        status: "pending",
+        cart_id: cartId,
+        user_email: user.email,
+        amount: totalPrice,
+        created_at: new Date(),
+      });
       const response = await fetch(`https://www.rokango.ng/api/checkout`, {
         method: "POST",
         headers: {
@@ -139,8 +155,7 @@ export default function ShoppingSection({ user }) {
         body: JSON.stringify({
           email: user.email,
           amount: totalPrice,
-
-          ref: `ORDER_${Date.now()}_${Math.random().toString(36).substring(7)}`, // Generate a unique reference
+          ref: transactionRef.id,
         }),
       });
 
@@ -157,7 +172,8 @@ export default function ShoppingSection({ user }) {
         throw new Error("Authorization URL not received from server");
       }
 
-      // Redirect to Paystack's payment page
+      localStorage.setItem("paymentReference", transactionRef.id);
+
       window.location.href = data.data.authorization_url;
     } catch (error) {
       console.error("There was a problem with the checkout process:", error);
