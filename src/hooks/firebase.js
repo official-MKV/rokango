@@ -94,7 +94,10 @@ export const useCart = (userId) => {
 
   const createCartMutation = useMutation({
     mutationFn: async (newCart) => {
-      const docRef = await addDoc(collection(db, "carts"), newCart);
+      const docRef = await addDoc(collection(db, "carts"), {
+        ordered: false,
+        ...newCart,
+      });
       return { id: docRef.id, ...newCart };
     },
     onSuccess: (data) => {

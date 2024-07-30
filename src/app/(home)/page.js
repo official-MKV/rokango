@@ -66,8 +66,10 @@ const page = () => {
       }
     };
 
-    verifyPayment();
-  }, [router.query]);
+    if (router.isReady) {
+      verifyPayment();
+    }
+  }, [router.isReady, router.query]);
 
   return (
     <div>

@@ -173,7 +173,7 @@ export default function ShoppingSection({ user }) {
       }
 
       localStorage.setItem("paymentReference", transactionRef.id);
-
+      setCheckingOut(false);
       window.location.href = data.data.authorization_url;
     } catch (error) {
       console.error("There was a problem with the checkout process:", error);
@@ -300,7 +300,7 @@ export default function ShoppingSection({ user }) {
               disabled={checkingOut}
               className="bg-[#ffa459] hover:bg-[#ff7c11]"
               onClick={() => {
-                // setShowOrderPopup(false);
+                setCheckingOut(true);
                 handleCheckout();
               }}
             >
