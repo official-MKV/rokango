@@ -1,4 +1,5 @@
 import React from "react";
+import { withRoleGuard } from "../HOC";
 
 const page = () => {
   return (

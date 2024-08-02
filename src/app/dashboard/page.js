@@ -1,10 +1,11 @@
 "use client";
 import React from "react";
+import withRoleGuard from "../HOC";
 import { useAuth } from "@/hooks/firebase";
 
 const page = () => {
   const { user } = useAuth();
-  console.log(user);
+
   return <div></div>;
 };
 

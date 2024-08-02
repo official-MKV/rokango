@@ -1,7 +1,9 @@
+"use client";
 import React from "react";
 import SideBar from "@/Components/SideBar";
+import withRoleGuard from "../HOC";
 
-const layout = ({ children }) => {
+const Layout = ({ children }) => {
   return (
     <div className="flex w-full h-full pt-[50px]">
       <div className="md:w-[350px] w-0" />
@@ -11,4 +13,4 @@ const layout = ({ children }) => {
   );
 };
 
-export default layout;
+export default withRoleGuard(Layout, ["retailer", "admin"]);

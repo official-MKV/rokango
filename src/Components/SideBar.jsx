@@ -39,15 +39,15 @@ const SideBar = () => {
 
   useEffect(() => {
     if (user?.role === "retailer") {
-      setMenuItems(SupplierMenuItems);
-    } else if (user?.role === "supplier") {
+      setMenuItems(RetailerMenuItems);
+    } else if (user?.role === "supplier" || user?.role == "admin") {
       setMenuItems(SupplierMenuItems);
     } else {
       setMenuItems([]);
     }
   }, [user]);
 
-  if (!user) return null; // Don't render anything if user is not authenticated
+  if (!user) return null;
 
   return (
     <div className="bg-white z-40 fixed lg:ml-[50px] shadow-xl lg:w-[250px] md:w-[100px] w-[100vw] lg:top-auto lg:bottom-auto top-auto bottom-5 rounded-[30px] lg:min-h-[80vh] md:h-[80vh] h-[10vh]">

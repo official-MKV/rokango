@@ -30,8 +30,9 @@ export async function POST(req) {
         role: "supplier",
         picture: pictureUrl,
       };
+      const userDocRef = doc(db, "users", uid);
 
-      await addDoc(collection(db, "users"), userData);
+      await setDoc(userDocRef, userData);
 
       return new Response(JSON.stringify(userData), {
         status: 200,

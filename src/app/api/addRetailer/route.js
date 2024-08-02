@@ -21,7 +21,6 @@ export async function POST(req) {
         pictureUrl = await getDownloadURL(pictureRef);
       }
       const userData = {
-        id: uid,
         name: formData.get("name"),
         businessName: formData.get("businessName"),
         phone: formData.get("phone"),
@@ -30,8 +29,9 @@ export async function POST(req) {
         role: "retailer",
         picture: pictureUrl,
       };
+      const userDocRef = doc(db, "users", uid);
 
-      await addDoc(collection(db, "users"), userData);
+      await setDoc(userDocRef, userData);
 
       return new Response(JSON.stringify(userData), {
         status: 200,
