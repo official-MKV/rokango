@@ -192,32 +192,6 @@ export default function ShoppingSection({ user }) {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="flex-grow"
         />
-        <Select
-          onValueChange={(value) =>
-            setFilters((prev) => ({ ...prev, supplier: value }))
-          }
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Supplier" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="supplier1">Supplier 1</SelectItem>
-            <SelectItem value="supplier2">Supplier 2</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select
-          onValueChange={(value) =>
-            setFilters((prev) => ({ ...prev, brand: value }))
-          }
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Brand" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="brand1">Brand 1</SelectItem>
-            <SelectItem value="brand2">Brand 2</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
       {filteredProducts?.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 space-y-[30px]">

@@ -173,9 +173,9 @@ const page = () => {
           </div>
         </section>
         <section id="brand_category_suppliers_Display"></section>
-        {/* <section id="shopping_Section">
+        <section id="shopping_Section">
           {user && <ShoppingSection user={user} />}
-        </section> */}
+        </section>
         <section id="call_to_action" className="w-full py-16 ">
           <div className="container mx-auto px-4">
             <div className="rounded-[30px] bg-[#e7822f] overflow-hidden shadow-lg">

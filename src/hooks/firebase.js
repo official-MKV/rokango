@@ -141,6 +141,7 @@ export const useCart = (userId) => {
         title: "Error",
         description: "Failed to create cart. Please try again.",
         variant: "destructive",
+        duration: 2000,
       });
     },
   });
@@ -159,6 +160,7 @@ export const useCart = (userId) => {
         title: "Error",
         description: "Failed to update cart. Please try again.",
         variant: "destructive",
+        duration: 2000,
       });
     },
   });
@@ -188,6 +190,7 @@ export const useCart = (userId) => {
     toast({
       title: "Added to cart",
       description: `${product.name} added to your cart.`,
+      duration: 2000,
     });
   };
 

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useFirebaseQuery, useCart, useAuth } from "@/hooks/firebase";
 import { Input } from "@/Components/ui/input";
@@ -16,8 +16,17 @@ import { ProductCard } from "@/Components/ShoppingSection";
 import { PackageSearch, ShoppingCart } from "lucide-react";
 
 export default function ShoppingPage() {
+  return (
+    <Suspense>
+      <FullShoppingSection />
+    </Suspense>
+  );
+}
+
+const FullShoppingSection = () => {
   const router = useRouter();
   const user = useAuth();
+
   const searchParams = useSearchParams();
 
   const [filters, setFilters] = useState({
@@ -50,7 +59,6 @@ export default function ShoppingPage() {
   const { cart, addToCart } = useCart(user.uid);
 
   useEffect(() => {
-    // Update URL with current filters
     const queryParams = new URLSearchParams();
     Object.entries(filters).forEach(([key, { value }]) => {
       if (value) {
@@ -63,9 +71,7 @@ export default function ShoppingPage() {
   }, [filters]);
 
   useEffect(() => {
-    // Fetch suggestions for each filter
     const fetchSuggestions = async () => {
-      // This is a placeholder. In a real app, you'd fetch these from your database.
       setSuggestions({
         category: ["Electronics", "Clothing", "Books"],
         supplier: ["Supplier A", "Supplier B"],
@@ -83,15 +89,7 @@ export default function ShoppingPage() {
     }));
   };
 
-  const handlePriceChange = ([min, max]) => {
-    setFilters((prev) => ({
-      ...prev,
-      price: { value: { min, max }, matchType: "range" },
-    }));
-  };
-
   const filteredProducts = products || [];
-
   return (
     <div className="container mx-auto p-4">
       <div className="mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:relative fixed w-full z-50 bg-[white] px-[20px] md:top-0 md:px-0 md:pb-0 top-[80px] pb-[10px]">
@@ -195,4 +193,4 @@ export default function ShoppingPage() {
       )}
     </div>
   );
-}
+};
