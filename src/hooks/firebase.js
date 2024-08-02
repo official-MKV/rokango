@@ -10,6 +10,9 @@ import {
   setDoc,
   addDoc,
   updateDoc,
+  orderBy,
+  startAt,
+  endAt,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -24,9 +27,38 @@ export function useFirebaseQuery(collectionName, filters = {}) {
     queryFn: async () => {
       let q = collection(db, collectionName);
 
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) {
-          q = query(q, where(key, "==", value));
+      Object.entries(filters).forEach(([key, filterValue]) => {
+        if (filterValue && typeof filterValue === "object") {
+          const { value, matchType } = filterValue;
+          if (value) {
+            switch (matchType) {
+              case "exact":
+                q = query(q, where(key, "==", value));
+                break;
+              case "startsWith":
+                q = query(
+                  q,
+                  orderBy(key),
+                  startAt(value),
+                  endAt(value + "\uf8ff")
+                );
+                break;
+              case "contains":
+                const lowerValue = value.toLowerCase();
+                q = query(
+                  q,
+                  orderBy(key),
+                  startAt(lowerValue),
+                  endAt(lowerValue + "\uf8ff")
+                );
+                break;
+              default:
+                q = query(q, where(key, "==", value));
+            }
+          }
+        } else if (filterValue) {
+          // If it's not an object, treat it as an exact match
+          q = query(q, where(key, "==", filterValue));
         }
       });
 
