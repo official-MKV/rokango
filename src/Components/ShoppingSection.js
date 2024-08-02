@@ -25,7 +25,7 @@ import { useRouter } from "next/navigation";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
-const ProductCard = ({ product, onAddToCart }) => {
+export const ProductCard = ({ product, onAddToCart }) => {
   const router = useRouter();
   return (
     <div
@@ -92,7 +92,7 @@ export default function ShoppingSection({ user }) {
     data: products,
     isLoading: productLoading,
     error,
-  } = useFirebaseQuery("products", filters);
+  } = useFirebaseQuery("products");
 
   const {
     cart,

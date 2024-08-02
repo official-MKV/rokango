@@ -11,6 +11,7 @@ import { useToast } from "@/Components/ui/use-toast";
 import Verified from "@/Components/Verified";
 import { Button } from "@/Components/ui/button";
 import { CheckCircle2, ArrowRight } from "lucide-react";
+import Marquee from "@/Components/magicui/marquee";
 
 const page = () => {
   const icons = {
@@ -93,7 +94,12 @@ const page = () => {
             </div>
 
             <div className=" w-full flex items-center justify-center">
-              <div className="font-medium mt-[10px] px-[20px] py-[10px] bg-[#ffa459] text-[white] cursor-pointer hover:bg-[#ff8f33] hover:rounded-[10px] transition-all duration-500 ease-in-out">
+              <div
+                onClick={() => {
+                  window.location.href = "/shop";
+                }}
+                className="font-medium mt-[10px] px-[20px] py-[10px] bg-[#ffa459] text-[white] cursor-pointer hover:bg-[#ff8f33] hover:rounded-[10px] transition-all duration-500 ease-in-out"
+              >
                 Shop Now
               </div>
             </div>
@@ -109,12 +115,12 @@ const page = () => {
           </div>
         </section>
         <section id="value__Proposition">
-          <div className="relative w-full flex  flex-wrap items-center justify-center  gap-[10px] md:gap-[50px] px-[10px]">
+          <div className="md:flex hidden w-full   flex-wrap items-center justify-center  gap-[10px] md:gap-[50px] px-[10px]">
             {value.map((item) => {
               const IconComponent = icons[item.icon];
               return (
                 <MagicCard
-                  className=" md:size-[300px] w-full  cursor-pointer flex-col  shadow-2xl flex items-center justify-center   py-[30px] px-[30px]"
+                  className=" md:size-[300px] w-full md:relative   cursor-pointer flex-col  shadow-2xl flex items-center justify-center   py-[30px] px-[30px]"
                   gradientColor={"#ffa459"}
                   gradientSize={100}
                   gradientOpacity={50}
@@ -136,11 +142,40 @@ const page = () => {
               );
             })}
           </div>
+          <div className="relative md:hidden flex w-full flex-col items-center justify-center overflow-hidden   bg-background md:shadow-xl">
+            <Marquee pauseOnHover className="[--duration:20s] shadow-sm  ">
+              {value.map((item) => {
+                const IconComponent = icons[item.icon];
+                return (
+                  <MagicCard
+                    className=" md:size-[300px] w-[300px] md:relative   cursor-pointer flex-col    flex items-center justify-center   py-[30px] px-[30px]"
+                    gradientColor={"#ffa459"}
+                    gradientSize={100}
+                    gradientOpacity={50}
+                    gradientTransparency={50}
+                  >
+                    <div className="h-full w-full flex flex-col gap-10">
+                      <div className="size-[50px] rounded-full bg-[#faf0e4] flex items-center justify-center">
+                        <IconComponent className="text-[#fbd4a5] size-[30px] " />
+                      </div>
+                      <div className="flex flex-col gap-y-3">
+                        <p className="text-[15px] font-bold">{item.title}</p>
+                        <p className="text-[12px] font-light">
+                          {" "}
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
+                  </MagicCard>
+                );
+              })}
+            </Marquee>
+          </div>
         </section>
         <section id="brand_category_suppliers_Display"></section>
-        <section id="shopping_Section">
+        {/* <section id="shopping_Section">
           {user && <ShoppingSection user={user} />}
-        </section>
+        </section> */}
         <section id="call_to_action" className="w-full py-16 ">
           <div className="container mx-auto px-4">
             <div className="rounded-[30px] bg-[#e7822f] overflow-hidden shadow-lg">

@@ -27,15 +27,36 @@ export function NavBar() {
   const roleSpecificItems = navItems["admin"];
   const allNavItems = [...navItems.common, ...roleSpecificItems];
   const { user, loading } = useAuth();
-  const { cart } = useCart(user?.uid);
+  const {
+    cart,
+    cartId,
+    isLoading,
+    isError,
+    addToCart,
+    updateQuantity,
+    removeItem,
+  } = useCart(user?.uid);
   const [showOrderPopup, setShowOrderPopup] = useState(false);
+
+  const handleAddToCart = (product) => {
+    addToCart(product);
+    setShowAddToCartPopup(true);
+  };
+
+  const handleUpdateQuantity = (productId, change) => {
+    updateQuantity(productId, change);
+  };
+  const handleRemoveItem = (productId) => {
+    removeItem(productId);
+  };
+
   const totalPrice = cart.reduce(
     (total, item) => total + item.price * item.quantity,
     0
   );
 
   return (
-    <nav className="bg-white ">
+    <nav className="bg-white md:relative fixed z-50 top-0 w-full">
       <AlertDialog open={showOrderPopup} onOpenChange={setShowOrderPopup}>
         <AlertDialogContent className="max-w-3xl">
           <AlertDialogHeader>
