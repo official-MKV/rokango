@@ -26,7 +26,6 @@ export function useFirebaseQuery(collectionName, filters = {}) {
     queryKey: [collectionName, filters],
     queryFn: async () => {
       let q = collection(db, collectionName);
-
       Object.entries(filters).forEach(([key, filterValue]) => {
         if (filterValue && typeof filterValue === "object") {
           const { value, matchType } = filterValue;
@@ -57,7 +56,6 @@ export function useFirebaseQuery(collectionName, filters = {}) {
             }
           }
         } else if (filterValue) {
-          // If it's not an object, treat it as an exact match
           q = query(q, where(key, "==", filterValue));
         }
       });

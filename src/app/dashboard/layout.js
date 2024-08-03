@@ -12,4 +12,4 @@ const Layout = ({ children }) => {
   );
 };
 
-export default withRoleGuard(Layout, ["suppliers"]);
+export default withRoleGuard(Layout, ["supplier"]);

@@ -113,7 +113,7 @@ export default function UserDetailPage() {
       <Button onClick={handleGoBack} className="mb-4">
         Go Back
       </Button>
-      <h1 className="text-2xl font-bold text-center mb-6">Retailer Details</h1>
+      <h1 className="text-2xl font-bold text-center mb-6">Supplier Details</h1>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">{user.name}</h2>

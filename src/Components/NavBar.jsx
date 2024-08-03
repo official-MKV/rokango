@@ -162,7 +162,13 @@ export function NavBar() {
               </div>
               <div
                 onClick={() => {
-                  router.push("/profile");
+                  const route =
+                    user.role === "admin"
+                      ? "/dashboard"
+                      : user.role === "supplier"
+                      ? "/dashboard"
+                      : "/profile";
+                  router.push();
                 }}
                 className="flex transition-all duration-500 ease-in-out items-center w-full gap-3 px-[10px] py-[2px] rounded-full hover:shadow-lg hover:bg-[#ffa459] cursor-pointer"
               >
