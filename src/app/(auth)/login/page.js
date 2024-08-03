@@ -1,14 +1,12 @@
-// pages/login.js
 "use client";
-
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase"; // Adjust this import based on your Firebase setup
+import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, Lock, LogIn } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -17,25 +15,52 @@ import {
   CardContent,
   CardFooter,
 } from "@/Components/ui/card";
-import { Alert, AlertDescription } from "@/Components/ui/alert";
-import { Mail, Lock, LogIn } from "lucide-react";
+import { useToast } from "@/Components/ui/use-toast";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleLogin = async (e) => {
-    setIsLoading(true);
     e.preventDefault();
+    setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
       setIsLoading(false);
       router.push("/");
     } catch (error) {
-      setError(error.message);
+      setIsLoading(false);
+
+      let errorMessage = "An error occurred during login.";
+
+      switch (error.code) {
+        case "auth/user-not-found":
+          errorMessage = "No user found with this email address.";
+          break;
+        case "auth/invalid-credential":
+          errorMessage = "Incorrect credential. Please try again.";
+          break;
+        case "auth/invalid-email":
+          errorMessage = "Invalid email address. Please check and try again.";
+          break;
+        case "auth/user-disabled":
+          errorMessage =
+            "This account has been disabled. Please contact support.";
+          break;
+        case "auth/too-many-requests":
+          errorMessage =
+            "Too many failed login attempts. Please try again later.";
+          break;
+      }
+
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: errorMessage,
+      });
     }
   };
 
@@ -90,15 +115,10 @@ export default function LoginPage() {
                 </div>
               </div>
             </div>
-            {error && (
-              <Alert variant="destructive" className="mt-4">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
             <Button
               type="submit"
               disabled={loading}
-              className="w-full mt-6 bg-[#ffa459] hover:bg-[#ff8c2a] "
+              className="w-full mt-6 bg-[#ffa459] hover:bg-[#ff8c2a]"
             >
               {!loading ? (
                 <>
