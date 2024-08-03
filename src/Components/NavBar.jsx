@@ -164,11 +164,11 @@ export function NavBar() {
                 onClick={() => {
                   const route =
                     user.role === "admin"
-                      ? "/dashboard"
+                      ? "/admin"
                       : user.role === "supplier"
                       ? "/dashboard"
                       : "/profile";
-                  router.push();
+                  router.push(route);
                 }}
                 className="flex transition-all duration-500 ease-in-out items-center w-full gap-3 px-[10px] py-[2px] rounded-full hover:shadow-lg hover:bg-[#ffa459] cursor-pointer"
               >
