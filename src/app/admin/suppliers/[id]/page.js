@@ -1,14 +1,14 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/Components/ui/use-toast";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Button } from "@/Components/ui/button";
 import { useParams } from "next/navigation";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@/Components/ui/switch";
 
 export default function UserDetailPage() {
   const params = useParams();
