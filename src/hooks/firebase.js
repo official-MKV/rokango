@@ -176,6 +176,7 @@ export const useCart = (userId) => {
     toast({
       title: "Product added",
       description: `${product.name} added to your cart.`,
+      duration: 2000,
     });
 
     await updateCartMutation.mutateAsync({
