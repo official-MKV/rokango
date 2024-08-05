@@ -14,7 +14,7 @@ const ProductPage = () => {
   const pathname = usePathname();
   const id = pathname.split("/").pop();
   const { toast } = useToast();
-  const [quantity, setQuantity] = useState(1);
+
   const { user, loading: authLoading } = useAuth();
 
   const {
@@ -24,6 +24,7 @@ const ProductPage = () => {
     addToCart,
     updateQuantity,
   } = useCart(user?.uid);
+  const [quantity, setQuantity] = useState(cart[id]?.quantity || 0);
 
   const {
     data: product,
@@ -50,6 +51,11 @@ const ProductPage = () => {
 
   const handleQuantityChange = (change) => {
     setQuantity((prev) => Math.max(1, prev + change));
+    updateQuantity(id, change);
+    toast({
+      title: "Cart Item updated",
+      description: `${quantity + change} x ${product.name} added to your cart.`,
+    });
   };
 
   const handleAddToCart = () => {

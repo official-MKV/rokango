@@ -13,6 +13,10 @@ import {
   DialogTrigger,
 } from "@/Components/ui/dialog";
 import { format, differenceInHours } from "date-fns";
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useQueryClient } from "@tanstack/react-query";
+import { Badge } from "@/Components/ui/badge";
 
 const primaryColor = "#ffa459";
 
@@ -26,8 +30,9 @@ const OrderCard = ({ order, onToggleDelivered }) => {
   const isNew = differenceInHours(new Date(), order.date_ordered.toDate()) < 48;
 
   const handleToggle = (checked) => {
-    onToggleDelivered(order.order_id, checked);
-    //
+    if (!order.delivered) {
+      onToggleDelivered(order.id, checked);
+    }
   };
 
   const total = order.items.reduce(
@@ -36,34 +41,48 @@ const OrderCard = ({ order, onToggleDelivered }) => {
   );
 
   return (
-    <Card className={`mb-4 ${order.delivered ? "bg-green-50" : ""}`}>
+    <Card className={`mb-4 min-w-[350px] ${order.delivered ? "bg-white" : ""}`}>
       <CardHeader>
         <CardTitle className="flex justify-between items-center text-sm">
           <span>
             {isNew && <NewTag />}
-            {order.order_id}
+            {order.id}
           </span>
           <div className="flex items-center space-x-2">
-            <span className="text-xs">
-              {order.delivered ? "Delivered" : "Not Delivered"}
-            </span>
-            <Switch
-              checked={order.delivered}
-              className="data-[state=checked]:bg-green-500"
-              onCheckedChange={handleToggle}
-            />
+            {order.delivered ? (
+              <Badge variant="success" className="bg-green-500 text-white">
+                Delivered
+              </Badge>
+            ) : (
+              <>
+                <span className="text-xs">Not Delivered</span>
+                <Switch
+                  checked={order.delivered}
+                  className="data-[state=unchecked]:bg-red-500"
+                  onCheckedChange={handleToggle}
+                />
+              </>
+            )}
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-sm">{format(order.date_ordered.toDate(), "PPP")}</p>
-        <p className="text-sm truncate">{order.retailer_name}</p>
-        <p className="text-sm truncate">{order.delivery_location}</p>
+        <p className="text-sm">
+          Ordered: {format(order.date_ordered.toDate(), "PPP")}
+        </p>
+        {order.delivery_date && (
+          <p className="text-sm">
+            Delivered: {format(order.delivery_date.toDate(), "PPP")}
+          </p>
+        )}
+        <p className="text-sm truncate">Retailer: {order.retailer_name}</p>
+        <p className="text-sm truncate">Location: {order.delivery_location}</p>
+        <p className="text-sm font-semibold mt-2">Total: ₦{total.toFixed(2)}</p>
         <Dialog>
           <DialogTrigger asChild>
             <Button
               variant="outline"
-              className="mt-2 text-xs"
+              className="mt-2 text-xs w-full"
               style={{ backgroundColor: primaryColor, color: "white" }}
             >
               View Details
@@ -78,7 +97,7 @@ const OrderCard = ({ order, onToggleDelivered }) => {
                 <p>
                   <strong>Order ID:</strong>
                 </p>
-                <p>{order.order_id}</p>
+                <p>{order.id}</p>
                 <p>
                   <strong>Date Created:</strong>
                 </p>
@@ -87,6 +106,14 @@ const OrderCard = ({ order, onToggleDelivered }) => {
                   <strong>Date Ordered:</strong>
                 </p>
                 <p>{format(order.date_ordered.toDate(), "PPP")}</p>
+                {order.delivery_date && (
+                  <>
+                    <p>
+                      <strong>Delivery Date:</strong>
+                    </p>
+                    <p>{format(order.delivery_date.toDate(), "PPP")}</p>
+                  </>
+                )}
                 <p>
                   <strong>Delivery Location:</strong>
                 </p>
@@ -114,17 +141,17 @@ const OrderCard = ({ order, onToggleDelivered }) => {
                       {item.quantity}
                     </div>
                     <div className="col-span-2 text-right">
-                      ${item.price.toFixed(2)}
+                      ₦{item.price.toFixed(2)}
                     </div>
                     <div className="col-span-3 text-right">
-                      ${(item.quantity * item.price).toFixed(2)}
+                      ₦{(item.quantity * item.price).toFixed(2)}
                     </div>
                   </div>
                 ))}
                 <div className="grid grid-cols-12 gap-2 text-sm font-bold mt-2 pt-2 border-t border-gray-300">
                   <div className="col-span-9 text-right">Total:</div>
                   <div className="col-span-3 text-right">
-                    ${total.toFixed(2)}
+                    ₦{total.toFixed(2)}
                   </div>
                 </div>
               </div>
@@ -140,6 +167,7 @@ const OrdersPage = () => {
   const [filters, setFilters] = useState({ retailer_name: "", order_id: "" });
   const [showRecent, setShowRecent] = useState(false);
   const { data: orders, isLoading, error } = useFirebaseQuery("orders");
+  const queryClient = useQueryClient();
 
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
@@ -149,12 +177,10 @@ const OrdersPage = () => {
           order.retailer_name
             .toLowerCase()
             .includes(filters.retailer_name.toLowerCase()) &&
-          order.order_id.toLowerCase().includes(filters.order_id.toLowerCase())
+          order.id.toLowerCase().includes(filters.order_id.toLowerCase())
       )
-      .sort((a, b) =>
-        showRecent ? b.date_ordered.toDate() - a.date_ordered.toDate() : 0
-      );
-  }, [orders, filters, showRecent]);
+      .sort((a, b) => b.date_created.toDate() - a.date_created.toDate());
+  }, [orders, filters]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -162,13 +188,21 @@ const OrdersPage = () => {
   };
 
   const handleToggleDelivered = async (orderId, isDelivered) => {
-    // Implement the logic to update the order status in Firebase
-    console.log(
-      `Order ${orderId} marked as ${
-        isDelivered ? "delivered" : "not delivered"
-      }`
-    );
-    // You would typically update the Firestore document here
+    try {
+      const orderRef = doc(db, "orders", orderId);
+      await updateDoc(orderRef, {
+        delivered: isDelivered,
+        delivery_date: isDelivered ? serverTimestamp() : null,
+      });
+      queryClient.invalidateQueries(["orders"]);
+      console.log(
+        `Order ${orderId} marked as ${
+          isDelivered ? "delivered" : "not delivered"
+        }`
+      );
+    } catch (error) {
+      console.error("Error updating order status:", error);
+    }
   };
 
   return (
@@ -192,12 +226,6 @@ const OrdersPage = () => {
           className="flex-grow"
         />
         <Button
-          onClick={() => setShowRecent(!showRecent)}
-          style={{ backgroundColor: showRecent ? primaryColor : undefined }}
-        >
-          {showRecent ? "Show All" : "Show Recent"}
-        </Button>
-        <Button
           onClick={() => setFilters({ retailer_name: "", order_id: "" })}
           style={{ backgroundColor: primaryColor }}
         >
@@ -211,10 +239,10 @@ const OrdersPage = () => {
           Error: {error.message}
         </div>
       ) : filteredOrders.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
           {filteredOrders.map((order) => (
             <OrderCard
-              key={order.order_id}
+              key={order.id}
               order={order}
               onToggleDelivered={handleToggleDelivered}
             />

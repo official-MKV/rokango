@@ -135,12 +135,6 @@ export const useCart = (userId) => {
     },
     onError: (error) => {
       console.error("Error creating cart:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create cart. Please try again.",
-        variant: "destructive",
-        duration: 2000,
-      });
     },
   });
 
@@ -179,16 +173,14 @@ export const useCart = (userId) => {
     } else {
       newItems = [...cart.items, { ...product, quantity: 1 }];
     }
+    toast({
+      title: "Product added",
+      description: `${product.name} added to your cart.`,
+    });
 
     await updateCartMutation.mutateAsync({
       cartId: cart.id,
       newCart: { ...cart, items: newItems },
-    });
-
-    toast({
-      title: "Added to cart",
-      description: `${product.name} added to your cart.`,
-      duration: 2000,
     });
   };
 

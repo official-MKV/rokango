@@ -3,13 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useFirebaseQuery } from "@/hooks/firebase";
 import { Input } from "@/Components/ui/input";
 import { useCart } from "@/hooks/firebase";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/Components/ui/select";
+import Link from "next/link";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,10 +22,8 @@ import { db } from "@/lib/firebase";
 export const ProductCard = ({ product, onAddToCart }) => {
   const router = useRouter();
   return (
-    <div
-      onClick={() => {
-        router.push(`/product/${product.id}`);
-      }}
+    <Link
+      href={`/product/${product.id}`}
       className="md:w-[300px] w-[150px] md:h-auto h-auto cursor-pointer flex flex-col gap-5 relative hover:-translate-y-4 hover:shadow-md px-[5px] py-[3px] rounded-[10px] transition-all duration-200 "
     >
       <div className="size-[150px] md:h-[250px] md:w-full overflow-hidden rounded-[10px]">
@@ -69,13 +61,16 @@ export const ProductCard = ({ product, onAddToCart }) => {
       </div>
       <div className="flex">
         <button
-          className="px-[18px] py-[8px] bg-[#ffa459] text-white font-medium hover:rounded-[10px] transition-all duration-500 ease-in-out hover:bg-[#fc7b12]"
-          onClick={() => onAddToCart(product)}
+          className="  px-[18px] py-[8px] bg-[#ffa459] text-white font-medium hover:rounded-[10px] transition-all duration-500 ease-in-out hover:bg-[#fc7b12]"
+          onClick={(e) => {
+            e.preventDefault();
+            onAddToCart(product);
+          }}
         >
           Add To cart
         </button>
       </div>
-    </div>
+    </Link>
   );
 };
 
