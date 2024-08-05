@@ -27,6 +27,8 @@ export function NavBar() {
   const roleSpecificItems = navItems["admin"];
   const allNavItems = [...navItems.common, ...roleSpecificItems];
   const { user, loading } = useAuth();
+  const [checkingOut, setCheckingOut] = useState(false);
+
   const {
     cart,
     cartId,
@@ -54,6 +56,54 @@ export function NavBar() {
     (total, item) => total + item.price * item.quantity,
     0
   );
+  const handleCheckout = async () => {
+    setCheckingOut(true);
+    if (!user.email || !totalPrice) {
+      console.error("Missing required checkout information");
+      return { error: "Missing required checkout information" };
+    }
+
+    try {
+      const transactionRef = await addDoc(collection(db, "transactions"), {
+        status: "pending",
+        cart_id: cartId,
+        user_email: user.email,
+        amount: totalPrice,
+        created_at: new Date(),
+      });
+      const response = await fetch(`/api/checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: user.email,
+          amount: totalPrice,
+          ref: transactionRef.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          `HTTP error! status: ${response.status}, message: ${errorData.error}`
+        );
+      }
+
+      const data = await response.json();
+
+      if (!data.data || !data.data.authorization_url) {
+        throw new Error("Authorization URL not received from server");
+      }
+
+      localStorage.setItem("paymentReference", transactionRef.id);
+      setCheckingOut(false);
+      window.location.href = data.data.authorization_url;
+    } catch (error) {
+      console.error("There was a problem with the checkout process:", error);
+      return { error: error.message };
+    }
+  };
 
   return (
     <nav className="bg-white md:relative fixed z-50 top-0 w-full">
@@ -119,7 +169,10 @@ export function NavBar() {
             </AlertDialogAction>
             <AlertDialogAction
               className="bg-[#ffa459] hover:bg-[#ff7c11]"
-              onClick={() => setShowOrderPopup(false)}
+              onClick={() => {
+                handleCheckout();
+                setShowOrderPopup(false);
+              }}
             >
               CheckOut
             </AlertDialogAction>

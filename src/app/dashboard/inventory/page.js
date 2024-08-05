@@ -1,10 +1,22 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
 import { db, storage } from "@/lib/firebase";
-import { collection, addDoc } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 import { toast } from "@/Components/ui/use-toast";
 import { MultiSelect } from "react-multi-select-component";
 import {
@@ -29,33 +41,15 @@ import { Textarea } from "@/Components/ui/textarea";
 import { useAuth, useFirebaseQuery } from "@/hooks/firebase";
 import { useQueryClient } from "@tanstack/react-query";
 import { Categories } from "../../../data/Categories";
-import ProductPage from "@/app/(home)/product/[id]/page";
-
-// Mock data for demonstration
-const mockProducts = [
-  {
-    id: "SKU001",
-    name: "Ergonomic Office Chair",
-    brand: "ComfortPlus",
-    categories: ["Furniture", "Office Supplies"],
-    description:
-      "Adjustable office chair with lumbar support and breathable mesh",
-    image:
-      "https://images.unsplash.com/photo-1541558869434-2840d308329a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-    inStock: true,
-    manufacturer: "ComfortPlus",
-    price: 249.99,
-    quantity: 30,
-    supplier: "Office Essentials Inc.",
-  },
-  // Add more mock products here...
-];
+import { Eye, Trash2, Edit } from "lucide-react";
+import { Switch } from "@/Components/ui/switch";
 
 const InventoryPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [selected, setSelected] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedProduct, setEditedProduct] = useState(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const {
@@ -73,6 +67,68 @@ const InventoryPage = () => {
       (!inStockOnly || product.inStock)
   );
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageRef = ref(
+        storage,
+        `product-images/${Date.now()}_${file.name}`
+      );
+      await uploadBytes(imageRef, file);
+      const imageUrl = await getDownloadURL(imageRef);
+      setEditedProduct((prev) => ({ ...prev, image: imageUrl }));
+    }
+  };
+
+  const handleDeleteProduct = async (productId, productName) => {
+    if (window.confirm(`Are you sure you want to delete ${productName}?`)) {
+      try {
+        await deleteDoc(doc(db, "products", productId));
+        queryClient.invalidateQueries(["products", user.businessName]);
+        toast({
+          title: "Product Deleted",
+          description: `Product ${productName} has been deleted successfully.`,
+        });
+        setSelectedProduct(null);
+      } catch (error) {
+        console.error("Error deleting product: ", error);
+        toast({
+          title: "Error",
+          description:
+            "There was an error deleting the product. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleInStockChange = async (checked) => {
+    try {
+      const updatedProduct = { ...editedProduct, inStock: checked };
+      if (!checked) {
+        updatedProduct.quantity = 0;
+      }
+      const productRef = doc(db, "products", editedProduct.id);
+      await updateDoc(productRef, updatedProduct);
+      setEditedProduct(updatedProduct);
+      queryClient.invalidateQueries(["products", user.businessName]);
+      toast({
+        title: "Stock Status Updated",
+        description: `${editedProduct.name} is now ${
+          checked ? "in stock" : "out of stock"
+        }.`,
+      });
+    } catch (error) {
+      console.error("Error updating stock status: ", error);
+      toast({
+        title: "Error",
+        description:
+          "There was an error updating the stock status. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const AddProductDialog = () => {
     const [newProduct, setNewProduct] = useState({
       name: "",
@@ -86,10 +142,12 @@ const InventoryPage = () => {
     });
     const [isLoading, setIsLoading] = useState(false);
     const [selected, setSelected] = useState([]);
+
     const handleInputChange = (e) => {
       const { name, value } = e.target;
       setNewProduct((prev) => ({ ...prev, [name]: value }));
     };
+
     const handleCategoriesChange = (selectedOptions) => {
       setSelected(selectedOptions);
       setNewProduct((prev) => ({
@@ -108,7 +166,6 @@ const InventoryPage = () => {
       setIsLoading(true);
 
       try {
-        // Upload image to Firebase Storage
         let imageUrl = "";
         if (newProduct.image) {
           const imageRef = ref(
@@ -119,7 +176,6 @@ const InventoryPage = () => {
           imageUrl = await getDownloadURL(imageRef);
         }
 
-        // Prepare product data
         const productData = {
           ...newProduct,
           image: imageUrl,
@@ -138,7 +194,6 @@ const InventoryPage = () => {
           description: `Product ${newProduct.name} has been added successfully.`,
         });
 
-        // Reset form and close dialog
         setNewProduct({
           name: "",
           brand: "",
@@ -149,7 +204,6 @@ const InventoryPage = () => {
           categories: [],
           image: null,
         });
-        // Here you would close the dialog
       } catch (error) {
         console.error("Error adding product: ", error);
         toast({
@@ -275,137 +329,411 @@ const InventoryPage = () => {
 
   const ProductDetailsDialog = ({ product }) => {
     if (!product) return null;
+    const [formInputs, setFormInputs] = useState({ ...product });
+
+    const handleInputChangeLocal = (e) => {
+      const { name, value, type } = e.target;
+      setFormInputs((prev) => ({
+        ...prev,
+        [name]: type === "number" ? parseFloat(value) : value,
+      }));
+    };
+
+    const handleCategoriesChange = (selectedOptions) => {
+      setFormInputs((prev) => ({
+        ...prev,
+        Categories: selectedOptions.map((option) => option.value),
+      }));
+    };
+
+    const handleFormSubmit = async (e) => {
+      e.preventDefault();
+
+      try {
+        const productRef = doc(db, "products", formInputs.id);
+        const updatedProduct = {
+          ...formInputs,
+          price: parseFloat(formInputs.price),
+          quantity: parseInt(formInputs.quantity),
+        };
+
+        await updateDoc(productRef, updatedProduct);
+        queryClient.invalidateQueries(["products", user.businessName]);
+        toast({
+          title: "Product Updated",
+          description: `Product ${updatedProduct.name} has been updated successfully.`,
+        });
+        setIsEditing(false);
+        setSelectedProduct(updatedProduct);
+        setEditedProduct(updatedProduct);
+      } catch (error) {
+        console.error("Error updating product: ", error);
+        toast({
+          title: "Error",
+          description:
+            "There was an error updating the product. Please try again.",
+          variant: "destructive",
+        });
+      }
+    };
 
     return (
-      <Dialog open={!!product} onOpenChange={() => setSelectedProduct(null)}>
-        <DialogContent>
+      <Dialog
+        open={!!product}
+        onOpenChange={() => {
+          setSelectedProduct(null);
+          setIsEditing(false);
+        }}
+      >
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{product.name}</DialogTitle>
+            <DialogTitle>
+              {isEditing ? "Edit Product" : product.name}
+            </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-48 object-cover rounded"
-            />
-            <p>
-              <strong>SKU:</strong> {product.id}
-            </p>
-            <p>
-              <strong>Brand:</strong> {product.brand}
-            </p>
-            <p>
-              <strong>Price:</strong> ${product.price.toFixed(2)}
-            </p>
-            <p>
-              <strong>Quantity:</strong> {product.quantity}
-            </p>
-            <p>
-              <strong>Description:</strong> {product.description}
-            </p>
-            <p>
-              <strong>Manufacturer:</strong> {product.manufacturer}
-            </p>
-            <p>
-              <strong>Supplier:</strong> {product.supplier}
-            </p>
-            {product.categories && (
-              <div>
-                <strong>Categories:</strong>
-                {product.categories.map((category, index) => (
-                  <Badge key={index} className="ml-2">
-                    {category}
-                  </Badge>
-                ))}
-              </div>
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto">
+            {isEditing ? (
+              <form onSubmit={handleFormSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    value={formInputs.name}
+                    onChange={handleInputChangeLocal}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="brand">Brand</Label>
+                  <Input
+                    id="brand"
+                    name="brand"
+                    value={formInputs.brand}
+                    onChange={handleInputChangeLocal}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="price">Price (₦)</Label>
+                  <Input
+                    id="price"
+                    name="price"
+                    type="number"
+                    step="0.01"
+                    value={formInputs.price}
+                    onChange={handleInputChangeLocal}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="quantity">Quantity</Label>
+                  <Input
+                    id="quantity"
+                    name="quantity"
+                    type="number"
+                    value={formInputs.quantity}
+                    onChange={handleInputChangeLocal}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="Categories">Categories</Label>
+                  <MultiSelect
+                    options={Categories}
+                    value={formInputs.Categories.map((cat) => ({
+                      label: cat,
+                      value: cat,
+                    }))}
+                    onChange={handleCategoriesChange}
+                    labelledBy="Select"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    value={formInputs.description}
+                    onChange={handleInputChangeLocal}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="image">Product Image</Label>
+                  <Input
+                    id="image"
+                    name="image"
+                    type="file"
+                    onChange={handleImageUpload}
+                    accept="image/*"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="inStock"
+                    checked={formInputs.inStock}
+                    onCheckedChange={(checked) =>
+                      setFormInputs((prev) => ({
+                        ...prev,
+                        quantity: checked ? 1 : 0,
+                        inStock: checked,
+                      }))
+                    }
+                  />
+                  <Label htmlFor="inStock">In Stock</Label>
+                </div>
+                <Button
+                  type="submit"
+                  style={{ backgroundColor: "#ffa459", color: "white" }}
+                >
+                  Save Changes
+                </Button>
+              </form>
+            ) : (
+              <>
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-48 object-cover rounded"
+                />
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <p>
+                    <strong>SKU:</strong> {product.id}
+                  </p>
+                  <p>
+                    <strong>Brand:</strong> {product.brand}
+                  </p>
+                  <p>
+                    <strong>Price:</strong> ₦{product.price.toFixed(2)}
+                  </p>
+                  <p>
+                    <strong>Quantity:</strong> {product.quantity}
+                  </p>
+                </div>
+                <p className="text-sm">
+                  <strong>Description:</strong> {product.description}
+                </p>
+                <p className="text-sm">
+                  <strong>Manufacturer:</strong> {product.manufacturer}
+                </p>
+                <p className="text-sm">
+                  <strong>Supplier:</strong> {product.supplier}
+                </p>
+                {product.Categories && (
+                  <div>
+                    <strong>Categories:</strong>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {product.Categories.map((category) => (
+                        <Badge key={category} variant="secondary">
+                          {category}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="inStock"
+                    checked={product.inStock}
+                    onCheckedChange={(checked) => handleInStockChange(checked)}
+                  />
+                  <Label htmlFor="inStock">In Stock</Label>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button
+                    onClick={() => {
+                      setIsEditing(true);
+                      setEditedProduct({ ...product });
+                    }}
+                    style={{ backgroundColor: "#ffa459", color: "white" }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      handleDeleteProduct(product.id, product.name)
+                    }
+                    variant="destructive"
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </>
             )}
-
-            <Badge className={product.inStock ? "bg-green-500" : "bg-red-500"}>
-              {product.inStock ? "In Stock" : "Out of Stock"}
-            </Badge>
           </div>
         </DialogContent>
       </Dialog>
     );
   };
-  if (isLoading) return <div>Loading...</div>;
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4 text-[#ffa459]">
-        Inventory Management
-      </h1>
-
-      <div className="mb-4 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-        <Input
-          placeholder="Search products by name or SKU..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex-grow"
-        />
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="inStock"
-            checked={inStockOnly}
-            onCheckedChange={setInStockOnly}
+      <h1 className="text-2xl font-bold mb-4">Inventory Management</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 mb-2 sm:mb-0">
+          <Input
+            type="text"
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full sm:w-64"
           />
-          <Label htmlFor="inStock">In Stock Only</Label>
+          <div className="flex items-center">
+            <Checkbox
+              id="inStockOnly"
+              checked={inStockOnly}
+              onCheckedChange={setInStockOnly}
+            />
+            <Label htmlFor="inStockOnly" className="ml-2">
+              In Stock Only
+            </Label>
+          </div>
         </div>
+        <AddProductDialog />
       </div>
+      <div className="mt-6">
+        {/* Desktop view */}
+        <div className="hidden sm:block overflow-x-auto">
+          <Table className="w-full">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Image</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>SKU</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Quantity</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredProducts?.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell>
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-10 h-10 object-cover rounded"
+                    />
+                  </TableCell>
+                  <TableCell>{product.name}</TableCell>
+                  <TableCell>{product.id}</TableCell>
+                  <TableCell>₦{product.price.toFixed(2)}</TableCell>
+                  <TableCell>{product.quantity}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={product.inStock ? "success" : "destructive"}
+                    >
+                      {product.inStock ? "In Stock" : "Out of Stock"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <Button
+                        onClick={() => setSelectedProduct(product)}
+                        size="sm"
+                        variant="ghost"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setSelectedProduct(product);
+                          setIsEditing(true);
+                          setEditedProduct({ ...product });
+                        }}
+                        size="sm"
+                        variant="ghost"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        onClick={() =>
+                          handleDeleteProduct(product.id, product.name)
+                        }
+                        size="sm"
+                        variant="ghost"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
 
-      <AddProductDialog />
-
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Image</TableHead>
-              <TableHead className="hidden sm:table-cell">SKU</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead className="hidden sm:table-cell">Brand</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead className="hidden sm:table-cell">Quantity</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredProducts.map((product) => (
-              <TableRow
-                key={product.id}
-                onClick={() => setSelectedProduct(product)}
-                className="cursor-pointer"
-              >
-                <TableCell>
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-10 h-10 object-cover rounded"
-                  />
-                </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  {product.id}
-                </TableCell>
-                <TableCell>{product.name}</TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  {product.brand}
-                </TableCell>
-                <TableCell>₦{product.price.toFixed(2)}</TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  {product.quantity}
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    className={product.inStock ? "bg-green-500" : "bg-red-500"}
-                  >
+        {/* Mobile view */}
+        <div className="sm:hidden space-y-6">
+          {filteredProducts?.map((product) => (
+            <div key={product.id} className="bg-white shadow rounded-lg p-4">
+              <div className="flex items-center space-x-4 mb-4">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-16 h-16 object-cover rounded"
+                />
+                <div>
+                  <h3 className="font-semibold">{product.name}</h3>
+                  <p className="text-sm text-gray-500">SKU: {product.id}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Price</p>
+                  <p>₦{product.price.toFixed(2)}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Quantity</p>
+                  <p>{product.quantity}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Status</p>
+                  <Badge variant={product.inStock ? "success" : "destructive"}>
                     {product.inStock ? "In Stock" : "Out of Stock"}
                   </Badge>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button
+                  onClick={() => setSelectedProduct(product)}
+                  size="sm"
+                  variant="ghost"
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+                <Button
+                  onClick={() => {
+                    setSelectedProduct(product);
+                    setIsEditing(true);
+                    setEditedProduct({ ...product });
+                  }}
+                  size="sm"
+                  variant="ghost"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  onClick={() => handleDeleteProduct(product.id, product.name)}
+                  size="sm"
+                  variant="ghost"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-
       <ProductDetailsDialog product={selectedProduct} />
     </div>
   );
