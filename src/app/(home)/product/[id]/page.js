@@ -61,6 +61,7 @@ const ProductPage = () => {
   const handleAddToCart = () => {
     if (product) {
       addToCart({ ...product, quantity });
+      console.log(quantity);
       toast({
         title: "Added to cart",
         description: `${quantity} x ${product.name} added to your cart.`,

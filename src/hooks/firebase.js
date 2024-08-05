@@ -186,20 +186,47 @@ export const useCart = (userId) => {
   };
 
   const updateQuantity = async (productId, change) => {
-    if (!cartQuery.data) return;
+    let cart = cartQuery.data;
 
-    const newItems = cartQuery.data.items
-      .map((item) =>
-        item.id === productId
-          ? { ...item, quantity: Math.max(0, item.quantity + change) }
-          : item
-      )
-      .filter((item) => item.quantity > 0);
+    if (!cart) return;
+    console.log(cart);
 
+    const existingItem = cart.items.find((item) => item.id === productId);
+    let newItems;
+
+    if (existingItem) {
+      const newQuantity = Math.max(0, existingItem.quantity + change);
+      if (newQuantity === 0) {
+        newItems = cart.items.filter((item) => item.id !== productId);
+      } else {
+        newItems = cart.items.map((item) =>
+          item.id === productId ? { ...item, quantity: newQuantity } : item
+        );
+      }
+    } else if (change) {
+      const docRef = doc(db, "products", productId);
+      const docSnapshot = await getDoc(docRef);
+      if (docSnapshot.exists()) {
+        const product = docSnapshot.data();
+        newItems = [...cart.items, { ...product, quantity: 1, id: productId }];
+      } else {
+        console.error(`Product with id ${productId} not found`);
+        return;
+      }
+    } else {
+      return;
+    }
+
+    // Update the cart
     await updateCartMutation.mutateAsync({
-      cartId: cartQuery.data.id,
-      newCart: { ...cartQuery.data, items: newItems },
+      cartId: cart.id,
+      newCart: { ...cart, items: newItems },
     });
+
+    // If the cart becomes empty after this operation, you might want to delete it
+    if (newItems.length === 0) {
+      await deleteCartMutation.mutateAsync(cart.id);
+    }
   };
 
   const removeItem = async (productId) => {
