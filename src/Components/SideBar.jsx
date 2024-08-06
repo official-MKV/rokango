@@ -20,7 +20,7 @@ import {
   DialogTrigger,
   DialogTitle,
   DialogHeader,
-} from "@/components/ui/dialog";
+} from "@/Components/ui/dialog";
 import { Badge } from "@/Components/ui/badge";
 import { onSnapshot, query, collection, where } from "firebase/firestore";
 import { db } from "@/lib/firebase"; // Adjust this import based on your Firebase setup
