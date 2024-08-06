@@ -60,6 +60,14 @@ export async function POST(req) {
                 created_at: new Date(),
                 user_email: transactionData.user_email,
               });
+              await addDoc(collection(db, "notifications"), {
+                recipient: supplier,
+                type: "new_order",
+                order_id: orderRef.id,
+                message: `You have a new order from ${transactionData.user_email}`,
+                created_at: new Date(),
+                read: false,
+              });
             }
           }
         }
