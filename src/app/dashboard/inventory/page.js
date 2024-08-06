@@ -330,13 +330,27 @@ const InventoryPage = () => {
   const ProductDetailsDialog = ({ product }) => {
     if (!product) return null;
     const [formInputs, setFormInputs] = useState({ ...product });
-
-    const handleInputChangeLocal = (e) => {
-      const { name, value, type } = e.target;
+    const handleInStockChange = (checked) => {
       setFormInputs((prev) => ({
         ...prev,
-        [name]: type === "number" ? parseFloat(value) : value,
+        inStock: checked,
+        quantity: checked ? Math.max(1, prev.quantity) : 0,
       }));
+    };
+    const handleInputChangeLocal = (e) => {
+      const { name, value, type } = e.target;
+      let newValue = type === "number" ? parseFloat(value) : value;
+
+      setFormInputs((prev) => {
+        const newInputs = { ...prev, [name]: newValue };
+
+        if (name === "quantity") {
+          newInputs.quantity = Math.max(0, newValue); // Ensure quantity is not negative
+          newInputs.inStock = newInputs.quantity > 0;
+        }
+
+        return newInputs;
+      });
     };
 
     const handleCategoriesChange = (selectedOptions) => {
@@ -432,6 +446,7 @@ const InventoryPage = () => {
                     id="quantity"
                     name="quantity"
                     type="number"
+                    min={0}
                     value={formInputs.quantity}
                     onChange={handleInputChangeLocal}
                     required
@@ -472,13 +487,7 @@ const InventoryPage = () => {
                   <Switch
                     id="inStock"
                     checked={formInputs.inStock}
-                    onCheckedChange={(checked) =>
-                      setFormInputs((prev) => ({
-                        ...prev,
-                        quantity: checked ? 1 : 0,
-                        inStock: checked,
-                      }))
-                    }
+                    onCheckedChange={handleInStockChange}
                   />
                   <Label htmlFor="inStock">In Stock</Label>
                 </div>
@@ -599,7 +608,7 @@ const InventoryPage = () => {
         </div>
         <AddProductDialog />
       </div>
-      <div className="mt-6">
+      <div className="mt-6 pb-[100px]">
         {/* Desktop view */}
         <div className="hidden sm:block overflow-x-auto">
           <Table className="w-full">
