@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,7 +21,7 @@ import {
   DialogTitle,
   DialogHeader,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/Components/ui/badge";
 import { onSnapshot, query, collection, where } from "firebase/firestore";
 import { db } from "@/lib/firebase"; // Adjust this import based on your Firebase setup
 
