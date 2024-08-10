@@ -121,7 +121,7 @@ export async function POST(req) {
                 read: false,
               });
               await sendTermiiMessage({
-                to: +2349059598249,
+                to: +2349056595381,
                 messageType: "New Order",
                 customMessage: `You have a new order from ${transactionData.user_email}. Order ID: ${orderRef.id}`,
               });
