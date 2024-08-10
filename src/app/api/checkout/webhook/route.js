@@ -71,20 +71,26 @@ export async function POST(req) {
   try {
     if (hash === signature) {
       const { event, data } = JSON.parse(rawBody.toString());
+      console.log(`data:${data}`);
       if (event === "charge.success") {
         const transactionRef = doc(db, "transactions", data.reference);
+        console.log(`Transaction ref:${transactionRef}`);
         const transactionSnap = await getDoc(transactionRef);
 
         if (transactionSnap.exists()) {
+          console.log("Transaction snap exists");
           const transactionData = transactionSnap.data();
           await updateDoc(transactionRef, { status: "success" });
           const cartRef = doc(db, "carts", transactionData.cart_id);
+          console.log(`cart Id:${cartRef}`);
           const cartSnap = await getDoc(cartRef);
 
           if (cartSnap.exists()) {
+            console.log("Cart snap exists");
             const cartData = cartSnap.data();
             const items = cartData.items || [];
             await updateDoc(cartRef, { ordered: true });
+            console.log(`Items:${items}`);
             const itemsBySupplier = items.reduce((acc, item) => {
               if (!acc[item.supplier]) {
                 acc[item.supplier] = [];
@@ -96,6 +102,7 @@ export async function POST(req) {
             for (const [supplier, supplierItems] of Object.entries(
               itemsBySupplier
             )) {
+              console.log(`Supplier:${supplier}`);
               await addDoc(collection(db, "orders"), {
                 order_id: transactionData.cart_id,
                 supplier: supplier,

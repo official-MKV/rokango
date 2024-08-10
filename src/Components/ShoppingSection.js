@@ -54,7 +54,7 @@ export const ProductCard = ({ product, onAddToCart }) => {
           <span className="flex items-center">
             Supplier:
             <span className="px-[10px] py-[3px] font-medium flex gap-5 rounded-full bg-[#faf0e4]">
-              {product.supplier}
+              {product.supplier.name}
             </span>
           </span>
         </div>
