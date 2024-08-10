@@ -71,13 +71,10 @@ export async function POST(req) {
   try {
     if (hash === signature) {
       const { event, data } = JSON.parse(rawBody.toString());
-      console.log(JSON.stringify(data, null, 2));
 
       if (event === "charge.success") {
         const transactionRef = doc(db, "transactions", data.reference);
-        console.log(`Transaction ref:${transactionRef}`);
         const transactionSnap = await getDoc(transactionRef);
-
         if (transactionSnap.exists()) {
           console.log("Transaction snap exists");
           const transactionData = transactionSnap.data();
@@ -87,16 +84,14 @@ export async function POST(req) {
           const cartSnap = await getDoc(cartRef);
 
           if (cartSnap.exists()) {
-            console.log("Cart snap exists");
             const cartData = cartSnap.data();
             const items = cartData.items || [];
             await updateDoc(cartRef, { ordered: true });
-            console.log(`Items:${items}`);
             const itemsBySupplier = items.reduce((acc, item) => {
-              if (!acc[item.supplier]) {
-                acc[item.supplier] = [];
+              if (!acc[item.supplier.id]) {
+                acc[item.supplier.id] = [];
               }
-              acc[item.supplier].push(item);
+              acc[item.supplier.id].push(item);
               return acc;
             }, {});
 
@@ -123,7 +118,7 @@ export async function POST(req) {
               await sendTermiiMessage({
                 to: +2349056595381,
                 messageType: "New Order",
-                customMessage: `You have a new order from ${transactionData.user_email}. Order ID: ${orderRef.id}`,
+                customMessage: `You have a new order from ${transactionData.user_email}. Order ID: }`,
               });
             }
           }
