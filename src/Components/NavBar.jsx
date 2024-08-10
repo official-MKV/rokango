@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import navItems from "@/data/navItems.json";
 import { useAuth } from "@/hooks/firebase";
-
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 import { Button } from "./ui/button";
 import { useCart } from "@/hooks/firebase";

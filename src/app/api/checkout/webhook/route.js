@@ -1,10 +1,12 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { doc, getDoc, updateDoc, collection, addDoc } from "firebase/firestore";
+import useTermiiMessage from "@/hooks/termii";
+import { db } from "@/lib/firebase";
 
 export async function POST(req) {
   const secret = process.env.PAYSTACK_SECRET_KEY;
-
+  const { sendMessage, loading, error } = useTermiiMessage();
   const chunks = [];
   const reader = req.body.getReader();
   let done, value;
@@ -67,6 +69,11 @@ export async function POST(req) {
                 message: `You have a new order from ${transactionData.user_email}`,
                 created_at: new Date(),
                 read: false,
+              });
+              await sendMessage({
+                to: +2349059598249,
+                messageType: "New Order",
+                customMessage: `You have a new order from ${transactionData.user_email}. Order ID: ${orderRef.id}`,
               });
             }
           }
