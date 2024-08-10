@@ -22,6 +22,8 @@ const page = () => {
   const router = useRouter();
   const { toast } = useToast();
   const { user, loading } = useAuth();
+  // For this I think it is better, if it was stored in a session, because what if the user never gets redirecetd,
+  // then the transacation status is never success, or we could do it on the hook
   useEffect(() => {
     const verifyPayment = async () => {
       const { verify, reference } = router.query;

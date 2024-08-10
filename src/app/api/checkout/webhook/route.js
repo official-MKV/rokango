@@ -82,7 +82,7 @@ export async function POST(req) {
           const cartRef = doc(db, "carts", transactionData.cart_id);
           console.log(`cart Id:${cartRef}`);
           const cartSnap = await getDoc(cartRef);
-
+          console.log(JSON.stringify(`cart`));
           if (cartSnap.exists()) {
             const cartData = cartSnap.data();
             const items = cartData.items || [];
@@ -94,12 +94,12 @@ export async function POST(req) {
               acc[item.supplier.id].push(item);
               return acc;
             }, {});
-
+            console.log("/");
             for (const [supplier, supplierItems] of Object.entries(
               itemsBySupplier
             )) {
               console.log(`Supplier:${supplier}`);
-              await addDoc(collection(db, "orders"), {
+              const orderRef = await addDoc(collection(db, "orders"), {
                 order_id: transactionData.cart_id,
                 supplier: supplier,
                 items: supplierItems,
