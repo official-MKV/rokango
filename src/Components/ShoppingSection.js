@@ -150,7 +150,7 @@ export default function ShoppingSection({ user }) {
         body: JSON.stringify({
           email: user.email,
           amount: totalPrice,
-          ref: transactionRef.id,
+          reference: transactionRef.id,
         }),
       });
 

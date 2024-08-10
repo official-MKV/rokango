@@ -80,7 +80,7 @@ export function NavBar() {
         body: JSON.stringify({
           email: user.email,
           amount: totalPrice,
-          ref: transactionRef.id,
+          reference: transactionRef.id,
         }),
       });
 

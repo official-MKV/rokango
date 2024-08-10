@@ -19,7 +19,7 @@ export async function POST(req) {
       email: body.email,
       amount: Math.round(body.amount * 100), // Paystack expects amount in kobo (smallest currency unit)
       currency: "NGN",
-      ref: body.ref,
+      reference: body.reference,
     };
 
     const res = await fetch(PAYSTACK_API_URL, {
