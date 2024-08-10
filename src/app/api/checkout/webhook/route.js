@@ -22,7 +22,7 @@ export async function POST(req) {
 
     try {
       const response = await fetch(
-        `${process.envTERMII_BASE_URL}/api/sms/send`,
+        `${process.env.TERMII_BASE_URL}/api/sms/send`,
         {
           method: "POST",
           headers: {
@@ -82,7 +82,7 @@ export async function POST(req) {
           const cartRef = doc(db, "carts", transactionData.cart_id);
           console.log(`cart Id:${cartRef}`);
           const cartSnap = await getDoc(cartRef);
-          console.log(JSON.stringify(`cart`));
+
           if (cartSnap.exists()) {
             const cartData = cartSnap.data();
             const items = cartData.items || [];
