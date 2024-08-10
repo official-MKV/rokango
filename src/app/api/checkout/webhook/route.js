@@ -1,15 +1,57 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { doc, getDoc, updateDoc, collection, addDoc } from "firebase/firestore";
-import useTermiiMessage from "@/hooks/termii";
 import { db } from "@/lib/firebase";
 
 export async function POST(req) {
   const secret = process.env.PAYSTACK_SECRET_KEY;
-  const { sendMessage, loading, error } = useTermiiMessage();
   const chunks = [];
   const reader = req.body.getReader();
   let done, value;
+  async function sendTermiiMessage(to, messageType, customMessage) {
+    const messageContent = customMessage || getDefaultMessage(messageType);
+
+    const data = {
+      to,
+      from: "Rokango",
+      sms: messageContent,
+      type: "plain",
+      api_key: process.env.TERMII_API_KEY,
+      channel: "generic",
+    };
+
+    try {
+      const response = await fetch(
+        `${process.envTERMII_BASE_URL}/api/sms/send`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error sending Termii message:", error);
+      throw error;
+    }
+  }
+
+  function getDefaultMessage(messageType) {
+    switch (messageType) {
+      case "New Order":
+        return "You have received a new order.";
+      // Add other cases as needed
+      default:
+        return "No message content available.";
+    }
+  }
 
   while (!done) {
     ({ done, value } = await reader.read());
@@ -70,7 +112,7 @@ export async function POST(req) {
                 created_at: new Date(),
                 read: false,
               });
-              await sendMessage({
+              await sendTermiiMessage({
                 to: +2349059598249,
                 messageType: "New Order",
                 customMessage: `You have a new order from ${transactionData.user_email}. Order ID: ${orderRef.id}`,
