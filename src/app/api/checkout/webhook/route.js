@@ -71,8 +71,8 @@ export async function POST(req) {
   try {
     if (hash === signature) {
       const { event, data } = JSON.parse(rawBody.toString());
-      console.log(`data:${data.reference}`);
-      return data;
+      console.log(JSON.stringify(data, null, 2));
+
       if (event === "charge.success") {
         const transactionRef = doc(db, "transactions", data.reference);
         console.log(`Transaction ref:${transactionRef}`);
