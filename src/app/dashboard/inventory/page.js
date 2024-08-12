@@ -57,7 +57,7 @@ const InventoryPage = () => {
     isLoading,
     error,
   } = useFirebaseQuery("products", {
-    supplier: user?.businessName,
+    "supplier.id": user?.uid,
   });
 
   const filteredProducts = products?.filter(

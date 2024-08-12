@@ -42,8 +42,6 @@ const page = () => {
                 description: "You can track your order on the orders page.",
                 duration: 5000,
               });
-
-              // Wait for a short time to ensure the toast is visible before redirecting
               setTimeout(() => {
                 router.push("/profile/orders");
               }, 2000);
