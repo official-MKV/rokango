@@ -1,17 +1,26 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import navItems from "@/data/navItems.json";
 import { useAuth } from "@/hooks/firebase";
 import { addDoc, collection } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
-import { Button } from "./ui/button";
+import { Button } from "@/Components/ui/button";
 import { useCart } from "@/hooks/firebase";
-import { PackageSearch, ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
+import {
+  PackageSearch,
+  ShoppingCart,
+  Plus,
+  Minus,
+  Trash2,
+  LogOut,
+  Menu,
+  X,
+} from "lucide-react";
+import { signOut as firebaseSignOut } from "firebase/auth";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,11 +33,11 @@ import {
 
 export function NavBar() {
   const router = useRouter();
-
-  const roleSpecificItems = navItems["admin"];
-  const allNavItems = [...navItems.common, ...roleSpecificItems];
+  const allNavItems = [...navItems.common];
   const { user, loading } = useAuth();
   const [checkingOut, setCheckingOut] = useState(false);
+  const [showOrderPopup, setShowOrderPopup] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const {
     cart,
@@ -39,7 +48,6 @@ export function NavBar() {
     updateQuantity,
     removeItem,
   } = useCart(user?.uid);
-  const [showOrderPopup, setShowOrderPopup] = useState(false);
 
   const handleAddToCart = (product) => {
     addToCart(product);
@@ -49,6 +57,7 @@ export function NavBar() {
   const handleUpdateQuantity = (productId, change) => {
     updateQuantity(productId, change);
   };
+
   const handleRemoveItem = (productId) => {
     removeItem(productId);
   };
@@ -57,6 +66,7 @@ export function NavBar() {
     (total, item) => total + item.price * item.quantity,
     0
   );
+
   const handleCheckout = async () => {
     setCheckingOut(true);
     if (!user.email || !totalPrice) {
@@ -106,8 +116,150 @@ export function NavBar() {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      await firebaseSignOut(auth);
+      router.push("/login");
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
   return (
-    <nav className="bg-white md:relative fixed z-50 top-0 w-full">
+    <nav className="bg-white fixed z-50 top-0 w-full">
+      <div className="md:w-[85vw] w-full py-[10px] px-[20px] flex justify-between items-center">
+        <div
+          className="relative h-16 cursor-pointer"
+          id="logo"
+          onClick={() => {
+            router.push("/");
+          }}
+        >
+          <img
+            src="/rokango.png"
+            style={{ objectFit: "contain" }}
+            className="w-full h-full cursor-pointer"
+          />
+        </div>
+
+        <div className="hidden md:flex items-center gap-x-4">
+          {allNavItems.map((item, key) => (
+            <NavLink key={key} item={item} />
+          ))}
+        </div>
+
+        <div className="flex items-center gap-5 ">
+          {!loading && user ? (
+            <>
+              <div
+                onClick={() => setShowOrderPopup(true)}
+                className="relative p-[10px] rounded-full group transition-all duration-500 ease-in-out hover:shadow-lg flex items-center justify-center hover:text-[white] cursor-pointer hover:bg-[#ffa459]"
+              >
+                <ShoppingCart className="text-gray-400 group-hover:text-[white] w-8 h-8" />
+                <span className="top-0 group-hover:bg-[white] group-hover:text-[#ffa459] right-0 absolute text-white bg-[#ffa459] size-[16px] text-[12px] rounded-full flex items-center justify-center">
+                  {cart.length}
+                </span>
+              </div>
+              <div
+                onClick={() => {
+                  const route =
+                    user.role === "admin"
+                      ? "/admin"
+                      : user.role === "supplier"
+                      ? "/dashboard"
+                      : "/profile";
+                  router.push(route);
+                  setMobileMenuOpen(false);
+                }}
+                className="hidden md:flex items-center cursor-pointer py-[2px] pl-[2px] gap-3 hover:bg-[#ffa459] rounded-full pr-[2px]"
+              >
+                <Avatar className=" ">
+                  <AvatarImage
+                    src="https://github.com/shadcn.png"
+                    alt="@shadcn"
+                  />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+                <div className="px-[10px] py-[3px] text-[12px] font-medium gap-5 rounded-full bg-[#faf0e4] text-nowrap">
+                  {user.businessName}
+                </div>
+              </div>
+              <div
+                className="px-4 py-2 font-normal hidden md:block text-[15px] hover:bg-[#ffa459] text-black hover:rounded-[5px] transition-all duration-500 ease-in-out hover:text-white  cursor-pointer"
+                onClick={() => {
+                  handleSignOut();
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Sign Out
+              </div>
+            </>
+          ) : !loading ? (
+            <div
+              onClick={() => router.push("/login")}
+              className="w-[100px] py-[10px] cursor-pointer hover:bg-[#ff9844] bg-[#ffa459] text-center flex items-center justify-center"
+            >
+              <span className="text-[white] font-medium">Login</span>
+            </div>
+          ) : null}
+
+          <button onClick={toggleMobileMenu} className="md:hidden">
+            {mobileMenuOpen ? (
+              <X className="h-6 w-6 text-gray-500" />
+            ) : (
+              <Menu className="h-6 w-6 text-gray-500" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-white shadow-lg">
+          {allNavItems.map((item, key) => (
+            <Link
+              key={key}
+              href={item.href}
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {item.label}
+            </Link>
+          ))}
+          {!loading && user && (
+            <>
+              <div
+                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                onClick={() => {
+                  const route =
+                    user.role === "admin"
+                      ? "/admin"
+                      : user.role === "supplier"
+                      ? "/dashboard"
+                      : "/profile";
+                  router.push(route);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Profile
+              </div>
+              <div
+                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                onClick={() => {
+                  handleSignOut();
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Sign Out
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
       <AlertDialog open={showOrderPopup} onOpenChange={setShowOrderPopup}>
         <AlertDialogContent className="max-w-3xl">
           <AlertDialogHeader>
@@ -180,76 +332,6 @@ export function NavBar() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <div className="w-full  py-[10px] md:px-[20px] flex">
-        <div
-          className="relative h-16 cursor-pointer"
-          id="logo"
-          onClick={() => {
-            router.push("/");
-          }}
-        >
-          <img
-            src="/rokango.png"
-            style={{ objectFit: "contain" }}
-            className="w-full h-full cursor-pointer"
-          />
-        </div>
-        <div className="w-full px-[20px] gap-x-4 md:flex items-center hidden">
-          {allNavItems.map((item, key) => {
-            return <NavLink item={item} />;
-          })}
-        </div>
-        <div>
-          {user ? (
-            <div className="flex items-center gap-5">
-              <div
-                onClick={() => {
-                  setShowOrderPopup(true);
-                }}
-                className=" relative p-[10px] rounded-full group transition-all duration-500 ease-in-out hover:shadow-lg flex items-center justify-center  hover:text-[white] cursor-pointer hover:bg-[#ffa459]"
-              >
-                <ShoppingCart className="text-gray-400  group-hover:text-[white] w-8 h-8" />
-                <span className="top-0 group-hover:bg-[white] group-hover:text-[#ffa459] right-0 absolute text-white bg-[#ffa459] size-[16px] text-[12px] rounded-full flex items-center justify-center ">
-                  {cart.length}
-                </span>
-              </div>
-              <div
-                onClick={() => {
-                  const route =
-                    user.role === "admin"
-                      ? "/admin"
-                      : user.role === "supplier"
-                      ? "/dashboard"
-                      : "/profile";
-                  router.push(route);
-                }}
-                className="flex transition-all duration-500 ease-in-out items-center w-full gap-3 px-[10px] py-[2px] rounded-full hover:shadow-lg hover:bg-[#ffa459] cursor-pointer"
-              >
-                <Avatar>
-                  <AvatarImage
-                    src="https://github.com/shadcn.png"
-                    alt="@shadcn"
-                  />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-                <div className="px-[10px] py-[3px] hidden   text-[12px] font-medium md:flex gap-5 rounded-full bg-[#faf0e4] text-nowrap">
-                  {user.retailerName}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div
-              onClick={() => {
-                router.push("/login");
-              }}
-              className="w-[100px] py-[10px] cursor-pointer hover:bg-[#ff9844] bg-[#ffa459] text-center flex items-center justify-center"
-            >
-              <span className="text-[white] font-medium">Login</span>
-            </div>
-          )}
-        </div>
-      </div>
     </nav>
   );
 }
@@ -298,4 +380,5 @@ function NavLink({ item }) {
     </Link>
   );
 }
+
 export default NavBar;
