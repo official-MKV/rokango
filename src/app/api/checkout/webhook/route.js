@@ -86,6 +86,9 @@ export async function POST(req) {
           if (cartSnap.exists()) {
             const cartData = cartSnap.data();
             const items = cartData.items || [];
+            const retailerRef = doc(db, "users", cartData.userId);
+            const retailerSnap = await getDoc(retailerRef);
+            const retailer = retailerSnap.data();
             await updateDoc(cartRef, { ordered: true });
             const itemsBySupplier = items.reduce((acc, item) => {
               if (!acc[item.supplier.id]) {
@@ -105,6 +108,7 @@ export async function POST(req) {
                 items: supplierItems,
                 status: "pending",
                 created_at: new Date(),
+                retailer: { id: cartData.userId, name: retailer.businessName },
                 user_email: transactionData.user_email,
               });
               await addDoc(collection(db, "notifications"), {

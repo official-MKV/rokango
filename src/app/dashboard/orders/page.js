@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useMemo } from "react";
-import { useFirebaseQuery } from "@/hooks/firebase";
+import { useAuth, useFirebaseQuery } from "@/hooks/firebase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Switch } from "@/Components/ui/switch";
 import { Input } from "@/Components/ui/input";
@@ -164,9 +164,14 @@ const OrderCard = ({ order, onToggleDelivered }) => {
 };
 
 const OrdersPage = () => {
+  const user = useAuth();
   const [filters, setFilters] = useState({ retailer_name: "", order_id: "" });
   const [showRecent, setShowRecent] = useState(false);
-  const { data: orders, isLoading, error } = useFirebaseQuery("orders");
+  const {
+    data: orders,
+    isLoading,
+    error,
+  } = useFirebaseQuery("orders", { "supplier.id": user?.uid });
   const queryClient = useQueryClient();
 
   const filteredOrders = useMemo(() => {
@@ -174,7 +179,7 @@ const OrdersPage = () => {
     return orders
       .filter(
         (order) =>
-          order.retailer_name
+          order.retailer.name
             .toLowerCase()
             .includes(filters.retailer_name.toLowerCase()) &&
           order.id.toLowerCase().includes(filters.order_id.toLowerCase())
