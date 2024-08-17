@@ -228,9 +228,8 @@ const page = () => {
                       "Get your products in front of more potential buyers",
                   },
                   {
-                    title: "Trust and Credibility",
-                    description:
-                      "Earn the trust of customers with our verification badge",
+                    title: "Quick Payout",
+                    description: "Get paid quickly after completing delivery",
                   },
                   {
                     title: "Growth Opportunities",
