@@ -120,7 +120,7 @@ const page = () => {
               const IconComponent = icons[item.icon];
               return (
                 <MagicCard
-                  className=" md:w-[350px] md:h-[200px] w-full md:relative   cursor-pointer flex-col  shadow-2xl flex items-center justify-center   py-[10px] px-[30px]"
+                  className=" md:w-[350px] md:h-[200px] w-[300px] md:relative   cursor-pointer flex-col  shadow-2xl flex items-center justify-center   py-[10px] px-[30px]"
                   gradientColor={"#ffa459"}
                   gradientSize={100}
                   gradientOpacity={50}
@@ -148,13 +148,13 @@ const page = () => {
                 const IconComponent = icons[item.icon];
                 return (
                   <MagicCard
-                    className=" md:w-[300px] h-[200px]  md:relative   cursor-pointer flex-col    flex items-center justify-center   py-[10px] px-[30px]"
+                    className=" md:w-[300px] h-[200px] w-[300px]  md:relative   cursor-pointer flex-col    flex items-center justify-center   py-[10px] px-[30px]"
                     gradientColor={"#ffa459"}
                     gradientSize={100}
                     gradientOpacity={50}
                     gradientTransparency={50}
                   >
-                    <div className="h-full w-full flex flex-col gap-10">
+                    <div className="h-full w-full flex flex-col gap-5">
                       <div className="size-[50px] rounded-full bg-[#faf0e4] flex items-center justify-center">
                         <IconComponent className="text-[#fbd4a5] size-[30px] " />
                       </div>
