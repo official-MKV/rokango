@@ -185,15 +185,8 @@ const page = () => {
                     A marketplace for your products
                   </h2>
                   <h3 className="text-2xl md:text-3xl font-semibold text-white mb-6">
-                    Become a Rokango{" "}
-                    <span className="inline-flex items-center leading-0">
-                      <span className=" text-4xl font-bold font-serif mr-1">
-                        V
-                      </span>
-                      erified
-                      <CheckCircle2 className="w-8 h-8 ml-2 text-white fill-green-500" />
-                    </span>{" "}
-                    supplier
+                    Become a Rokango Supplier
+                    <CheckCircle2 className="w-8 h-8 ml-2 text-white fill-green-500" />
                   </h3>
                   <p className="text-white text-lg mb-8">
                     Stand out in the market by becoming a Rokango verified
@@ -202,7 +195,7 @@ const page = () => {
                     customers who prioritize reliability.
                   </p>
                   <Button className="bg-white text-[#ffa459] hover:bg-gray-100 font-semibold py-2 px-6 rounded-full inline-flex items-center">
-                    Get Verified
+                    Register
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
                 </div>
