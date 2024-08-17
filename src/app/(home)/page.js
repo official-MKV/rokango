@@ -115,18 +115,18 @@ const page = () => {
           </div>
         </section>
         <section id="value__Proposition">
-          <div className="md:flex hidden w-full   flex-wrap items-center justify-center  gap-[10px] md:gap-[50px] px-[10px]">
+          <div className="md:flex hidden w-full h-fit  flex-wrap items-center justify-center  gap-[10px] md:gap-[50px] px-[10px]">
             {value.map((item) => {
               const IconComponent = icons[item.icon];
               return (
                 <MagicCard
-                  className=" md:size-[300px] w-full md:relative   cursor-pointer flex-col  shadow-2xl flex items-center justify-center   py-[30px] px-[30px]"
+                  className=" md:w-[350px] md:h-[200px] w-full md:relative   cursor-pointer flex-col  shadow-2xl flex items-center justify-center   py-[10px] px-[30px]"
                   gradientColor={"#ffa459"}
                   gradientSize={100}
                   gradientOpacity={50}
                   gradientTransparency={50}
                 >
-                  <div className="h-full w-full flex flex-col gap-10">
+                  <div className="h-full w-full flex flex-col gap-5">
                     <div className="size-[50px] rounded-full bg-[#faf0e4] flex items-center justify-center">
                       <IconComponent className="text-[#fbd4a5] size-[30px] " />
                     </div>
@@ -148,7 +148,7 @@ const page = () => {
                 const IconComponent = icons[item.icon];
                 return (
                   <MagicCard
-                    className=" md:size-[300px] w-[300px] md:relative   cursor-pointer flex-col    flex items-center justify-center   py-[30px] px-[30px]"
+                    className=" md:w-[300px] h-[200px]  md:relative   cursor-pointer flex-col    flex items-center justify-center   py-[10px] px-[30px]"
                     gradientColor={"#ffa459"}
                     gradientSize={100}
                     gradientOpacity={50}
@@ -178,11 +178,11 @@ const page = () => {
         </section>
         <section id="call_to_action" className="w-full py-16 ">
           <div className="container mx-auto px-4">
-            <div className="rounded-[30px] bg-[#e7822f] overflow-hidden shadow-lg">
+            <div className="rounded-[30px] bg-[#ffa459] overflow-hidden shadow-lg">
               <div className="flex flex-col md:flex-row">
                 <div className="w-full md:w-2/3 p-8 md:p-12">
                   <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                    Find a marketplace for your products
+                    A marketplace for your products
                   </h2>
                   <h3 className="text-2xl md:text-3xl font-semibold text-white mb-6">
                     Become a Rokango{" "}
