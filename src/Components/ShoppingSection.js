@@ -63,7 +63,7 @@ export const ProductCard = ({ product, onAddToCart }) => {
           </span>
         </div>
       </div>
-      <div className="flex h-1/6 w-full items-center">
+      <div className="flex h-1/6 w-full items-center justify-center">
         <button
           className="  px-[18px] py-[8px] bg-[#ffa459] text-white font-medium hover:rounded-[10px] transition-all duration-500 ease-in-out hover:bg-[#fc7b12]"
           onClick={(e) => {
