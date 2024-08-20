@@ -80,32 +80,32 @@ const page = () => {
       <div className=" flex flex-col  gap-[50px]">
         <section
           id="hero__Banner"
-          className="w-full md:h-[50vh] h-[70vh] overflow-hidden  bg-[#faf0e4] flex flex-col md:flex-row md:px-[30px] px-[10px] py-[20px] md:py-[30px]"
+          className="w-full md:h-[50vh] h-[70vh]  overflow-hidden   bg-[#faf0e4] flex flex-col md:flex-row md:px-[30px] px-[10px] py-[20px] md:py-[30px]"
         >
-          <div className="md:w-1/2 w-full h-full relative text-wrap flex flex-col gap-4">
-            <div className="w-full gap-2 relative text-center flex flex-col items-center justify-center ">
+          <div className="md:w-1/2 w-full md:h-full relative text-wrap flex flex-col md:justify-center gap-4">
+            <div className="w-full gap-2  relative text-center flex flex-col items-center justify-center ">
               <p className="md:text-5xl text-3xl font-bold leading-tight ">
-                Connect Directly with Manufacturers & Local Suppliers
+                Connecting Retailers with the Best Local Suppliers
               </p>
               <p className="md:w-[80%] w-full text-[15px] font-light">
-                Streamline your supply chain and discover quality products at
-                competitive prices.
+                Get the best products at the best prices from local suppliers
+                with fast deliveries and unmatched customer support.
               </p>
             </div>
 
-            <div className=" w-full flex items-center justify-center">
+            <div className="relative w-full flex items-center justify-center">
               <div
                 onClick={() => {
                   window.location.href = "/shop";
                 }}
-                className="font-medium mt-[10px] px-[20px] py-[10px] bg-[#ffa459] text-[white] cursor-pointer hover:bg-[#ff8f33] hover:rounded-[10px] transition-all duration-500 ease-in-out"
+                className="font-medium mt-[5px] px-[20px] py-[10px] bg-[#ffa459] text-[white] cursor-pointer hover:bg-[#ff8f33] hover:rounded-[10px] transition-all duration-500 ease-in-out"
               >
                 Shop Now
               </div>
             </div>
           </div>
           <div className="md:w-1/2 w-full   relative ">
-            <div className="relative w-full h-full items-center justify-center mb-[100px]">
+            <div className="relative w-full md:h-full items-center justify-center mb-[100px]">
               <img
                 src="/heroimg.png"
                 className="relative w-full h-full"
