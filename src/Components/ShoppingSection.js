@@ -180,7 +180,7 @@ export default function ShoppingSection({ user }) {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-4 flex space-x-4">
+      <div className="mb-4 flex space-x-4 flex-col">
         <Input
           placeholder="Search products..."
           value={searchTerm}

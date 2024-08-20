@@ -114,7 +114,10 @@ const page = () => {
             </div>
           </div>
         </section>
-        <section id="value__Proposition">
+        <section
+          id="value__Proposition"
+          className="flex relative w-full items-start justify-center "
+        >
           <div className="md:flex hidden w-full h-fit  flex-wrap items-center justify-center  gap-[10px] md:gap-[50px] px-[10px]">
             {value.map((item) => {
               const IconComponent = icons[item.icon];
@@ -142,7 +145,7 @@ const page = () => {
               );
             })}
           </div>
-          <div className="relative md:hidden flex w-full flex-col items-center justify-center overflow-hidden   bg-background md:shadow-xl">
+          <div className="relative md:hidden   flex w-full flex-col items-center justify-center overflow-hidden   bg-background md:shadow-xl">
             <Marquee pauseOnHover className="[--duration:20s] shadow-sm  ">
               {value.map((item) => {
                 const IconComponent = icons[item.icon];
@@ -172,8 +175,11 @@ const page = () => {
             </Marquee>
           </div>
         </section>
-        <section id="brand_category_suppliers_Display"></section>
-        <section id="shopping_Section">
+
+        <section id="shopping_Section" className="w-full h-full relative">
+          <span className="px-[10px] md:ml-[150px] w-full relative  md:text-[50px] text-[30px] font-bold ">
+            Featured Products
+          </span>
           {user && <ShoppingSection user={user} />}
         </section>
         <section id="call_to_action" className="w-full py-16 ">
