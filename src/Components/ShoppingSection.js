@@ -63,7 +63,7 @@ export const ProductCard = ({ product, onAddToCart }) => {
           </span>
         </div>
       </div>
-      <div className="flex">
+      <div className="flex w-full items-start">
         <button
           className="  px-[18px] py-[8px] bg-[#ffa459] text-white font-medium hover:rounded-[10px] transition-all duration-500 ease-in-out hover:bg-[#fc7b12]"
           onClick={(e) => {
