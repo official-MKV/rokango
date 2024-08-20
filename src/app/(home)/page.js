@@ -182,12 +182,12 @@ const page = () => {
               <div className="flex flex-col md:flex-row">
                 <div className="w-full md:w-2/3 p-8 md:p-12">
                   <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                    A marketplace for your products
+                    Your marketplace for your products
                   </h2>
-                  <h3 className="text-2xl md:text-3xl font-semibold text-white mb-6">
+                  <span className="text-2xl md:text-3xl font-semibold text-white mb-6 text-nowrapq flex">
                     Become a Rokango Supplier
-                    <CheckCircle2 className="w-8 h-8 ml-2 text-white fill-green-500" />
-                  </h3>
+                    <CheckCircle2 className="w-8 h-8  text-white fill-green-500" />
+                  </span>
                   <p className="text-white text-lg mb-8">
                     Stand out in the market by becoming a Rokango verified
                     supplier. Showcase your commitment to quality and
