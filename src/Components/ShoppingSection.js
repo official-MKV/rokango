@@ -24,19 +24,19 @@ export const ProductCard = ({ product, onAddToCart }) => {
   return (
     <Link
       href={`/product/${product.id}`}
-      className="md:w-[300px] w-[150px] md:h-auto h-auto cursor-pointer flex flex-col items-center justify-center gap-5 relative hover:-translate-y-4 hover:shadow-md px-[5px] py-[3px] rounded-[10px] transition-all duration-200 "
+      className="md:w-[300px] w-[200px] md:h-auto  overflow-y-hidden cursor-pointer flex flex-col items-center justify-center gap-5 relative hover:-translate-y-4 hover:shadow-md px-[5px] py-[3px] rounded-[10px] transition-all duration-200 "
     >
-      <div className="size-[150px] md:h-[250px] md:w-full overflow-hidden rounded-[10px]">
+      <div className="size-[150px] h-3/6 md:h-[250px]  md:w-full overflow-hidden rounded-[10px]">
         <img
           src={product.image}
           alt={product.name}
           className="w-full h-full object-cover"
         />
       </div>
-      <div className="relative w-full flex flex-col gap-4">
+      <div className="relative h-2/6 w-full flex flex-col gap-4">
         <div className="relative w-full flex flex-col">
           <p className="w-full flex justify-between">
-            <span className="text-[15px] font-bold w-[50%] overflow-hidden text-ellipsis whitespace-nowrap text-nowrap">
+            <span className="text-[13px] md:text-[15px] font-bold w-fit overflow-hidden text-ellipsis ">
               {product.name}
             </span>
             <span className="font-bold w-[50%]  flex justify-end">
@@ -63,7 +63,7 @@ export const ProductCard = ({ product, onAddToCart }) => {
           </span>
         </div>
       </div>
-      <div className="flex w-full items-start">
+      <div className="flex h-1/6 w-full items-start">
         <button
           className="  px-[18px] py-[8px] bg-[#ffa459] text-white font-medium hover:rounded-[10px] transition-all duration-500 ease-in-out hover:bg-[#fc7b12]"
           onClick={(e) => {
@@ -193,7 +193,7 @@ export default function ShoppingSection({ user }) {
         />
       </div>
       {filteredProducts?.length > 0 ? (
-        <div className="relative items-center  grid  grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-10 space-y-[30px]">
+        <div className="relative items-center  grid  grid-cols-2 md:grid-cols-2 lg:grid-cols-4 md:gap-10 space-y-[30px]">
           {filteredProducts.map((product) => (
             <ProductCard
               key={product.id}
