@@ -193,7 +193,7 @@ export default function ShoppingSection({ user }) {
         />
       </div>
       {filteredProducts?.length > 0 ? (
-        <div className="relative items-center  grid  grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 space-y-[30px]">
+        <div className="relative items-center  grid  grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-10 space-y-[30px]">
           {filteredProducts.map((product) => (
             <ProductCard
               key={product.id}
