@@ -139,13 +139,7 @@ export function NavBar() {
             router.push("/");
           }}
           style={{ backgroundImage: "url('/rokango.png')" }}
-        >
-          {/* <img
-            src="/rokango.png"
-            style={{ objectFit: "contain" }}
-            className="w-full h-full cursor-pointer"
-          /> */}
-        </div>
+        ></div>
 
         <div className="hidden md:flex items-center gap-x-4">
           {allNavItems.map((item, key) => (
@@ -176,7 +170,7 @@ export function NavBar() {
                   router.push(route);
                   setMobileMenuOpen(false);
                 }}
-                className="hidden md:flex items-center cursor-pointer py-[2px] pl-[2px] gap-3 hover:bg-[#ffa459] rounded-full pr-[2px]"
+                className=" md:flex items-center cursor-pointer py-[2px] pl-[2px] gap-3 hover:bg-[#ffa459] rounded-full pr-[2px]"
               >
                 <Avatar className=" ">
                   <AvatarImage
@@ -185,7 +179,7 @@ export function NavBar() {
                   />
                   <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
-                <div className="px-[10px] py-[3px] text-[12px] font-medium gap-5 rounded-full bg-[#faf0e4] text-nowrap">
+                <div className=" hidden md:flex px-[10px] py-[3px] text-[12px] font-medium gap-5 rounded-full bg-[#faf0e4] text-nowrap">
                   {user.businessName}
                 </div>
               </div>
