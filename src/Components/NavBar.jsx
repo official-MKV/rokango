@@ -131,9 +131,9 @@ export function NavBar() {
 
   return (
     <nav className="bg-white fixed z-50 top-0 w-full">
-      <div className="md:w-[85vw] w-full py-[10px] md:px-[20px]  flex justify-between items-center">
+      <div className="relative md:w-[85vw] w-full py-[10px] md:px-[5px]  px-[5px] flex justify-between items-center">
         <div
-          className="relative md:h-16 h-10 cursor-pointer"
+          className="relative md:h-16 h-10 cursor-pointer flex items-start"
           id="logo"
           onClick={() => {
             router.push("/");
