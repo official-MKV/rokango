@@ -27,6 +27,7 @@ export default function UserDetailPage() {
         const userDoc = await getDoc(doc(db, "users", userId));
         if (userDoc.exists()) {
           setUser(userDoc.data());
+          console.log(userDoc.data());
           setEditedUser(userDoc.data());
         } else {
           toast({
@@ -158,9 +159,19 @@ export default function UserDetailPage() {
             Save Changes
           </Button>
         )}
-        <Button onClick={handleDeactivate} variant="destructive">
-          Deactivate Account
-        </Button>
+        {user.active ? (
+          <Button onClick={handleDeactivate} variant="destructive">
+            Deactivate Account
+          </Button>
+        ) : (
+          <Button
+            onClick={handleDeactivate}
+            variant="primary"
+            className="bg-green-500"
+          >
+            Activate
+          </Button>
+        )}
       </div>
     </div>
   );

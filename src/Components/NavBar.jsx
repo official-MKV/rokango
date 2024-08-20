@@ -224,34 +224,6 @@ export function NavBar() {
               {item.label}
             </Link>
           ))}
-          {!loading && user && (
-            <>
-              <div
-                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                onClick={() => {
-                  const route =
-                    user.role === "admin"
-                      ? "/admin"
-                      : user.role === "supplier"
-                      ? "/dashboard"
-                      : "/profile";
-                  router.push(route);
-                  setMobileMenuOpen(false);
-                }}
-              >
-                Profile
-              </div>
-              <div
-                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                onClick={() => {
-                  handleSignOut();
-                  setMobileMenuOpen(false);
-                }}
-              >
-                Sign Out
-              </div>
-            </>
-          )}
         </div>
       )}
 

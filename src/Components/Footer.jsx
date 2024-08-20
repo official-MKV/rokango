@@ -1,8 +1,19 @@
+"use client";
 import React from "react";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
+import { signOut as firebaseSignOut } from "firebase/auth";
+import { db, auth } from "@/lib/firebase";
 
 const Footer = () => {
+  const handleSignOut = async () => {
+    try {
+      await firebaseSignOut(auth);
+      router.push("/login");
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  };
   return (
     <footer className="bg-gray-100 text-gray-600 py-8">
       <div className="container mx-auto px-4">
@@ -10,6 +21,14 @@ const Footer = () => {
           <div>
             <h3 className="font-bold text-lg mb-4 text-[#ffa549]">Rokango</h3>
             <p className="text-sm">Your trusted B2B e-commerce partner.</p>
+          </div>
+          <div
+            className="px-4 py-2 text-sm  bg-[#ffa459] w-fit text-[white] hover:bg-gray-100 cursor-pointer"
+            onClick={() => {
+              handleSignOut();
+            }}
+          >
+            Sign Out
           </div>
           <div>
             <h4 className="font-semibold mb-4">Quick Links</h4>
@@ -36,6 +55,7 @@ const Footer = () => {
               </li>
             </ul>
           </div>
+
           <div>
             <h4 className="font-semibold mb-4">Support</h4>
             <ul className="space-y-2 text-sm">
@@ -79,6 +99,7 @@ const Footer = () => {
           </div>
         </div>
         <hr className="my-8 border-gray-200" />
+
         <div className="flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm">&copy; 2024 Rokango. All rights reserved.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">

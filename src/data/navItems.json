@@ -1,8 +1,8 @@
 {
   "common": [
     {
-      "label": "About Rokango",
-      "href": "/about-Rokango"
+      "label": "Sales",
+      "href": "/sales"
     },
     {
       "label": "Blog",
@@ -12,9 +12,10 @@
       "label": "Categories",
       "href": "/categories"
     },
+
     {
-      "label": "Contact Us",
-      "href": "/contact-us"
+      "label": "Orders",
+      "href": "/orders"
     }
   ]
 }
