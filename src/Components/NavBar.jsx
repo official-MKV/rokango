@@ -133,17 +133,18 @@ export function NavBar() {
     <nav className="bg-white fixed z-50 top-0 w-full">
       <div className="relative md:w-[85vw] w-full py-[10px] md:px-[5px]  px-[5px] flex justify-between items-center">
         <div
-          className="relative md:h-16 h-10 cursor-pointer flex items-start"
+          className="relative md:h-16 h-10 w-full md:w-[50%] cursor-pointer flex items-start bg-contain bg-no-repeat"
           id="logo"
           onClick={() => {
             router.push("/");
           }}
+          style={{ backgroundImage: "url('/rokango.png')" }}
         >
-          <img
+          {/* <img
             src="/rokango.png"
             style={{ objectFit: "contain" }}
             className="w-full h-full cursor-pointer"
-          />
+          /> */}
         </div>
 
         <div className="hidden md:flex items-center gap-x-4">
