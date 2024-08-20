@@ -177,7 +177,7 @@ const page = () => {
         </section>
 
         <section id="shopping_Section" className="w-full h-full relative">
-          <span className="px-[10px] md:ml-[150px] w-full relative  md:text-[50px] text-[30px] font-bold ">
+          <span className="px-[10px] flex justify-center text-center w-full relative  md:text-[50px] text-[30px] font-bold ">
             Featured Products
           </span>
           {user && <ShoppingSection user={user} />}
