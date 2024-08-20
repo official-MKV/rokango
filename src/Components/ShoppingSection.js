@@ -63,7 +63,7 @@ export const ProductCard = ({ product, onAddToCart }) => {
           </span>
         </div>
       </div>
-      <div className="flex h-1/6 w-full items-start">
+      <div className="flex h-1/6 w-full items-center">
         <button
           className="  px-[18px] py-[8px] bg-[#ffa459] text-white font-medium hover:rounded-[10px] transition-all duration-500 ease-in-out hover:bg-[#fc7b12]"
           onClick={(e) => {
@@ -193,7 +193,7 @@ export default function ShoppingSection({ user }) {
         />
       </div>
       {filteredProducts?.length > 0 ? (
-        <div className="relative items-center  grid  grid-cols-2 md:grid-cols-2 lg:grid-cols-4 md:gap-10 space-y-[30px]">
+        <div className="relative items-center  grid  grid-cols-2 md:grid-cols-2 lg:grid-cols-4 md:gap-10 gap-5 space-y-[30px]">
           {filteredProducts.map((product) => (
             <ProductCard
               key={product.id}
