@@ -1,7 +1,14 @@
+"use client";
 import React from "react";
 import { withRoleGuard } from "../HOC";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 const page = () => {
+  const router = useRouter();
+  useEffect(() => {
+    router.push("/admin/dashboard");
+  }, [router.isReady]);
   return (
     <div
       initial={{ y: -20, opacity: 0 }}

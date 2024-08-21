@@ -46,7 +46,7 @@ const SideBar = () => {
           </div>
         </div>
         {menuItems.map((item, index) => {
-          const isActive = pathname === item.href;
+          const isActive = pathname.split("/")[2] === item.href.split("/")[2];
           return (
             <Link
               key={index}

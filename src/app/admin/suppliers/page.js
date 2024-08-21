@@ -31,7 +31,7 @@ export default function SuppliersPage() {
   }, [searchTerm]);
 
   const {
-    data: retailers,
+    data: suppliers,
     isLoading,
     error,
   } = useFirebaseQuery("users", {
@@ -42,11 +42,11 @@ export default function SuppliersPage() {
     setSearchTerm(e.target.value);
   };
 
-  const handleRowClick = (retailerId) => {
-    router.push(`/admin/suppliers/${retailerId}`);
+  const handleRowClick = (supplierId) => {
+    router.push(`/admin/suppliers/${supplierId}`);
   };
 
-  const handleAddRetailer = () => {
+  const handleAddSupplier = () => {
     router.push("/admin/suppliers/addNew");
   };
 
@@ -55,7 +55,7 @@ export default function SuppliersPage() {
 
   return (
     <div className="container mx-auto py-4 px-4 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-bold mb-4">Suupliers</h1>
+      <h1 className="text-2xl font-bold mb-4">Suppliers</h1>
       <div className="flex flex-col sm:flex-row justify-between mb-4 space-y-2 sm:space-y-0 sm:space-x-2">
         <Input
           placeholder="Search suppliers..."
@@ -64,7 +64,7 @@ export default function SuppliersPage() {
           className="w-full sm:max-w-xs"
         />
         <Button
-          onClick={handleAddRetailer}
+          onClick={handleAddSupplier}
           className="bg-[#ffa459] w-full sm:w-auto"
         >
           Add Supplier
@@ -78,6 +78,7 @@ export default function SuppliersPage() {
               <TableHead className="whitespace-nowrap">Business Name</TableHead>
               <TableHead className="whitespace-nowrap">Email</TableHead>
               <TableHead className="whitespace-nowrap">Phone</TableHead>
+              <TableHead className="whitespace-nowrap">Active</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -89,24 +90,27 @@ export default function SuppliersPage() {
                   </TableCell>
                 </TableRow>
               ))
-            ) : retailers && retailers.length > 0 ? (
-              retailers.map((retailer) => (
+            ) : suppliers && suppliers.length > 0 ? (
+              suppliers.map((supplier) => (
                 <TableRow
-                  key={retailer.id}
-                  onClick={() => handleRowClick(retailer.id)}
+                  key={supplier.id}
+                  onClick={() => handleRowClick(supplier.id)}
                   className="cursor-pointer hover:bg-gray-100"
                 >
                   <TableCell className="whitespace-nowrap">
-                    {retailer.name}
+                    {supplier.name}
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    {retailer.businessName}
+                    {supplier.businessName}
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    {retailer.email}
+                    {supplier.email}
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    {retailer.phone}
+                    {supplier.phone}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {supplier.active ? "✅" : "❌"}
                   </TableCell>
                 </TableRow>
               ))

@@ -2,13 +2,23 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/Components/ui/use-toast";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  writeBatch,
+  query,
+  collection,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Button } from "@/Components/ui/button";
 import { useParams } from "next/navigation";
 import { Switch } from "@/Components/ui/switch";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function UserDetailPage() {
   const params = useParams();
@@ -19,6 +29,7 @@ export default function UserDetailPage() {
   const [editMode, setEditMode] = useState(false);
   const [editedUser, setEditedUser] = useState(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -27,7 +38,6 @@ export default function UserDetailPage() {
         const userDoc = await getDoc(doc(db, "users", userId));
         if (userDoc.exists()) {
           setUser(userDoc.data());
-          console.log(userDoc.data());
           setEditedUser(userDoc.data());
         } else {
           toast({
@@ -84,6 +94,17 @@ export default function UserDetailPage() {
       });
     }
   };
+  const updateInactiveProducts = async ({ userId, state }) => {
+    const productsSnapshot = await getDocs(
+      query(collection(db, "products"), where("supplier.id", "==", userId))
+    );
+    console.log(userId);
+    const batch = writeBatch(db);
+    productsSnapshot.docs.forEach((productDoc) => {
+      batch.update(productDoc.ref, { active: state });
+    });
+    await batch.commit();
+  };
 
   const handleDeactivate = async () => {
     try {
@@ -91,6 +112,29 @@ export default function UserDetailPage() {
       await updateDoc(userRef, { active: false });
       setUser({ ...user, active: false });
       setEditedUser({ ...editedUser, active: false });
+      await updateInactiveProducts({ userId, state: false });
+      queryClient.invalidateQueries(["users", { role: "supplier" }]);
+      toast({
+        title: "Success",
+        description: "User account deactivated",
+      });
+    } catch (error) {
+      console.error("Error deactivating user:", error);
+      toast({
+        title: "Error",
+        description: "Failed to deactivate user account",
+        variant: "destructive",
+      });
+    }
+  };
+  const handleActivate = async () => {
+    try {
+      const userRef = doc(db, "users", userId);
+      await updateDoc(userRef, { active: true });
+      setUser({ ...user, active: true });
+      setEditedUser({ ...editedUser, active: true });
+      await updateInactiveProducts({ userId, state: true });
+      queryClient.invalidateQueries(["users", { role: "supplier" }]);
       toast({
         title: "Success",
         description: "User account deactivated",
@@ -106,7 +150,7 @@ export default function UserDetailPage() {
   };
 
   const handleGoBack = () => {
-    router.push("/");
+    router.back();
   };
 
   return (
@@ -165,9 +209,9 @@ export default function UserDetailPage() {
           </Button>
         ) : (
           <Button
-            onClick={handleDeactivate}
+            onClick={handleActivate}
             variant="primary"
-            className="bg-green-500"
+            className="bg-green-500 text-white"
           >
             Activate
           </Button>

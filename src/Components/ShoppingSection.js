@@ -91,7 +91,7 @@ export default function ShoppingSection({ user }) {
     data: products,
     isLoading: productLoading,
     error,
-  } = useFirebaseQuery("products");
+  } = useFirebaseQuery("products", { active: true });
 
   const {
     cart,
