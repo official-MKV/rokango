@@ -15,6 +15,7 @@ export default function AddSupplierForm() {
     businessAddress: "",
     password: "",
     picture: null,
+    active: true,
   });
 
   const addRetailerMutation = useMutation({

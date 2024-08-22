@@ -107,7 +107,7 @@ const page = () => {
           <div className="md:w-1/2 w-full   relative ">
             <div className="relative w-full md:h-full items-center justify-center mb-[100px]">
               <img
-                src="/heroimg.png"
+                src="/hero-img.png"
                 className="relative w-full h-full"
                 style={{ objecFit: "contain" }}
               />

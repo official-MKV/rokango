@@ -24,56 +24,49 @@ export const ProductCard = ({ product, onAddToCart }) => {
   return (
     <Link
       href={`/product/${product.id}`}
-      className="md:w-[300px] w-[200px] md:h-auto  overflow-y-hidden cursor-pointer flex flex-col items-center justify-center gap-5 relative hover:-translate-y-4 hover:shadow-md px-[5px] py-[3px] rounded-[10px] transition-all duration-200 "
+      className="w-full flex flex-col items-center justify-between gap-2 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-200"
     >
-      <div className="size-[150px] h-3/6 md:h-[250px]  md:w-full overflow-hidden rounded-[10px]">
+      <div className="w-full aspect-square overflow-hidden">
         <img
           src={product.image}
           alt={product.name}
           className="w-full h-full object-cover"
         />
       </div>
-      <div className="relative h-2/6 w-full flex flex-col gap-4">
-        <div className="relative w-full flex flex-col">
-          <p className="w-full flex justify-between">
-            <span className="text-[13px] md:text-[15px] font-bold w-fit overflow-hidden text-ellipsis ">
-              {product.name}
-            </span>
-            <span className="font-bold w-[50%]  flex justify-end">
-              ₦{product.price}
-            </span>
-          </p>
-          <span className="w-full overflow-hidden text-ellipsis whitespace-nowrap font-light text-[12px] text-gray-500">
-            {product.description}
+      <div className="w-full p-2 flex flex-col gap-1">
+        <div className="flex justify-between items-start">
+          <span className="text-sm font-bold truncate flex-1">
+            {product.name}
           </span>
+          <span className="text-sm font-bold">₦{product.price}</span>
         </div>
-
-        <div className="text-[12px] md:flex flex-col font-light gap-2 hidden ">
-          <span className="flex items-center ">
+        <span className="text-xs text-gray-500 truncate">
+          {product.description}
+        </span>
+        <div className="text-xs flex flex-col gap-1 mt-1">
+          <span className="flex items-center">
             Brand:
-            <span className="px-[10px] py-[3px] font-medium flex gap-5 rounded-full bg-[#faf0e4]">
+            <span className="ml-1 px-2 py-1 rounded-full bg-[#faf0e4]">
               {product.brand}
             </span>
           </span>
           <span className="flex items-center">
             Supplier:
-            <span className="px-[10px] py-[3px] font-medium flex gap-5 rounded-full bg-[#faf0e4]">
+            <span className="ml-1 px-2 py-1 rounded-full bg-[#faf0e4]">
               {product.supplier.name}
             </span>
           </span>
         </div>
       </div>
-      <div className="flex h-1/6 w-full items-center justify-center">
-        <button
-          className="  px-[18px] py-[8px] bg-[#ffa459] text-white font-medium hover:rounded-[10px] transition-all duration-500 ease-in-out hover:bg-[#fc7b12]"
-          onClick={(e) => {
-            e.preventDefault();
-            onAddToCart(product);
-          }}
-        >
-          Add To cart
-        </button>
-      </div>
+      <button
+        className="w-full py-2 bg-[#ffa459] text-white font-medium hover:bg-[#fc7b12] transition-colors duration-300"
+        onClick={(e) => {
+          e.preventDefault();
+          onAddToCart(product);
+        }}
+      >
+        Add To Cart
+      </button>
     </Link>
   );
 };
@@ -183,17 +176,17 @@ export default function ShoppingSection({ user }) {
   if (error) return <div>Error: {error.message}</div>;
 
   return (
-    <div className="  flex flex-col relative p-2 justify-center items-center">
-      <div className="mb-4 flex space-x-4 flex-col">
+    <div className="w-full max-w-full overflow-x-hidden flex flex-col relative p-2 justify-center items-center">
+      <div className="w-full mb-4 px-2">
         <Input
           placeholder="Search products..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex-grow"
+          className="w-full"
         />
       </div>
       {filteredProducts?.length > 0 ? (
-        <div className="relative items-center  grid  grid-cols-2 md:grid-cols-2 lg:grid-cols-4 md:gap-10 gap-5 space-y-[30px]">
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-2">
           {filteredProducts.map((product) => (
             <ProductCard
               key={product.id}
@@ -208,7 +201,6 @@ export default function ShoppingSection({ user }) {
           <p className="mt-4 text-xl font-semibold">No products found</p>
         </div>
       )}
-
       <AlertDialog open={showOrderPopup} onOpenChange={setShowOrderPopup}>
         <AlertDialogContent className="max-w-3xl">
           <AlertDialogHeader>

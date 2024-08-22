@@ -317,13 +317,14 @@ function NavLink({ item }) {
   if (item.dropdown) {
     return (
       <div
-        className="relative"
+        className="relative group"
         onMouseEnter={() => setIsOpen(true)}
         onMouseLeave={() => setIsOpen(false)}
       >
         <button className="nav-link" style={linkStyle(item.href)}>
           {item.label}
         </button>
+
         {isOpen && (
           <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
             {item.dropdown.map((subItem) => (
@@ -342,7 +343,11 @@ function NavLink({ item }) {
   }
 
   return (
-    <Link href={item.href} className="nav-link" style={linkStyle(item.href)}>
+    <Link
+      href={item.href}
+      className="nav-link group"
+      style={linkStyle(item.href)}
+    >
       {item.label}
     </Link>
   );
