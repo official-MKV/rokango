@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
 import {
   Table,
   TableBody,
@@ -14,32 +13,31 @@ import {
 import { Skeleton } from "@/Components/ui/skeleton";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
-
 import { useFirebaseQuery } from "@/hooks/firebase";
 
 export default function SuppliersPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // Adjust as needed
   const router = useRouter();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
   const {
-    data: suppliers,
+    data: suppliersData,
     isLoading,
     error,
   } = useFirebaseQuery("users", {
-    role: "supplier",
-    name: { value: searchTerm, matchType: "contains" },
+    filters: { role: "supplier" },
+    page: currentPage,
+    limit: itemsPerPage,
+    searchField: "name",
+    searchTerm: searchTerm,
   });
+
+  const { items: suppliers, totalPages } = suppliersData || {};
+
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
   };
 
   const handleRowClick = (supplierId) => {
@@ -85,7 +83,7 @@ export default function SuppliersPage() {
             {isLoading ? (
               Array.from({ length: 4 }).map((_, index) => (
                 <TableRow key={index}>
-                  <TableCell colSpan={4}>
+                  <TableCell colSpan={5}>
                     <Skeleton className="w-full h-[50px] rounded-[5px]" />
                   </TableCell>
                 </TableRow>
@@ -116,7 +114,7 @@ export default function SuppliersPage() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={4} className="text-center">
+                <TableCell colSpan={5} className="text-center">
                   No Suppliers found
                 </TableCell>
               </TableRow>
@@ -124,6 +122,7 @@ export default function SuppliersPage() {
           </TableBody>
         </Table>
       </div>
+      {/* Add pagination controls here if needed */}
     </div>
   );
 }

@@ -36,7 +36,7 @@ export const ProductCard = ({ product, onAddToCart }) => {
       href={`/product/${product.id}`}
       className="w-full flex flex-col items-center justify-between gap-2 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-200"
     >
-      <div className="w-full aspect-square overflow-hidden">
+      <div className="w-full min-h-fit aspect-square overflow-hidden">
         <img
           src={product.image}
           alt={product.name}

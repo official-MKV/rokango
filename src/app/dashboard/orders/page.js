@@ -167,11 +167,21 @@ const OrdersPage = () => {
   const user = useAuth();
   const [filters, setFilters] = useState({ retailer_name: "", order_id: "" });
   const [showRecent, setShowRecent] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const itemsPerPage = 20;
   const {
-    data: orders,
+    data: ordersData,
     isLoading,
     error,
-  } = useFirebaseQuery("orders", { "supplier.id": user?.uid });
+  } = useFirebaseQuery("orders", {
+    filters: { "supplier.id": user?.uid },
+    page: currentPage,
+    limit: itemsPerPage,
+    searchField: "name",
+    searchTerm: "",
+  });
+  const { items: orders, totalPages } = ordersData || {};
   const queryClient = useQueryClient();
 
   const filteredOrders = useMemo(() => {

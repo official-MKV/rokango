@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
 import {
   Table,
   TableBody,
@@ -14,32 +13,31 @@ import {
 import { Skeleton } from "@/Components/ui/skeleton";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
-import { fetchRetailers } from "@/lib/api";
 import { useFirebaseQuery } from "@/hooks/firebase";
 
 export default function RetailersPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // Adjust as needed
   const router = useRouter();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
   const {
-    data: retailers,
+    data: retailersData,
     isLoading,
     error,
   } = useFirebaseQuery("users", {
-    role: "retailer",
-    name: { value: searchTerm, matchType: "contains" },
+    filters: { role: "retailer" },
+    page: currentPage,
+    limit: itemsPerPage,
+    searchField: "name",
+    searchTerm: searchTerm,
   });
+
+  const { items: retailers, totalPages } = retailersData || {};
+
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
   };
 
   const handleRowClick = (retailerId) => {
@@ -120,6 +118,7 @@ export default function RetailersPage() {
           </TableBody>
         </Table>
       </div>
+      {/* Add pagination controls here if needed */}
     </div>
   );
 }

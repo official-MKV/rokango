@@ -51,14 +51,22 @@ const InventoryPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedProduct, setEditedProduct] = useState(null);
   const queryClient = useQueryClient();
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const itemsPerPage = 20;
   const { user } = useAuth();
   const {
-    data: products,
+    data: productData,
     isLoading,
     error,
   } = useFirebaseQuery("products", {
-    "supplier.id": user?.uid,
+    filter: { "supplier.id": user?.uid },
+    page: currentPage,
+    limit: itemsPerPage,
+    searchField: "name",
+    searchTerm: "",
   });
+  const { items: products, totalPages } = productData || {};
 
   const filteredProducts = products?.filter(
     (product) =>
@@ -526,7 +534,7 @@ const InventoryPage = () => {
                   <strong>Manufacturer:</strong> {product.manufacturer}
                 </p>
                 <p className="text-sm">
-                  <strong>Supplier:</strong> {product.supplier}
+                  <strong>Supplier:</strong> {product.supplier.name}
                 </p>
                 {product.Categories && (
                   <div>
