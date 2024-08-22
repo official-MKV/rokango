@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useFirebaseQuery } from "@/hooks/firebase";
 import { Input } from "@/Components/ui/input";
 import { useCart } from "@/hooks/firebase";
@@ -14,8 +14,18 @@ import {
   AlertDialogTitle,
 } from "@/Components/ui/alert-dialog";
 import { Button } from "@/Components/ui/button";
-import { PackageSearch, ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
+import {
+  PackageSearch,
+  ShoppingCart,
+  Plus,
+  Minus,
+  Trash2,
+  Search,
+  Loader2,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useDebounce } from "use-debounce";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -72,20 +82,32 @@ export const ProductCard = ({ product, onAddToCart }) => {
 };
 
 export default function ShoppingSection({ user }) {
-  const [filters, setFilters] = useState({ supplier: "", brand: "" });
+  const [filters, setFilters] = useState({ supplier: null, brand: null });
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchInputValue, setSearchInputValue] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const router = useRouter();
+  const [currentPage, setCurrentPage] = useState(1);
+
   const [showAddToCartPopup, setShowAddToCartPopup] = useState(false);
   const [showViewOrderButton, setShowViewOrderButton] = useState(false);
   const [showOrderPopup, setShowOrderPopup] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
 
+  const itemsPerPage = 20;
   const {
-    data: products,
-    isLoading: productLoading,
-    error,
-  } = useFirebaseQuery("products", { active: true });
+    data: productData,
 
+    error,
+    refetch,
+  } = useFirebaseQuery("products", {
+    filters: { ...filters, active: true },
+    page: currentPage,
+    limit: itemsPerPage,
+    searchField: "name",
+    searchTerm: searchTerm,
+  });
+  const { items: products, totalPages } = productData || {};
   const {
     cart,
     cartId,
@@ -101,16 +123,47 @@ export default function ShoppingSection({ user }) {
       setShowViewOrderButton(true);
     }
   }, [cart]);
-
+  useEffect(() => {
+    if (searchInputValue == "") {
+      setSearchTerm("");
+    } else {
+      refetch().then(() => {
+        setIsSearching(false);
+      });
+    }
+  }, [searchInputValue, refetch]);
   const filteredProducts = products?.filter(
     (product) =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  const handleSearch = () => {
+    setIsSearching(true);
+    setSearchTerm(searchInputValue);
+    setCurrentPage(1);
+    refetch().then(() => {
+      setIsSearching(false);
+    });
+  };
+  const handleSearchInputChange = useCallback((e) => {
+    const newValue = e.target.value;
+    setSearchInputValue(newValue);
+    if (searchInputValue == "") {
+      setSearchTerm("");
+    }
+    // setIsSearching(true);
+  }, []);
 
+  const clearSearch = useCallback(() => {
+    setSearchInputValue("");
+    setIsSearching(false);
+  }, []);
   const handleAddToCart = (product) => {
     addToCart(product);
     setShowAddToCartPopup(true);
+  };
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
   };
 
   const handleUpdateQuantity = (productId, change) => {
@@ -177,13 +230,42 @@ export default function ShoppingSection({ user }) {
 
   return (
     <div className="w-full max-w-full overflow-x-hidden flex flex-col relative p-2 justify-center items-center">
-      <div className="w-full mb-4 px-2">
-        <Input
-          placeholder="Search products..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full"
-        />
+      <div className="relative w-full mb-4 px-2 flex gap-2">
+        <div className="relative w-fit">
+          <Input
+            placeholder="Search products..."
+            value={searchInputValue}
+            onChange={handleSearchInputChange}
+            className="realtive w-fit transition-all duration-500 ease-in-out"
+          />
+          {searchInputValue && (
+            <button
+              onClick={clearSearch}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 py-2 px-1 bg-[white]"
+            >
+              <X className="h-4 w-4 text-gray-500" />
+            </button>
+          )}
+        </div>
+
+        {/*
+        {isSearching && (
+          <div className="flex items-center">
+            <Loader2 className="h-4 w-4 animate-spin text-[#ffa459]" />
+          </div>
+        )} */}
+        <Button
+          onClick={handleSearch}
+          disabled={isSearching || searchInputValue.length === 0}
+          className="bg-[#ffa459] hover:bg-[#fc7b12] text-white"
+        >
+          {isSearching ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Search className="h-4 w-4" />
+          )}
+          {!isSearching && "Search"}
+        </Button>
       </div>
       {filteredProducts?.length > 0 ? (
         <div className="w-full grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-2">
@@ -201,6 +283,24 @@ export default function ShoppingSection({ user }) {
           <p className="mt-4 text-xl font-semibold">No products found</p>
         </div>
       )}
+      {totalPages > 1 && (
+        <div className="mt-4 flex justify-center space-x-2">
+          <Button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <span>{`Page ${currentPage} of ${totalPages}`}</span>
+          <Button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      )}
+
       <AlertDialog open={showOrderPopup} onOpenChange={setShowOrderPopup}>
         <AlertDialogContent className="max-w-3xl">
           <AlertDialogHeader>

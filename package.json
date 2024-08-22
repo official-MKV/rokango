@@ -30,6 +30,7 @@
     "firebase-admin": "^12.2.0",
     "framer-motion": "^11.3.19",
     "lucide-react": "^0.408.0",
+    "lunr": "^2.3.9",
     "next": "14.2.5",
     "node-fetch": "^3.3.2",
     "react": "^18",
@@ -38,7 +39,8 @@
     "react-paystack": "^5.0.0",
     "recharts": "^2.12.7",
     "tailwind-merge": "^2.4.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "use-debounce": "^10.0.3"
   },
   "devDependencies": {
     "postcss": "^8",

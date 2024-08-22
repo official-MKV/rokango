@@ -10,9 +10,11 @@ import {
   setDoc,
   addDoc,
   updateDoc,
+  startAfter,
   orderBy,
   startAt,
   endAt,
+  limit,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -21,52 +23,81 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/Components/ui/use-toast";
 import { db, auth } from "@/lib/firebase";
 
-export function useFirebaseQuery(collectionName, filters = {}) {
+export function useFirebaseQuery(collectionName, options = {}) {
+  const {
+    filters = {},
+    page = 1,
+    pageSize = 20,
+    searchField,
+    searchTerm,
+    orderByField = "createdAt",
+    orderDirection = "desc",
+  } = options;
+
   return useQuery({
-    queryKey: [collectionName, filters],
+    queryKey: [
+      collectionName,
+      filters,
+      page,
+      pageSize,
+      searchField,
+      searchTerm,
+      orderByField,
+      orderDirection,
+    ],
     queryFn: async () => {
       let q = collection(db, collectionName);
-      Object.entries(filters).forEach(([key, filterValue]) => {
-        if (filterValue && typeof filterValue === "object") {
-          const { value, matchType } = filterValue;
-          if (value) {
-            switch (matchType) {
-              case "exact":
-                q = query(q, where(key, "==", value));
-                break;
-              case "startsWith":
-                q = query(
-                  q,
-                  orderBy(key),
-                  startAt(value),
-                  endAt(value + "\uf8ff")
-                );
-                break;
-              case "contains":
-                const lowerValue = value.toLowerCase();
-                q = query(
-                  q,
-                  orderBy(key),
-                  startAt(lowerValue),
-                  endAt(lowerValue + "\uf8ff")
-                );
-                break;
-              default:
-                q = query(q, where(key, "==", value));
-            }
-          }
-        } else if (filterValue) {
-          q = query(q, where(key, "==", filterValue));
+
+      // Apply filters
+
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          q = query(q, where(key, "==", value));
         }
       });
 
+      // Apply search if searchField and searchTerm are provided
+      if (searchField && searchTerm) {
+        console.log("search field is running");
+        q = query(
+          q,
+          // orderBy(searchField),
+          where(searchField, ">=", searchTerm),
+          where(searchField, "<=", searchTerm + "\uf8ff")
+        );
+      }
+
+      // Get total count (this is an extra query, so use cautiously)
+      const totalSnapshot = await getDocs(q);
+      const totalItems = totalSnapshot.size;
+
+      // Apply ordering
+      // q = query(q, orderBy(orderByField, orderDirection));
+
+      // Apply pagination
+      if (page > 1) {
+        const prevPageQuery = query(q, limit((page - 1) * pageSize));
+        const prevPageDocs = await getDocs(prevPageQuery);
+        const lastVisible = prevPageDocs.docs[prevPageDocs.docs.length - 1];
+        q = query(q, startAfter(lastVisible));
+      }
+      q = query(q, limit(pageSize));
+
       const snapshot = await getDocs(q);
-      return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+      const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+      return {
+        items,
+        totalItems,
+        currentPage: page,
+        totalPages: Math.ceil(totalItems / pageSize),
+        pageSize,
+      };
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
-
 export function useAuth() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
