@@ -2,6 +2,7 @@
 import { useAuth } from "@/hooks/firebase"; // Adjust the import path as needed
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import LoadingPage from "@/Components/LoadingPage";
 
 export function withRoleGuard(WrappedComponent, allowedRoles) {
   return function RoleGuard(props) {
@@ -15,7 +16,11 @@ export function withRoleGuard(WrappedComponent, allowedRoles) {
     }, [user, loading, router]);
 
     if (loading) {
-      return <div>Loading...</div>; // Or a proper loading component
+      return (
+        <div>
+          <LoadingPage />
+        </div>
+      );
     }
 
     if (!user || !allowedRoles.includes(user.role)) {

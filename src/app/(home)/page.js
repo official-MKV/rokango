@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { useState } from "react";
 import { MagicCard } from "@/Components/magicui/magic-card";
 import value from "@/data/valueProposition.json";
 import { ShoppingCart, Package, Shield } from "lucide-react";
@@ -11,6 +12,9 @@ import { useToast } from "@/Components/ui/use-toast";
 import Verified from "@/Components/Verified";
 import { Button } from "@/Components/ui/button";
 import { CheckCircle2, ArrowRight } from "lucide-react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import LoadingPage from "@/Components/LoadingPage";
 import Marquee from "@/Components/magicui/marquee";
 
 const page = () => {
@@ -22,41 +26,45 @@ const page = () => {
   const router = useRouter();
   const { toast } = useToast();
   const { user, loading } = useAuth();
+  const [isVerifying, setIsVerifying] = useState(false);
   // For this I think it is better, if it was stored in a session, because what if the user never gets redirecetd,
   // then the transacation status is never success, or we could do it on the hook
   useEffect(() => {
     const verifyPayment = async () => {
-      const { verify, reference } = router.query;
-
+      const urlParams = new URLSearchParams(window.location.search);
+      const verify = urlParams.get("verify");
+      const reference = urlParams.get("reference");
+      console.log(reference);
       if (verify === "true" && reference) {
+        setIsVerifying(true);
         try {
-          const transactionRef = doc(db, "transactions", reference);
-          const transactionSnap = await getDoc(transactionRef);
+          const checkPaymentStatus = async () => {
+            const transactionRef = doc(db, "transactions", reference);
+            const transactionSnap = await getDoc(transactionRef);
 
-          if (transactionSnap.exists()) {
-            const transactionData = transactionSnap.data();
+            if (transactionSnap.exists()) {
+              const transactionData = transactionSnap.data();
 
-            if (transactionData.status === "success") {
-              toast({
-                title: "Payment Successful",
-                description: "You can track your order on the orders page.",
-                duration: 5000,
-              });
-              setTimeout(() => {
-                router.push("/profile/orders");
-              }, 2000);
+              if (transactionData.status === "success") {
+                toast({
+                  title: "Payment Successful",
+                  description: "You can track your order on the orders page.",
+                  duration: 5000,
+                });
+
+                setIsVerifying(false);
+              } else if (transactionData.status === "pending") {
+                // If still pending, check again after 5 seconds
+                setTimeout(checkPaymentStatus, 5000);
+              } else {
+                throw new Error("Payment failed");
+              }
             } else {
-              toast({
-                title: "Payment Unsuccessful",
-                description:
-                  "There was an issue with your payment. Please try again.",
-                variant: "destructive",
-                duration: 5000,
-              });
+              throw new Error("Transaction not found");
             }
-          } else {
-            throw new Error("Transaction not found");
-          }
+          };
+
+          await checkPaymentStatus();
         } catch (error) {
           console.error("Error verifying payment:", error);
           toast({
@@ -66,14 +74,21 @@ const page = () => {
             variant: "destructive",
             duration: 5000,
           });
+          setIsVerifying(false);
         }
       }
     };
 
-    if (router.isReady) {
-      verifyPayment();
-    }
-  }, [router.isReady, router.query]);
+    verifyPayment();
+  }, [router, toast]);
+
+  if (loading || isVerifying) {
+    return (
+      <div>
+        <LoadingPage />
+      </div>
+    );
+  }
 
   return (
     <div>
