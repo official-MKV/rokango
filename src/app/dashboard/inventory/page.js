@@ -55,6 +55,7 @@ const InventoryPage = () => {
 
   const itemsPerPage = 20;
   const { user } = useAuth();
+
   const {
     data: productData,
     isLoading,
