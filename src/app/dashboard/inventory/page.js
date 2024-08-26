@@ -61,7 +61,7 @@ const InventoryPage = () => {
     isLoading,
     error,
   } = useFirebaseQuery("products", {
-    filter: { "supplier.id": user?.uid },
+    filters: { "supplier.id": user?.uid },
     page: currentPage,
     limit: itemsPerPage,
     searchField: "name",
