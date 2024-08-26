@@ -75,7 +75,7 @@ const OrderCard = ({ order, onToggleDelivered }) => {
             Delivered: {format(order.delivery_date.toDate(), "PPP")}
           </p>
         )}
-        <p className="text-sm truncate">Retailer: {order.retailer_name}</p>
+        <p className="text-sm truncate">Retailer: {order.retailer.name}</p>
         <p className="text-sm truncate">Location: {order.delivery_location}</p>
         <p className="text-sm font-semibold mt-2">Total: ₦{total.toFixed(2)}</p>
         <Dialog>
@@ -121,7 +121,7 @@ const OrderCard = ({ order, onToggleDelivered }) => {
                 <p>
                   <strong>Retailer:</strong>
                 </p>
-                <p>{order.retailer_name}</p>
+                <p>{order.retailer.name}</p>
               </div>
               <h4 className="font-bold mt-4 mb-2">Items:</h4>
               <div className="bg-gray-100 p-2 rounded">

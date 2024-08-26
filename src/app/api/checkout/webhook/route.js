@@ -90,6 +90,15 @@ export async function POST(req) {
             const retailerSnap = await getDoc(retailerRef);
             const retailer = retailerSnap.data();
             await updateDoc(cartRef, { ordered: true });
+            for (const item of items) {
+              const productRef = doc(db, "products", item.id);
+              const productSnap = await getDoc(productRef);
+              if (productSnap.exists()) {
+                const productData = productSnap.data();
+                const newQuantity = productData.quantity - item.quantity;
+                await updateDoc(productRef, { quantity: newQuantity });
+              }
+            }
             const itemsBySupplier = items.reduce((acc, item) => {
               if (!acc[item.supplier.id]) {
                 acc[item.supplier.id] = [];
@@ -110,6 +119,7 @@ export async function POST(req) {
                 created_at: new Date(),
                 retailer: { id: cartData.userId, name: retailer.businessName },
                 user_email: transactionData.user_email,
+                delivery_location: retailer.businessAddress,
               });
               await addDoc(collection(db, "notifications"), {
                 recipient: supplier,
