@@ -82,7 +82,7 @@ export async function POST(req) {
           const cartRef = doc(db, "carts", transactionData.cart_id);
           console.log(`cart Id:${cartRef}`);
           const cartSnap = await getDoc(cartRef);
-
+          // Update product quantity
           if (cartSnap.exists()) {
             const cartData = cartSnap.data();
             const items = cartData.items || [];

@@ -27,7 +27,7 @@ const NewTag = () => (
 );
 
 const OrderCard = ({ order, onToggleDelivered }) => {
-  const isNew = differenceInHours(new Date(), order.date_ordered.toDate()) < 48;
+  const isNew = differenceInHours(new Date(), order.created_at.toDate()) < 48;
 
   const handleToggle = (checked) => {
     if (!order.delivered) {
@@ -68,7 +68,7 @@ const OrderCard = ({ order, onToggleDelivered }) => {
       </CardHeader>
       <CardContent>
         <p className="text-sm">
-          Ordered: {format(order.date_ordered.toDate(), "PPP")}
+          Ordered: {format(order.created_at.toDate(), "PPP")}
         </p>
         {order.delivery_date && (
           <p className="text-sm">
@@ -101,11 +101,11 @@ const OrderCard = ({ order, onToggleDelivered }) => {
                 <p>
                   <strong>Date Created:</strong>
                 </p>
-                <p>{format(order.date_created.toDate(), "PPP")}</p>
+                <p>{format(order.created_at.toDate(), "PPP")}</p>
                 <p>
                   <strong>Date Ordered:</strong>
                 </p>
-                <p>{format(order.date_ordered.toDate(), "PPP")}</p>
+                <p>{format(order.created_at.toDate(), "PPP")}</p>
                 {order.delivery_date && (
                   <>
                     <p>
@@ -194,7 +194,7 @@ const OrdersPage = () => {
             .includes(filters.retailer_name.toLowerCase()) &&
           order.id.toLowerCase().includes(filters.order_id.toLowerCase())
       )
-      .sort((a, b) => b.date_created.toDate() - a.date_created.toDate());
+      .sort((a, b) => b.created_at.toDate() - a.created_at.toDate());
   }, [orders, filters]);
 
   const handleFilterChange = (e) => {
