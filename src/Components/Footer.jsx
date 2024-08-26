@@ -23,7 +23,7 @@ const Footer = () => {
             <p className="text-sm">Your trusted B2B e-commerce partner.</p>
           </div>
           <div
-            className="px-4 py-2 text-sm  bg-[#ffa459] w-fit text-[white] hover:bg-gray-100 cursor-pointer"
+            className="px-4 py-2 text-sm h-[40px] bg-[#ffa459] w-fit text-[white] hover:bg-gray-100 cursor-pointer"
             onClick={() => {
               handleSignOut();
             }}

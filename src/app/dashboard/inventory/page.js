@@ -144,9 +144,11 @@ const InventoryPage = () => {
       price: "",
       quantity: "",
       inStock: true,
+      active: true,
       description: "",
       Categories: [],
       image: null,
+      supplier: { name: user?.businesName, id: user?.uid },
     });
     const [isLoading, setIsLoading] = useState(false);
     const [selected, setSelected] = useState([]);
@@ -189,7 +191,7 @@ const InventoryPage = () => {
           image: imageUrl,
           price: parseFloat(newProduct.price),
           quantity: parseInt(newProduct.quantity),
-          supplier: user.businessName,
+          supplier: { name: user.businessName, id: user.uid },
           createdAt: new Date(),
         };
         console.log(productData);
