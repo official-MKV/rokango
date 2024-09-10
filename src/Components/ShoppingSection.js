@@ -62,9 +62,9 @@ export const ProductCard = ({ product, onAddToCart }) => {
           </span>
           <span className="flex items-center">
             Supplier:
-            <span className="ml-1 px-2 py-1 rounded-full bg-[#faf0e4] group relative text-nowrap text-ellipsis">
-              {product.supplier.name}
-              <span className="hidden group-hover:block z-20 absolute text-black, opacity-50 bg-white p-3 text-center -top-10 -right-20 hover:opacity-100">
+            <span className="ml-1 w-full px-2 py-1 rounded-full bg-[#faf0e4] group relative text-nowrap overflow-hidden">
+              <span className="block truncate">{product.supplier.name}</span>
+              <span className="hidden group-hover:block absolute z-20 text-black bg-white p-3 text-center -top-10 -right-0 hover:opacity-100 whitespace-nowrap">
                 {product.supplier.name}
               </span>
             </span>
