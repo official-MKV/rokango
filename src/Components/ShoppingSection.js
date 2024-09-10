@@ -62,8 +62,11 @@ export const ProductCard = ({ product, onAddToCart }) => {
           </span>
           <span className="flex items-center">
             Supplier:
-            <span className="ml-1 px-2 py-1 rounded-full bg-[#faf0e4]">
+            <span className="ml-1 px-2 py-1 rounded-full bg-[#faf0e4] group relative text-nowrap text-ellipsis">
               {product.supplier.name}
+              <span className="hidden group-hover:block z-20 absolute text-black, opacity-50 bg-white p-3 text-center -top-10 -right-20 hover:opacity-100">
+                {product.supplier.name}
+              </span>
             </span>
           </span>
         </div>
@@ -83,6 +86,7 @@ export const ProductCard = ({ product, onAddToCart }) => {
 
 export default function ShoppingSection({ user }) {
   const [filters, setFilters] = useState({ active: true });
+  const [searchInputValue, setSearchInputValue] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isSearching, setIsSearching] = useState(false);
@@ -106,16 +110,17 @@ export default function ShoppingSection({ user }) {
   const { cart, addToCart } = useCart(user.uid);
 
   const handleSearchInputChange = useCallback((e) => {
-    setSearchTerm(e.target.value);
+    setSearchInputValue(e.target.value);
   }, []);
 
   const handleSearch = useCallback(() => {
     setIsSearching(true);
+    setSearchTerm(searchInputValue);
     setCurrentPage(1);
     refetch().then(() => {
       setIsSearching(false);
     });
-  }, [refetch]);
+  }, [searchInputValue, refetch]);
 
   const handleKeyPress = useCallback(
     (e) => {
@@ -127,6 +132,7 @@ export default function ShoppingSection({ user }) {
   );
 
   const clearSearch = useCallback(() => {
+    setSearchInputValue("");
     setSearchTerm("");
     setCurrentPage(1);
     refetch();
@@ -151,12 +157,12 @@ export default function ShoppingSection({ user }) {
         <div className="relative w-fit">
           <Input
             placeholder="Search products..."
-            value={searchTerm}
+            value={searchInputValue}
             onChange={handleSearchInputChange}
             onKeyPress={handleKeyPress}
             className="relative w-fit transition-all duration-500 ease-in-out"
           />
-          {searchTerm && (
+          {searchInputValue && (
             <button
               onClick={clearSearch}
               className="absolute right-2 top-1/2 transform -translate-y-1/2 py-2 px-1 bg-[white]"

@@ -27,14 +27,17 @@ function generateSearchOptions(searchTerm) {
   const terms = searchTerm.toLowerCase().split(" ");
   const options = [];
 
-  // Generate all possible combinations of the search terms
-  for (let i = 0; i < terms.length; i++) {
-    for (let j = i + 1; j <= terms.length; j++) {
-      options.push(terms.slice(i, j).join(" "));
-    }
-  }
+  // Generate prefix matches
+  terms.forEach((term) => {
+    options.push(term);
+    options.push(term + "\uf8ff");
+  });
 
-  // Add variations with first letter capitalized
+  // Generate full word matches
+  options.push(searchTerm.toLowerCase());
+  options.push(searchTerm.toLowerCase() + "\uf8ff");
+
+  // Add capitalized versions
   const capitalizedOptions = options.map(
     (option) => option.charAt(0).toUpperCase() + option.slice(1)
   );
@@ -77,13 +80,14 @@ export function useFirebaseQuery(collectionName, options = {}) {
       // Apply search if searchField and searchTerm are provided and not empty
       if (searchField && searchTerm && searchTerm.trim() !== "") {
         const searchOptions = generateSearchOptions(searchTerm.trim());
-
+        console.log("This shit is to die for");
+        console.log(searchOptions);
         // Create an array of queries, one for each search option
         const queries = searchOptions.map((option) =>
           query(
             q,
             where(searchField, ">=", option),
-            where(searchField, "<=", option + "\uf8ff")
+            where(searchField, "<", option + "\uf8ff")
           )
         );
 
