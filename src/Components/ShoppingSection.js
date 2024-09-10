@@ -34,7 +34,7 @@ export const ProductCard = ({ product, onAddToCart }) => {
   return (
     <Link
       href={`/product/${product.id}`}
-      className="w-full flex flex-col items-center justify-between gap-2 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-200"
+      className="w-full h-fit flex flex-col items-center justify-between gap-2 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-200"
     >
       <div className="w-full min-h-fit aspect-square overflow-hidden">
         <img
@@ -53,7 +53,7 @@ export const ProductCard = ({ product, onAddToCart }) => {
         <span className="text-xs text-gray-500 truncate">
           {product.description}
         </span>
-        {/* <div className="text-xs flex flex-col gap-1 mt-1">
+        <div className="text-xs flex flex-col gap-1 mt-1">
           <span className="flex items-center">
             Brand:
             <span className="ml-1 px-2 py-1 rounded-full bg-[#faf0e4]">
@@ -66,7 +66,7 @@ export const ProductCard = ({ product, onAddToCart }) => {
               {product.supplier.name}
             </span>
           </span>
-        </div> */}
+        </div>
       </div>
       <button
         className="w-full py-2 bg-[#ffa459] text-white font-medium hover:bg-[#fc7b12] transition-colors duration-300"
@@ -82,151 +82,68 @@ export const ProductCard = ({ product, onAddToCart }) => {
 };
 
 export default function ShoppingSection({ user }) {
-  const [filters, setFilters] = useState({ supplier: null, brand: null });
+  const [filters, setFilters] = useState({ active: true });
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchInputValue, setSearchInputValue] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
-
-  const [showAddToCartPopup, setShowAddToCartPopup] = useState(false);
-  const [showViewOrderButton, setShowViewOrderButton] = useState(false);
-  const [showOrderPopup, setShowOrderPopup] = useState(false);
-  const [checkingOut, setCheckingOut] = useState(false);
-
+  const [isSearching, setIsSearching] = useState(false);
   const itemsPerPage = 20;
+
   const {
     data: productData,
-
     error,
+    isLoading,
     refetch,
   } = useFirebaseQuery("products", {
-    filters: { active: true },
+    filters,
     page: currentPage,
-    limit: itemsPerPage,
+    pageSize: itemsPerPage,
     searchField: "name",
-    searchTerm: searchTerm,
+    searchTerm,
+    orderByField: "name",
+    orderDirection: "asc",
   });
-  const { items: products, totalPages } = productData || {};
-  const {
-    cart,
-    cartId,
-    isLoading,
-    isError,
-    addToCart,
-    updateQuantity,
-    removeItem,
-  } = useCart(user.uid);
 
-  useEffect(() => {
-    if (cart.length > 0) {
-      setShowViewOrderButton(true);
-    }
-  }, [cart]);
-  useEffect(() => {
-    if (searchInputValue == "") {
-      setSearchTerm("");
-    } else {
-      refetch().then(() => {
-        setIsSearching(false);
-      });
-    }
-  }, [searchInputValue, refetch]);
-  const filteredProducts = products?.filter(
-    (product) =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  const handleSearch = () => {
+  const { cart, addToCart } = useCart(user.uid);
+
+  const handleSearchInputChange = useCallback((e) => {
+    setSearchTerm(e.target.value);
+  }, []);
+
+  const handleSearch = useCallback(() => {
     setIsSearching(true);
-    setSearchTerm(searchInputValue);
     setCurrentPage(1);
     refetch().then(() => {
       setIsSearching(false);
     });
-  };
-  const handleSearchInputChange = useCallback((e) => {
-    const newValue = e.target.value;
-    setSearchInputValue(newValue);
-    if (searchInputValue == "") {
-      setSearchTerm("");
-    }
-    // setIsSearching(true);
-  }, []);
+  }, [refetch]);
+
+  const handleKeyPress = useCallback(
+    (e) => {
+      if (e.key === "Enter") {
+        handleSearch();
+      }
+    },
+    [handleSearch]
+  );
 
   const clearSearch = useCallback(() => {
-    setSearchInputValue("");
-    setIsSearching(false);
-  }, []);
-  const handleAddToCart = (product) => {
-    addToCart(product);
-    setShowAddToCartPopup(true);
-  };
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-  };
+    setSearchTerm("");
+    setCurrentPage(1);
+    refetch();
+  }, [refetch]);
 
-  const handleUpdateQuantity = (productId, change) => {
-    updateQuantity(productId, change);
-  };
-  const handleRemoveItem = (productId) => {
-    removeItem(productId);
-  };
-
-  const totalPrice = cart.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
+  const handleAddToCart = useCallback(
+    (product) => {
+      addToCart(product);
+    },
+    [addToCart]
   );
-  const handleCheckout = async () => {
-    setCheckingOut(true);
-    if (!user.email || !totalPrice) {
-      console.error("Missing required checkout information");
-      return { error: "Missing required checkout information" };
-    }
 
-    try {
-      const transactionRef = await addDoc(collection(db, "transactions"), {
-        status: "pending",
-        cart_id: cartId,
-        user_email: user.email,
-        amount: totalPrice,
-        created_at: new Date(),
-      });
-      const response = await fetch(`/api/checkout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: user.email,
-          amount: totalPrice,
-          reference: transactionRef.id,
-        }),
-      });
+  const handlePageChange = useCallback((newPage) => {
+    setCurrentPage(newPage);
+  }, []);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          `HTTP error! status: ${response.status}, message: ${errorData.error}`
-        );
-      }
-
-      const data = await response.json();
-
-      if (!data.data || !data.data.authorization_url) {
-        throw new Error("Authorization URL not received from server");
-      }
-
-      localStorage.setItem("paymentReference", transactionRef.id);
-      setCheckingOut(false);
-      window.location.href = data.data.authorization_url;
-    } catch (error) {
-      console.error("There was a problem with the checkout process:", error);
-      return { error: error.message };
-    }
-  };
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+  const { items: products, totalPages } = productData || {};
 
   return (
     <div className="w-full max-w-full overflow-x-hidden flex flex-col relative p-2 justify-center items-center">
@@ -234,11 +151,12 @@ export default function ShoppingSection({ user }) {
         <div className="relative w-fit">
           <Input
             placeholder="Search products..."
-            value={searchInputValue}
+            value={searchTerm}
             onChange={handleSearchInputChange}
-            className="realtive w-fit transition-all duration-500 ease-in-out"
+            onKeyPress={handleKeyPress}
+            className="relative w-fit transition-all duration-500 ease-in-out"
           />
-          {searchInputValue && (
+          {searchTerm && (
             <button
               onClick={clearSearch}
               className="absolute right-2 top-1/2 transform -translate-y-1/2 py-2 px-1 bg-[white]"
@@ -247,16 +165,9 @@ export default function ShoppingSection({ user }) {
             </button>
           )}
         </div>
-
-        {/*
-        {isSearching && (
-          <div className="flex items-center">
-            <Loader2 className="h-4 w-4 animate-spin text-[#ffa459]" />
-          </div>
-        )} */}
         <Button
           onClick={handleSearch}
-          disabled={isSearching || searchInputValue.length === 0}
+          disabled={isSearching}
           className="bg-[#ffa459] hover:bg-[#fc7b12] text-white"
         >
           {isSearching ? (
@@ -267,9 +178,13 @@ export default function ShoppingSection({ user }) {
           {!isSearching && "Search"}
         </Button>
       </div>
-      {filteredProducts?.length > 0 ? (
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-[#ffa459]" />
+        </div>
+      ) : products?.length > 0 ? (
         <div className="w-full grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-2">
-          {filteredProducts.map((product) => (
+          {products.map((product) => (
             <ProductCard
               key={product.id}
               product={product}
@@ -300,85 +215,12 @@ export default function ShoppingSection({ user }) {
           </Button>
         </div>
       )}
-
-      <AlertDialog open={showOrderPopup} onOpenChange={setShowOrderPopup}>
-        <AlertDialogContent className="max-w-3xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Your Order</AlertDialogTitle>
-          </AlertDialogHeader>
-          <div className="mt-4">
-            {cart.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between py-2 border-b"
-              >
-                <div className="flex items-center">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-16 h-16 object-cover mr-4"
-                  />
-                  <div>
-                    <h3 className="font-semibold">{item.name}</h3>
-                    <p className="text-sm text-gray-500">₦{item.price}</p>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleUpdateQuantity(item.id, -1)}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <span className="mx-2">{item.quantity}</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleUpdateQuantity(item.id, 1)}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveItem(item.id)}
-                    className="ml-2"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 text-right">
-            <p className="font-semibold">Total: ₦{totalPrice.toFixed(2)}</p>
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogAction
-              className="bg-transparent border-[2px] border-[black] text-[black] hover:bg-[black] hover:text-[white]"
-              onClick={() => setShowOrderPopup(false)}
-            >
-              Close
-            </AlertDialogAction>
-            <AlertDialogAction
-              disabled={checkingOut}
-              className="bg-[#ffa459] hover:bg-[#ff7c11]"
-              onClick={() => {
-                setCheckingOut(true);
-                handleCheckout();
-              }}
-            >
-              CheckOut
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {showViewOrderButton && (
+      {cart.length > 0 && (
         <Button
           className="fixed bottom-4 right-4 z-10 bg-[#ffa459] hover:bg-[#fc7b12] shadow-[0px_0px_10px_0px_#ff7913]"
-          onClick={() => setShowOrderPopup(true)}
+          onClick={() => {
+            /* Implement view cart functionality */
+          }}
         >
           <ShoppingCart className="mr-2 h-4 w-4" /> View Order
         </Button>

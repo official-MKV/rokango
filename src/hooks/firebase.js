@@ -22,6 +22,26 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useToast } from "@/Components/ui/use-toast";
 import { db, auth } from "@/lib/firebase";
+
+function generateSearchOptions(searchTerm) {
+  const terms = searchTerm.toLowerCase().split(" ");
+  const options = [];
+
+  // Generate all possible combinations of the search terms
+  for (let i = 0; i < terms.length; i++) {
+    for (let j = i + 1; j <= terms.length; j++) {
+      options.push(terms.slice(i, j).join(" "));
+    }
+  }
+
+  // Add variations with first letter capitalized
+  const capitalizedOptions = options.map(
+    (option) => option.charAt(0).toUpperCase() + option.slice(1)
+  );
+
+  return [...new Set([...options, ...capitalizedOptions])];
+}
+
 export function useFirebaseQuery(collectionName, options = {}) {
   const {
     filters = {},
@@ -48,39 +68,38 @@ export function useFirebaseQuery(collectionName, options = {}) {
       let q = collection(db, collectionName);
 
       // Apply filters
-      Object.entries(filters).forEach(([key, { value, matchType }]) => {
+      Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== "") {
-          console.log(`${key}:${value}`);
-          if (matchType === "contains") {
-            const lowerValue = value.toLowerCase();
-            q = query(
-              q,
-              where(key, ">=", lowerValue),
-              where(key, "<=", lowerValue + "\uf8ff")
-            );
-          } else {
-            q = query(q, where(key, "==", value));
-          }
+          q = query(q, where(key, "==", value));
         }
       });
 
       // Apply search if searchField and searchTerm are provided and not empty
-      console.log(`SearchTerm:${searchTerm}`);
       if (searchField && searchTerm && searchTerm.trim() !== "") {
-        const lowerSearchTerm = searchTerm.trim().toLowerCase();
+        const searchOptions = generateSearchOptions(searchTerm.trim());
+
+        // Create an array of queries, one for each search option
+        const queries = searchOptions.map((option) =>
+          query(
+            q,
+            where(searchField, ">=", option),
+            where(searchField, "<=", option + "\uf8ff")
+          )
+        );
+
+        // Combine all queries with an OR condition
         q = query(
           q,
-          where(searchField, ">=", lowerSearchTerm),
-          where(searchField, "<=", lowerSearchTerm + "\uf8ff")
+          ...queries.map((subQuery) => subQuery._queryConstraints).flat()
         );
       }
 
-      // Get total count (this is an extra query, so use cautiously)
-      const totalSnapshot = await getDocs(q);
-      const totalItems = totalSnapshot.size;
-
       // Apply ordering
       // q = query(q, orderBy(orderByField, orderDirection));
+
+      // Get total count
+      const totalSnapshot = await getDocs(q);
+      const totalItems = totalSnapshot.size;
 
       // Apply pagination
       if (page > 1) {
@@ -93,16 +112,7 @@ export function useFirebaseQuery(collectionName, options = {}) {
 
       const snapshot = await getDocs(q);
 
-      const items = snapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() }))
-        .filter((item) => {
-          if (!searchField || !searchTerm) return true;
-          const fieldValue = item[searchField];
-          return (
-            typeof fieldValue === "string" &&
-            fieldValue.toLowerCase().includes(searchTerm.trim().toLowerCase())
-          );
-        });
+      const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
       return {
         items,
