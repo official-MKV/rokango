@@ -53,7 +53,7 @@ export const ProductCard = ({ product, onAddToCart }) => {
         <span className="text-xs text-gray-500 truncate">
           {product.description}
         </span>
-        <div className="text-xs flex flex-col gap-1 mt-1">
+        {/* <div className="text-xs flex flex-col gap-1 mt-1">
           <span className="flex items-center">
             Brand:
             <span className="ml-1 px-2 py-1 rounded-full bg-[#faf0e4]">
@@ -66,7 +66,7 @@ export const ProductCard = ({ product, onAddToCart }) => {
               {product.supplier.name}
             </span>
           </span>
-        </div>
+        </div> */}
       </div>
       <button
         className="w-full py-2 bg-[#ffa459] text-white font-medium hover:bg-[#fc7b12] transition-colors duration-300"
@@ -101,7 +101,7 @@ export default function ShoppingSection({ user }) {
     error,
     refetch,
   } = useFirebaseQuery("products", {
-    filters: { ...filters, active: true },
+    filters: { active: true },
     page: currentPage,
     limit: itemsPerPage,
     searchField: "name",

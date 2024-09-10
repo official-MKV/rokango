@@ -22,7 +22,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useToast } from "@/Components/ui/use-toast";
 import { db, auth } from "@/lib/firebase";
-
 export function useFirebaseQuery(collectionName, options = {}) {
   const {
     filters = {},
@@ -49,22 +48,30 @@ export function useFirebaseQuery(collectionName, options = {}) {
       let q = collection(db, collectionName);
 
       // Apply filters
-
-      Object.entries(filters).forEach(([key, value]) => {
-        console.log(`${key}:${value}`);
-        if (value !== undefined && value !== null) {
-          q = query(q, where(key, "==", value));
+      Object.entries(filters).forEach(([key, { value, matchType }]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          console.log(`${key}:${value}`);
+          if (matchType === "contains") {
+            const lowerValue = value.toLowerCase();
+            q = query(
+              q,
+              where(key, ">=", lowerValue),
+              where(key, "<=", lowerValue + "\uf8ff")
+            );
+          } else {
+            q = query(q, where(key, "==", value));
+          }
         }
       });
 
-      // Apply search if searchField and searchTerm are provided
-      if (searchField && searchTerm) {
-        console.log("search field is running");
+      // Apply search if searchField and searchTerm are provided and not empty
+      console.log(`SearchTerm:${searchTerm}`);
+      if (searchField && searchTerm && searchTerm.trim() !== "") {
+        const lowerSearchTerm = searchTerm.trim().toLowerCase();
         q = query(
           q,
-          // orderBy(searchField),
-          where(searchField, ">=", searchTerm),
-          where(searchField, "<=", searchTerm + "\uf8ff")
+          where(searchField, ">=", lowerSearchTerm),
+          where(searchField, "<=", lowerSearchTerm + "\uf8ff")
         );
       }
 
@@ -86,7 +93,16 @@ export function useFirebaseQuery(collectionName, options = {}) {
 
       const snapshot = await getDocs(q);
 
-      const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const items = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((item) => {
+          if (!searchField || !searchTerm) return true;
+          const fieldValue = item[searchField];
+          return (
+            typeof fieldValue === "string" &&
+            fieldValue.toLowerCase().includes(searchTerm.trim().toLowerCase())
+          );
+        });
 
       return {
         items,
@@ -99,6 +115,7 @@ export function useFirebaseQuery(collectionName, options = {}) {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
+
 export function useAuth() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);

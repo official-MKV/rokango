@@ -4,7 +4,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useFirebaseQuery, useCart, useAuth } from "@/hooks/firebase";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
-import { Slider } from "@/Components/ui/slider";
 import {
   Select,
   SelectContent,
@@ -13,11 +12,11 @@ import {
   SelectValue,
 } from "@/Components/ui/select";
 import { ProductCard } from "@/Components/ShoppingSection";
-import { PackageSearch, ShoppingCart } from "lucide-react";
+import { PackageSearch, ShoppingCart, Search, Loader2, X } from "lucide-react";
 
 export default function ShoppingPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<div>Loading...</div>}>
       <FullShoppingSection />
     </Suspense>
   );
@@ -26,7 +25,6 @@ export default function ShoppingPage() {
 const FullShoppingSection = () => {
   const router = useRouter();
   const user = useAuth();
-
   const searchParams = useSearchParams();
 
   const [filters, setFilters] = useState({
@@ -37,12 +35,14 @@ const FullShoppingSection = () => {
       matchType: "exact",
     },
     brand: { value: searchParams.get("brand") || "", matchType: "exact" },
-
     searchTerm: {
       value: searchParams.get("search") || "",
       matchType: "contains",
     },
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isSearching, setIsSearching] = useState(false);
+  const itemsPerPage = 20;
 
   const [suggestions, setSuggestions] = useState({
     category: [],
@@ -52,11 +52,21 @@ const FullShoppingSection = () => {
   });
 
   const {
-    data: products,
-    isLoading,
+    data: productData,
     error,
-  } = useFirebaseQuery("products", filters);
-  const { cart, addToCart } = useCart(user.uid);
+    refetch,
+  } = useFirebaseQuery("products", {
+    filters: { ...filters, active: true },
+    page: currentPage,
+    limit: itemsPerPage,
+    searchField: "name",
+    searchTerm: filters.searchTerm.value,
+    orderByField: "createdAt",
+    orderDirection: "desc",
+  });
+
+  const { items: products, totalPages } = productData || {};
+  const { cart, addToCart } = useCart(user?.uid);
 
   useEffect(() => {
     const queryParams = new URLSearchParams();
@@ -68,7 +78,7 @@ const FullShoppingSection = () => {
     router.push(`/shop?${queryParams.toString()}`, undefined, {
       shallow: true,
     });
-  }, [filters]);
+  }, [filters, router]);
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -87,88 +97,88 @@ const FullShoppingSection = () => {
       ...prev,
       [key]: { value, matchType },
     }));
+    setCurrentPage(1);
   };
 
-  const filteredProducts = products || [];
+  const handleSearch = () => {
+    setIsSearching(true);
+    refetch().then(() => {
+      setIsSearching(false);
+    });
+  };
+
+  const clearSearch = () => {
+    handleFilterChange("searchTerm", "", "contains");
+  };
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:relative fixed w-full z-50 bg-[white] px-[20px] md:top-0 md:px-0 md:pb-0 top-[80px] pb-[10px]">
-        <Input
-          placeholder="Search products..."
-          value={filters.searchTerm.value}
-          onChange={(e) =>
-            handleFilterChange("searchTerm", e.target.value, "contains")
-          }
-        />
-        <Select
-          value={filters.category.value}
-          onValueChange={(value) => handleFilterChange("category", value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent>
-            {suggestions.category.map((cat) => (
-              <SelectItem key={cat} value={cat}>
-                {cat}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          value={filters.supplier.value}
-          onValueChange={(value) => handleFilterChange("supplier", value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Supplier" />
-          </SelectTrigger>
-          <SelectContent>
-            {suggestions.supplier.map((sup) => (
-              <SelectItem key={sup} value={sup}>
-                {sup}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          value={filters.manufacturer.value}
-          onValueChange={(value) => handleFilterChange("manufacturer", value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Manufacturer" />
-          </SelectTrigger>
-          <SelectContent>
-            {suggestions.manufacturer.map((man) => (
-              <SelectItem key={man} value={man}>
-                {man}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          value={filters.brand.value}
-          onValueChange={(value) => handleFilterChange("brand", value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Brand" />
-          </SelectTrigger>
-          <SelectContent>
-            {suggestions.brand.map((brand) => (
-              <SelectItem key={brand} value={brand}>
-                {brand}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sticky top-0 bg-white z-50 p-4">
+        <div className="col-span-1 md:col-span-2 lg:col-span-4 flex gap-2">
+          <div className="flex-grow relative">
+            <Input
+              placeholder="Search products..."
+              value={filters.searchTerm.value}
+              onChange={(e) =>
+                handleFilterChange("searchTerm", e.target.value, "contains")
+              }
+              className="pr-8"
+            />
+            {filters.searchTerm.value && (
+              <button
+                onClick={clearSearch}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1"
+              >
+                <X className="h-4 w-4 text-gray-500" />
+              </button>
+            )}
+          </div>
+          <Button
+            onClick={handleSearch}
+            disabled={isSearching}
+            className="bg-[#ffa459] hover:bg-[#fc7b12] text-white"
+          >
+            {isSearching ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Search className="h-4 w-4" />
+            )}
+            {!isSearching && "Search"}
+          </Button>
+        </div>
+        {["category", "supplier", "manufacturer", "brand"].map((filterKey) => (
+          <Select
+            key={filterKey}
+            value={filters[filterKey].value}
+            onValueChange={(value) => handleFilterChange(filterKey, value)}
+          >
+            <SelectTrigger>
+              <SelectValue
+                placeholder={
+                  filterKey.charAt(0).toUpperCase() + filterKey.slice(1)
+                }
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {suggestions[filterKey].map((item) => (
+                <SelectItem key={item} value={item}>
+                  {item}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ))}
       </div>
 
-      {isLoading ? (
-        <div>Loading...</div>
-      ) : error ? (
+      {error ? (
         <div>Error: {error.message}</div>
-      ) : filteredProducts.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-[300px] md:mt-0">
-          {filteredProducts.map((product) => (
+      ) : products && products.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {products.map((product) => (
             <ProductCard
               key={product.id}
               product={product}
@@ -183,7 +193,25 @@ const FullShoppingSection = () => {
         </div>
       )}
 
-      {cart.length > 0 && (
+      {totalPages > 1 && (
+        <div className="mt-4 flex justify-center space-x-2">
+          <Button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <span>{`Page ${currentPage} of ${totalPages}`}</span>
+          <Button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      )}
+
+      {cart && cart.length > 0 && (
         <Button
           className="fixed bottom-4 right-4 z-10 bg-[#ffa459] hover:bg-[#fc7b12]"
           onClick={() => router.push("/cart")}
