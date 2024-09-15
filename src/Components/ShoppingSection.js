@@ -54,12 +54,12 @@ export const ProductCard = ({ product, onAddToCart }) => {
           {product.description}
         </span>
         <div className="text-xs flex flex-col gap-1 mt-1">
-          <span className="flex items-center">
+          {/* <span className="flex items-center">
             Brand:
             <span className="ml-1 px-2 py-1 rounded-full bg-[#faf0e4]">
               {product.brand}
             </span>
-          </span>
+          </span> */}
           <span className="flex items-center">
             Supplier:
             <span className="ml-1 w-fit px-2 py-1 rounded-full bg-[#faf0e4] group relative text-nowrap overflow-hidden">
@@ -184,7 +184,7 @@ export default function ShoppingSection({ user }) {
           {!isSearching && "Search"}
         </Button>
       </div>
-      {isLoading ? (
+      {isLoading || isSearching ? (
         <div className="flex justify-center items-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-[#ffa459]" />
         </div>

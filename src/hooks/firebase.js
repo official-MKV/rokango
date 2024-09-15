@@ -23,28 +23,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/Components/ui/use-toast";
 import { db, auth } from "@/lib/firebase";
 
-function generateSearchOptions(searchTerm) {
-  const terms = searchTerm.toLowerCase().split(" ");
-  const options = [];
-
-  // Generate prefix matches
-  terms.forEach((term) => {
-    options.push(term);
-    options.push(term + "\uf8ff");
-  });
-
-  // Generate full word matches
-  options.push(searchTerm.toLowerCase());
-  options.push(searchTerm.toLowerCase() + "\uf8ff");
-
-  // Add capitalized versions
-  const capitalizedOptions = options.map(
-    (option) => option.charAt(0).toUpperCase() + option.slice(1)
-  );
-
-  return [...new Set([...options, ...capitalizedOptions])];
-}
-
 export function useFirebaseQuery(collectionName, options = {}) {
   const {
     filters = {},
@@ -72,29 +50,19 @@ export function useFirebaseQuery(collectionName, options = {}) {
 
       // Apply filters
       Object.entries(filters).forEach(([key, value]) => {
+        console.log(`${key}:${value}`);
         if (value !== undefined && value !== null && value !== "") {
           q = query(q, where(key, "==", value));
         }
       });
 
-      // Apply search if searchField and searchTerm are provided and not empty
+      // Apply search if searchField and searchTerm are provided
       if (searchField && searchTerm && searchTerm.trim() !== "") {
-        const searchOptions = generateSearchOptions(searchTerm.trim());
-        console.log("This shit is to die for");
-        console.log(searchOptions);
-        // Create an array of queries, one for each search option
-        const queries = searchOptions.map((option) =>
-          query(
-            q,
-            where(searchField, ">=", option),
-            where(searchField, "<", option + "\uf8ff")
-          )
-        );
-
-        // Combine all queries with an OR condition
+        const trimmedSearchTerm = searchTerm.trim().toLowerCase();
         q = query(
           q,
-          ...queries.map((subQuery) => subQuery._queryConstraints).flat()
+          where(searchField, ">=", trimmedSearchTerm),
+          where(searchField, "<=", trimmedSearchTerm + "\uf8ff")
         );
       }
 

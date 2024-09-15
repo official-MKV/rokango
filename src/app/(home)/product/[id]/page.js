@@ -9,6 +9,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/firebase";
+import { Loader2 } from "lucide-react";
 
 const ProductPage = () => {
   const pathname = usePathname();
@@ -79,7 +80,11 @@ const ProductPage = () => {
   }, [cart, product]);
 
   if (productLoading || reviewsLoading || authLoading || cartLoading)
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-[#ffa459]" />
+      </div>
+    );
   if (productError)
     return <div>Error loading product: {productError.message}</div>;
   if (reviewsError)

@@ -314,7 +314,7 @@ function NavLink({ item }) {
     fontWeight: isActive(path) ? "bold" : "normal",
   });
 
-  if (item.dropdown) {
+  if (item.subLinks) {
     return (
       <div
         className="relative group"
@@ -326,8 +326,8 @@ function NavLink({ item }) {
         </button>
 
         {isOpen && (
-          <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-            {item.dropdown.map((subItem) => (
+          <div className="absolute left-0 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+            {item.subLinks.map((subItem) => (
               <Link
                 key={subItem.href}
                 href={subItem.href}

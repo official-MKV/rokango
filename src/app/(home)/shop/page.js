@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useFirebaseQuery, useCart, useAuth } from "@/hooks/firebase";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
+import { Categories } from "@/data/Categories";
 import {
   Select,
   SelectContent,
@@ -28,17 +29,11 @@ const FullShoppingSection = () => {
   const searchParams = useSearchParams();
 
   const [filters, setFilters] = useState({
-    category: { value: searchParams.get("category") || "", matchType: "exact" },
-    supplier: { value: searchParams.get("supplier") || "", matchType: "exact" },
-    manufacturer: {
-      value: searchParams.get("manufacturer") || "",
-      matchType: "exact",
-    },
-    brand: { value: searchParams.get("brand") || "", matchType: "exact" },
-    searchTerm: {
-      value: searchParams.get("search") || "",
-      matchType: "contains",
-    },
+    category: searchParams.get("category") || "",
+    supplier: searchParams.get("supplier") || "",
+    manufacturer: searchParams.get("manufacturer") || "",
+    brand: searchParams.get("brand") || "",
+    searchTerm: searchParams.get("search") || "",
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [isSearching, setIsSearching] = useState(false);
@@ -83,7 +78,10 @@ const FullShoppingSection = () => {
   useEffect(() => {
     const fetchSuggestions = async () => {
       setSuggestions({
-        category: ["Electronics", "Clothing", "Books"],
+        category: Categories.reduce((a, item) => {
+          a.push(item.label);
+          return a;
+        }, []),
         supplier: ["Supplier A", "Supplier B"],
         manufacturer: ["Manufacturer X", "Manufacturer Y"],
         brand: ["Brand 1", "Brand 2"],
@@ -150,7 +148,7 @@ const FullShoppingSection = () => {
             {!isSearching && "Search"}
           </Button>
         </div>
-        {["category", "supplier", "manufacturer", "brand"].map((filterKey) => (
+        {["category", "supplier", "brand"].map((filterKey) => (
           <Select
             key={filterKey}
             value={filters[filterKey].value}

@@ -4,12 +4,27 @@
       "label": "Sales",
       "href": "/sales"
     },
-
     {
       "label": "Categories",
-      "href": "/categories"
+      "href": "/categories",
+      "subLinks": [
+        { "href": "/food-and-beverages", "label": "Food and Beverages" },
+        {
+          "href": "/personal-care-products",
+          "label": "Personal Care Products"
+        },
+        {
+          "href": "/household-cleaning-products",
+          "label": "Household Cleaning Products"
+        },
+        { "href": "/baby-products", "label": "Baby Products" },
+        { "href": "/beauty-and-cosmetics", "label": "Beauty and Cosmetics" },
+        {
+          "href": "/home-and-kitchen-supplies",
+          "label": "Home and Kitchen Supplies"
+        }
+      ]
     },
-
     {
       "label": "Orders",
       "href": "/orders"
