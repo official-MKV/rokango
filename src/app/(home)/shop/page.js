@@ -11,7 +11,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/Components/ui/select";
 import { ProductCard } from "@/Components/ShoppingSection";
 import {
   PackageSearch,
