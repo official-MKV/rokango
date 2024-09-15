@@ -8,19 +8,25 @@
       "label": "Categories",
       "href": "/categories",
       "subLinks": [
-        { "href": "/food-and-beverages", "label": "Food and Beverages" },
         {
-          "href": "/personal-care-products",
+          "href": "/shop/?category=food-and-beverages",
+          "label": "Food and Beverages"
+        },
+        {
+          "href": "/shop/?category=personal-care-products",
           "label": "Personal Care Products"
         },
         {
-          "href": "/household-cleaning-products",
+          "href": "/shop/?category=household-cleaning-products",
           "label": "Household Cleaning Products"
         },
-        { "href": "/baby-products", "label": "Baby Products" },
-        { "href": "/beauty-and-cosmetics", "label": "Beauty and Cosmetics" },
+        { "href": "/shop/?category=baby-products", "label": "Baby Products" },
         {
-          "href": "/home-and-kitchen-supplies",
+          "href": "/shop/?category=beauty-and-cosmetics",
+          "label": "Beauty and Cosmetics"
+        },
+        {
+          "href": "/shop/?category=home-and-kitchen-supplies",
           "label": "Home and Kitchen Supplies"
         }
       ]
