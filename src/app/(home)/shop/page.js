@@ -2,8 +2,8 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useFirebaseQuery, useCart, useAuth } from "@/hooks/firebase";
-import { Input } from "@/Components/ui/input";
-import { Button } from "@/Components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Categories } from "@/data/Categories";
 import {
   Select,
@@ -11,9 +11,18 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/Components/ui/select";
-import { ProductCard } from "@/Components/ShoppingSection";
-import { PackageSearch, ShoppingCart, Search, Loader2, X } from "lucide-react";
+} from "@/components/ui/select";
+import { ProductCard } from "@/components/ShoppingSection";
+import {
+  PackageSearch,
+  ShoppingCart,
+  Search,
+  Loader2,
+  X,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function ShoppingPage() {
   return (
@@ -31,18 +40,17 @@ const FullShoppingSection = () => {
   const [filters, setFilters] = useState({
     category: searchParams.get("category") || "",
     supplier: searchParams.get("supplier") || "",
-    manufacturer: searchParams.get("manufacturer") || "",
     brand: searchParams.get("brand") || "",
     searchTerm: searchParams.get("search") || "",
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [isSearching, setIsSearching] = useState(false);
+  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
   const itemsPerPage = 20;
 
   const [suggestions, setSuggestions] = useState({
     category: [],
     supplier: [],
-    manufacturer: [],
     brand: [],
   });
 
@@ -53,11 +61,15 @@ const FullShoppingSection = () => {
   } = useFirebaseQuery("products", {
     filters: { ...filters, active: true },
     page: currentPage,
-    limit: itemsPerPage,
+    pageSize: itemsPerPage,
     searchField: "name",
     searchTerm: filters.searchTerm.value,
     orderByField: "createdAt",
     orderDirection: "desc",
+  });
+
+  const { data: suppliersData } = useFirebaseQuery("users", {
+    filters: { role: "supplier" },
   });
 
   const { items: products, totalPages } = productData || {};
@@ -82,13 +94,16 @@ const FullShoppingSection = () => {
           a.push(item.label);
           return a;
         }, []),
-        supplier: ["Supplier A", "Supplier B"],
-        manufacturer: ["Manufacturer X", "Manufacturer Y"],
-        brand: ["Brand 1", "Brand 2"],
+        supplier:
+          suppliersData?.items?.reduce((list, supplier) => {
+            list.push(supplier.name);
+            return list;
+          }, []) || [],
+        brand: ["Brand 1", "Brand 2"], // Replace with actual brand data
       });
     };
     fetchSuggestions();
-  }, []);
+  }, [suppliersData]);
 
   const handleFilterChange = (key, value, matchType = "exact") => {
     setFilters((prev) => ({
@@ -113,10 +128,40 @@ const FullShoppingSection = () => {
     setCurrentPage(newPage);
   };
 
+  const FilterSelect = ({ filterKey }) => (
+    <Select
+      value={filters[filterKey].value}
+      onValueChange={(value) => handleFilterChange(filterKey, value)}
+    >
+      <SelectTrigger className="w-full">
+        <SelectValue
+          placeholder={filterKey.charAt(0).toUpperCase() + filterKey.slice(1)}
+        />
+      </SelectTrigger>
+      <SelectContent>
+        {suggestions[filterKey].map((item) => (
+          <SelectItem key={item} value={item}>
+            {item}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
+  const FiltersContent = () => (
+    <>
+      {["category", "supplier", "brand"].map((filterKey) => (
+        <div key={filterKey} className="mb-2">
+          <FilterSelect filterKey={filterKey} />
+        </div>
+      ))}
+    </>
+  );
+
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sticky top-0 bg-white z-50 p-4">
-        <div className="col-span-1 md:col-span-2 lg:col-span-4 flex gap-2">
+      <div className="mb-4 sticky top-0 bg-white z-50 p-4">
+        <div className="flex flex-col md:flex-row gap-2 mb-2">
           <div className="flex-grow relative">
             <Input
               placeholder="Search products..."
@@ -143,33 +188,31 @@ const FullShoppingSection = () => {
             {isSearching ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <Search className="h-4 w-4" />
+              <Search className="h-4 w-4 mr-2" />
             )}
             {!isSearching && "Search"}
           </Button>
         </div>
-        {["category", "supplier", "brand"].map((filterKey) => (
-          <Select
-            key={filterKey}
-            value={filters[filterKey].value}
-            onValueChange={(value) => handleFilterChange(filterKey, value)}
-          >
-            <SelectTrigger>
-              <SelectValue
-                placeholder={
-                  filterKey.charAt(0).toUpperCase() + filterKey.slice(1)
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {suggestions[filterKey].map((item) => (
-                <SelectItem key={item} value={item}>
-                  {item}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ))}
+
+        {/* Desktop Filters */}
+        <div className="hidden md:grid md:grid-cols-3 gap-2">
+          <FiltersContent />
+        </div>
+
+        {/* Mobile Filters */}
+        <div className="md:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="w-full">
+                Filters
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[80vh]">
+              <FiltersContent />
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
 
       {error ? (
