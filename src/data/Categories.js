@@ -1,4 +1,4 @@
-export const Categories = [
+export const CategoriesLocal = [
   { value: "Food and Beverages", label: "Food and Beverages" },
   { value: "Personal Care Products", label: "Personal Care Products" },
   {

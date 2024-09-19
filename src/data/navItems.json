@@ -6,7 +6,7 @@
     },
     {
       "label": "Categories",
-      "href": "/categories",
+      "href": "/",
       "subLinks": [
         {
           "href": "/shop/?category=food-and-beverages",

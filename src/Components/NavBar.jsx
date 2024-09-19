@@ -9,6 +9,8 @@ import { addDoc, collection } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 import { Button } from "@/Components/ui/button";
+import { motion } from "framer-motion";
+
 import { useCart } from "@/hooks/firebase";
 import {
   PackageSearch,
@@ -19,6 +21,8 @@ import {
   LogOut,
   Menu,
   X,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { signOut as firebaseSignOut } from "firebase/auth";
 import {
@@ -30,6 +34,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/Components/ui/alert-dialog";
+import { sub } from "date-fns";
+import { MotionConfig } from "framer-motion";
 
 export function NavBar() {
   const router = useRouter();
@@ -38,6 +44,14 @@ export function NavBar() {
   const [checkingOut, setCheckingOut] = useState(false);
   const [showOrderPopup, setShowOrderPopup] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openDropdowns, setOpenDropdowns] = useState({});
+
+  const toggleDropdown = (key) => {
+    setOpenDropdowns((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
 
   const {
     cart,
@@ -211,19 +225,49 @@ export function NavBar() {
           </button>
         </div>
       </div>
-
       {mobileMenuOpen && (
         <div className="md:hidden bg-white shadow-lg">
-          {allNavItems.map((item, key) => (
-            <Link
-              key={key}
-              href={item.href}
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {allNavItems.map((item, key) => {
+            return (
+              <div key={key}>
+                <div
+                  className="flex justify-between items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() =>
+                    item.subLinks
+                      ? toggleDropdown(key)
+                      : item.href && router.push(item.href)
+                  }
+                >
+                  {item.label}
+                  {item.subLinks &&
+                    (openDropdowns[key] ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    ))}
+                </div>
+                {item.subLinks && openDropdowns[key] && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="flex flex-col w-full pl-4"
+                  >
+                    {item.subLinks.map((sublink, index) => (
+                      <Link
+                        key={index}
+                        href={sublink.href}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {sublink.label}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 

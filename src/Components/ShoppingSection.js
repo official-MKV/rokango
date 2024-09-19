@@ -26,8 +26,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDebounce } from "use-debounce";
-import { addDoc, collection } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { useSupabaseQuery } from "@/hooks/supabase";
 
 export const ProductCard = ({ product, onAddToCart }) => {
   const router = useRouter();
@@ -97,7 +96,7 @@ export default function ShoppingSection({ user }) {
     error,
     isLoading,
     refetch,
-  } = useFirebaseQuery("products", {
+  } = useSupabaseQuery("products", {
     filters,
     page: currentPage,
     pageSize: itemsPerPage,

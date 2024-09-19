@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useFirebaseQuery, useCart, useAuth } from "@/hooks/firebase";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
-import { Categories } from "@/data/Categories";
+import { CategoriesLocal } from "@/data/Categories";
 import {
   Select,
   SelectContent,
@@ -22,6 +22,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { useSupabaseQuery } from "@/hooks/supabase";
 import { Sheet, SheetContent, SheetTrigger } from "@/Components/ui/sheet";
 
 export default function ShoppingPage() {
@@ -38,18 +39,19 @@ const FullShoppingSection = () => {
   const searchParams = useSearchParams();
 
   const [filters, setFilters] = useState({
-    category: searchParams.get("category") || "",
+    Categories: searchParams.get("categories") || "",
     supplier: searchParams.get("supplier") || "",
     brand: searchParams.get("brand") || "",
     searchTerm: searchParams.get("search") || "",
+    active: true,
   });
+
   const [currentPage, setCurrentPage] = useState(1);
   const [isSearching, setIsSearching] = useState(false);
-  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
   const itemsPerPage = 20;
 
   const [suggestions, setSuggestions] = useState({
-    category: [],
+    Categories: [],
     supplier: [],
     brand: [],
   });
@@ -58,13 +60,12 @@ const FullShoppingSection = () => {
     data: productData,
     error,
     refetch,
-  } = useFirebaseQuery("products", {
-    filters: { ...filters, active: true },
+  } = useSupabaseQuery("products", {
+    filters,
     page: currentPage,
     pageSize: itemsPerPage,
     searchField: "name",
-    searchTerm: filters.searchTerm.value,
-    orderByField: "createdAt",
+    searchTerm: filters.searchTerm,
     orderDirection: "desc",
   });
 
@@ -77,7 +78,7 @@ const FullShoppingSection = () => {
 
   useEffect(() => {
     const queryParams = new URLSearchParams();
-    Object.entries(filters).forEach(([key, { value }]) => {
+    Object.entries(filters).forEach(([key, value]) => {
       if (value) {
         queryParams.set(key, value);
       }
@@ -90,7 +91,7 @@ const FullShoppingSection = () => {
   useEffect(() => {
     const fetchSuggestions = async () => {
       setSuggestions({
-        category: Categories.reduce((a, item) => {
+        Categories: CategoriesLocal.reduce((a, item) => {
           a.push(item.label);
           return a;
         }, []),
@@ -105,10 +106,10 @@ const FullShoppingSection = () => {
     fetchSuggestions();
   }, [suppliersData]);
 
-  const handleFilterChange = (key, value, matchType = "exact") => {
+  const handleFilterChange = (key, value) => {
     setFilters((prev) => ({
       ...prev,
-      [key]: { value, matchType },
+      [key]: key === "Categories" ? [value] : value,
     }));
     setCurrentPage(1);
   };
@@ -121,7 +122,7 @@ const FullShoppingSection = () => {
   };
 
   const clearSearch = () => {
-    handleFilterChange("searchTerm", "", "contains");
+    handleFilterChange("searchTerm", "");
   };
 
   const handlePageChange = (newPage) => {
@@ -130,7 +131,7 @@ const FullShoppingSection = () => {
 
   const FilterSelect = ({ filterKey }) => (
     <Select
-      value={filters[filterKey].value}
+      value={filters[filterKey]}
       onValueChange={(value) => handleFilterChange(filterKey, value)}
     >
       <SelectTrigger className="w-full">
@@ -147,20 +148,18 @@ const FullShoppingSection = () => {
       </SelectContent>
     </Select>
   );
-
   const FiltersContent = () => (
     <>
-      {["category", "supplier", "brand"].map((filterKey) => (
+      {["Categories", "supplier", "brand"].map((filterKey) => (
         <div key={filterKey} className="mb-2">
           <FilterSelect filterKey={filterKey} />
         </div>
       ))}
     </>
   );
-
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-4 sticky top-0 bg-white z-50 p-4">
+      <div className="mb-4 sticky top-0 bg-white z-30 p-4">
         <div className="flex flex-col md:flex-row gap-2 mb-2">
           <div className="flex-grow relative">
             <Input
