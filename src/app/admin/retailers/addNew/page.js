@@ -4,9 +4,15 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 
 export default function AddRetailerForm() {
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
   const [formData, setFormData] = useState({
     name: "",
     businessName: "",
@@ -91,14 +97,30 @@ export default function AddRetailerForm() {
           onChange={handleChange}
           required
         />
-        <Input
-          name="password"
-          type="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
+        <div className="relative">
+          <Input
+            type={showPassword ? "text" : "password"}
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Enter your password"
+            className=""
+            required
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="absolute right-0 top-0 h-full px-3"
+            onClick={togglePasswordVisibility}
+          >
+            {showPassword ? (
+              <EyeOffIcon className="h-4 w-4" />
+            ) : (
+              <EyeIcon className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
         <Input name="picture" type="file" onChange={handleFileChange} />
         <Button
           type="submit"
