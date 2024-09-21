@@ -19,6 +19,16 @@ import { Button } from "@/Components/ui/button";
 import { useParams } from "next/navigation";
 import { Switch } from "@/Components/ui/switch";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/Components/ui/alert-dialog";
 
 export default function UserDetailPage() {
   const params = useParams();
@@ -30,6 +40,40 @@ export default function UserDetailPage() {
   const [editedUser, setEditedUser] = useState(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+
+  const handleDelete = async () => {
+    try {
+      const response = await fetch("/api/deleteSupplier", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ supplierId: userId }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: "Supplier account and related data have been deleted",
+        });
+        router.push("/suppliers");
+        queryClient.invalidateQueries(["users", { role: "supplier" }]);
+      } else {
+        throw new Error(result.message || "Deletion failed");
+      }
+    } catch (error) {
+      console.error("Error deleting retailer:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete retailer account",
+        variant: "destructive",
+      });
+    }
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -98,7 +142,7 @@ export default function UserDetailPage() {
     const productsSnapshot = await getDocs(
       query(collection(db, "products"), where("supplier.id", "==", userId))
     );
-    console.log(userId);
+
     const batch = writeBatch(db);
     productsSnapshot.docs.forEach((productDoc) => {
       batch.update(productDoc.ref, { active: state });
@@ -197,26 +241,63 @@ export default function UserDetailPage() {
           <Label htmlFor="active">Active</Label>
         </div>
       </div>
-      <div className="flex justify-between mt-6">
+      <div className="flex flex-col space-y-4 mt-6">
         {editMode && (
-          <Button onClick={handleSave} style={{ backgroundColor: "#ffa459" }}>
+          <Button
+            onClick={handleSave}
+            className="bg-[#ffa459] hover:bg-[#ff9040] text-white"
+          >
             Save Changes
           </Button>
         )}
         {user.active ? (
-          <Button onClick={handleDeactivate} variant="destructive">
+          <Button
+            onClick={handleDeactivate}
+            className="border-2 w-fit border-red-500 bg-red-50 text-red-500 hover:bg-red-100"
+          >
             Deactivate Account
           </Button>
         ) : (
           <Button
             onClick={handleActivate}
-            variant="primary"
-            className="bg-green-500 text-white"
+            className="bg-green-200/50 w-fit border-green-500 border-2 hover:bg-green-200 text-green-500"
           >
-            Activate
+            Activate Account
           </Button>
         )}
       </div>
+
+      <div className="mt-12">
+        <Button
+          onClick={() => setShowDeleteDialog(true)}
+          className="w-fit bg-red-600 hover:bg-red-700 text-white font-bold py-3"
+        >
+          Delete Account
+        </Button>
+      </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              supplier's account and remove all associated data, including
+              product listings, order history, and any other related information
+              from our system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
