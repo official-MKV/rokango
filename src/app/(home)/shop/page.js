@@ -42,9 +42,12 @@ const FullShoppingSection = () => {
     Categories: searchParams.get("categories") || "",
     supplier: searchParams.get("supplier") || "",
     brand: searchParams.get("brand") || "",
-    searchTerm: searchParams.get("search") || "",
     active: true,
   });
+  const [searchTerm, setSearchTerm] = useState(
+    searchParams.get("search") || ""
+  );
+  const [searchInputValue, setSearchInputValue] = useState(searchTerm);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [isSearching, setIsSearching] = useState(false);
@@ -65,7 +68,7 @@ const FullShoppingSection = () => {
     page: currentPage,
     pageSize: itemsPerPage,
     searchField: "name",
-    searchTerm: filters.searchTerm,
+    searchTerm,
     orderDirection: "desc",
   });
 
@@ -83,10 +86,13 @@ const FullShoppingSection = () => {
         queryParams.set(key, value);
       }
     });
+    if (searchTerm) {
+      queryParams.set("search", searchTerm);
+    }
     router.push(`/shop?${queryParams.toString()}`, undefined, {
       shallow: true,
     });
-  }, [filters, router]);
+  }, [filters, searchTerm, router]);
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -116,13 +122,16 @@ const FullShoppingSection = () => {
 
   const handleSearch = () => {
     setIsSearching(true);
+    setSearchTerm(searchInputValue);
+    setCurrentPage(1);
     refetch().then(() => {
       setIsSearching(false);
     });
   };
 
   const clearSearch = () => {
-    handleFilterChange("searchTerm", "");
+    setSearchInputValue("");
+    setSearchTerm("");
   };
 
   const handlePageChange = (newPage) => {
@@ -148,6 +157,7 @@ const FullShoppingSection = () => {
       </SelectContent>
     </Select>
   );
+
   const FiltersContent = () => (
     <>
       {["Categories", "supplier", "brand"].map((filterKey) => (
@@ -157,6 +167,7 @@ const FullShoppingSection = () => {
       ))}
     </>
   );
+
   return (
     <div className="container mx-auto p-4">
       <div className="mb-4 sticky top-0 bg-white z-30 p-4">
@@ -164,13 +175,11 @@ const FullShoppingSection = () => {
           <div className="flex-grow relative">
             <Input
               placeholder="Search products..."
-              value={filters.searchTerm.value}
-              onChange={(e) =>
-                handleFilterChange("searchTerm", e.target.value, "contains")
-              }
+              value={searchInputValue}
+              onChange={(e) => setSearchInputValue(e.target.value)}
               className="pr-8"
             />
-            {filters.searchTerm.value && (
+            {searchInputValue && (
               <button
                 onClick={clearSearch}
                 className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1"
