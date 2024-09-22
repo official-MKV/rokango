@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/Components/ui/select";
 import { ProductCard } from "@/Components/ShoppingSection";
+import Loader from "@/Components/Loader";
 import {
   PackageSearch,
   ShoppingCart,
@@ -27,7 +28,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/Components/ui/sheet";
 
 export default function ShoppingPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<Loader />}>
       <FullShoppingSection />
     </Suspense>
   );
