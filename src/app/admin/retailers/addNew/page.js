@@ -30,6 +30,7 @@ export default function AddRetailerForm() {
         body: formData,
       });
       if (!response.ok) {
+        console.log(await response.json());
         throw new Error("Failed to add retailer");
       }
       return response.json();

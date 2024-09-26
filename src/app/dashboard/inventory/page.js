@@ -40,9 +40,11 @@ import { Badge } from "@/Components/ui/badge";
 import { Textarea } from "@/Components/ui/textarea";
 import { useAuth, useFirebaseQuery } from "@/hooks/firebase";
 import { useQueryClient } from "@tanstack/react-query";
-import { Categories } from "../../../data/Categories";
+import { CategoriesLocal } from "../../../data/Categories";
 import { Eye, Trash2, Edit } from "lucide-react";
 import { Switch } from "@/Components/ui/switch";
+import Loader from "@/Components/Loader";
+import { useSupabaseQuery } from "@/hooks/supabase";
 
 const InventoryPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -58,15 +60,19 @@ const InventoryPage = () => {
 
   const {
     data: productData,
-    isLoading,
     error,
-  } = useFirebaseQuery("products", {
-    filters: { "supplier.id": user?.uid },
+    isLoading,
+    refetch,
+  } = useSupabaseQuery("products", {
+    filter: { "supplier.id": user?.uid },
     page: currentPage,
-    limit: itemsPerPage,
+    pageSize: itemsPerPage,
     searchField: "name",
-    searchTerm: "",
+    searchTerm,
+    orderByField: "name",
+    orderDirection: "asc",
   });
+
   const { items: products, totalPages } = productData || {};
 
   const filteredProducts = products?.filter(
@@ -289,7 +295,7 @@ const InventoryPage = () => {
             <div>
               <Label htmlFor="Categories">Categories</Label>
               <MultiSelect
-                options={Categories}
+                options={CategoriesLocal}
                 value={selected}
                 onChange={handleCategoriesChange}
                 labelledBy="Select"
@@ -466,7 +472,7 @@ const InventoryPage = () => {
                 <div>
                   <Label htmlFor="Categories">Categories</Label>
                   <MultiSelect
-                    options={Categories}
+                    options={CategoriesLocal}
                     value={formInputs.Categories.map((cat) => ({
                       label: cat,
                       value: cat,
@@ -587,7 +593,7 @@ const InventoryPage = () => {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <Loader />;
   }
 
   if (error) {
