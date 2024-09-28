@@ -39,9 +39,22 @@ export default function SupplierSignupForm() {
       }
       return response.json();
     },
-    onSuccess: () => {
-      signInWithEmailAndPassword(auth, email, password);
-      router.push("/");
+    onSuccess: async (data) => {
+      try {
+        await signInWithEmailAndPassword(
+          auth,
+          formData.email,
+          formData.password
+        );
+
+        router.push("/");
+      } catch (error) {
+        console.error("Error signing in after signup:", error);
+        router.push("/login");
+        // alert(
+        //   "Account created successfully, but there was an issue signing in. Please try logging in manually."
+        // );
+      }
     },
   });
 
