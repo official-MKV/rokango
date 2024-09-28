@@ -64,7 +64,7 @@ const InventoryPage = () => {
     isLoading,
     refetch,
   } = useSupabaseQuery("products", {
-    filter: { "supplier.id": user?.uid },
+    filters: { "supplier.id": user?.uid },
     page: currentPage,
     pageSize: itemsPerPage,
     searchField: "name",

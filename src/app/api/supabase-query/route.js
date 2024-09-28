@@ -32,6 +32,10 @@ export async function POST(request) {
       } else if (key === "active") {
         // Handle boolean values
         query = query.eq(key, value === "true" || value === true);
+      } else if (key.includes(".")) {
+        // Handle JSONB fields
+        const [jsonField, jsonKey] = key.split(".");
+        query = query.eq(`${jsonField}->>${jsonKey}`, value);
       } else {
         query = query.eq(key, value);
       }
