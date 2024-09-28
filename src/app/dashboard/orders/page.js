@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Switch } from "@/Components/ui/switch";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
+import Loader from "@/Components/Loader";
 import {
   Dialog,
   DialogContent,
@@ -248,7 +249,7 @@ const OrdersPage = () => {
         </Button>
       </div>
       {isLoading ? (
-        <div className="text-center p-4">Loading orders...</div>
+        <Loader />
       ) : error ? (
         <div className="text-center p-4 text-red-500">
           Error: {error.message}

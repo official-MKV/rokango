@@ -215,7 +215,7 @@ const page = () => {
                     trustworthiness, and enjoy the benefits of connecting with
                     customers who prioritize reliability.
                   </p>
-                  <a href="/register">
+                  <a href="/register/supplier">
                     <Button className="bg-white text-[#ffa459] hover:bg-gray-100 font-semibold py-2 px-6 rounded-full inline-flex items-center">
                       Register
                       <ArrowRight className="ml-2 w-5 h-5" />

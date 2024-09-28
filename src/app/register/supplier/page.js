@@ -2,17 +2,19 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, CheckCircle, XCircle } from "lucide-react";
+import { Progress } from "@/Components/ui/progress";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export default function SupplierSignupForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formProgress, setFormProgress] = useState(0);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -21,13 +23,14 @@ export default function SupplierSignupForm() {
     email: "",
     businessAddress: "",
     password: "",
+    confirmPassword: "",
     picture: null,
     active: true,
   });
 
   const signupMutation = useMutation({
     mutationFn: async (formData) => {
-      const response = await fetch("/api/signup", {
+      const response = await fetch("/api/addSupplier", {
         method: "POST",
         body: formData,
       });
@@ -37,112 +40,114 @@ export default function SupplierSignupForm() {
       return response.json();
     },
     onSuccess: () => {
-      router.push("/welcome");
+      signInWithEmailAndPassword(auth, email, password);
+      router.push("/");
     },
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({ ...prevState, [name]: value }));
+    updateFormProgress();
   };
 
   const handleFileChange = (e) => {
     setFormData((prevState) => ({ ...prevState, picture: e.target.files[0] }));
+    updateFormProgress();
+  };
+
+  const updateFormProgress = () => {
+    const totalFields = Object.keys(formData).length;
+    const filledFields = Object.values(formData).filter(
+      (value) => value !== "" && value !== null
+    ).length;
+    setFormProgress((filledFields / totalFields) * 100);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
     const formDataToSend = new FormData();
     for (const key in formData) {
-      formDataToSend.append(key, formData[key]);
+      if (key !== "confirmPassword") {
+        formDataToSend.append(key, formData[key]);
+      }
     }
     signupMutation.mutate(formDataToSend);
   };
 
+  const isPasswordValid = formData.password.length >= 6;
+  const doPasswordsMatch =
+    formData.password === formData.confirmPassword && formData.password !== "";
+
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="max-w-lg w-full bg-white shadow-lg rounded-lg p-8">
-        <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 p-4"
+    >
+      <div className="max-w-lg w-full bg-white shadow-2xl rounded-lg p-8">
+        <motion.h1
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="text-3xl font-bold text-center mb-6 text-gray-800"
+        >
           Create Your Supplier Account
-        </h1>
+        </motion.h1>
         <p className="text-center text-gray-500 mb-6">
           Join us and streamline your business by managing your orders,
           products, and more.
         </p>
 
+        <Progress
+          value={formProgress}
+          className="mb-6 text-[#ffa458]  [&>div]:bg-orange-400"
+        />
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">
-              Full Name
-            </label>
-            <Input
-              name="name"
-              placeholder="Enter your full name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="w-full"
-            />
-          </div>
+          {[
+            { label: "Full Name", name: "name", type: "text" },
+            { label: "Business Name", name: "businessName", type: "text" },
+            { label: "Phone Number", name: "phone", type: "tel" },
+            { label: "Email Address", name: "email", type: "email" },
+            {
+              label: "Business Address",
+              name: "businessAddress",
+              type: "text",
+            },
+          ].map((field) => (
+            <motion.div
+              key={field.name}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <label className="block text-gray-700 font-semibold mb-2">
+                {field.label}
+              </label>
+              <Input
+                name={field.name}
+                type={field.type}
+                placeholder={`Enter your ${field.label.toLowerCase()}`}
+                value={formData[field.name]}
+                onChange={handleChange}
+                required
+                className="w-full"
+              />
+            </motion.div>
+          ))}
 
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">
-              Business Name
-            </label>
-            <Input
-              name="businessName"
-              placeholder="Enter your business name"
-              value={formData.businessName}
-              onChange={handleChange}
-              required
-              className="w-full"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">
-              Phone Number
-            </label>
-            <Input
-              name="phone"
-              placeholder="Enter your phone number"
-              value={formData.phone}
-              onChange={handleChange}
-              required
-              className="w-full"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">
-              Email Address
-            </label>
-            <Input
-              name="email"
-              type="email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">
-              Business Address
-            </label>
-            <Input
-              name="businessAddress"
-              placeholder="Enter your business address"
-              value={formData.businessAddress}
-              onChange={handleChange}
-              required
-              className="w-full"
-            />
-          </div>
-
-          <div className="relative">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+            className="relative"
+          >
             <label className="block text-gray-700 font-semibold mb-2">
               Password
             </label>
@@ -153,24 +158,81 @@ export default function SupplierSignupForm() {
               value={formData.password}
               onChange={handleChange}
               required
-              className="w-full"
+              className="w-full pr-10"
             />
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="absolute right-0 top-0 h-full px-3"
-              onClick={togglePasswordVisibility}
+              className="absolute right-0 top-7 h-full px-3"
+              onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? (
-                <EyeOffIcon className="h-4 w-4 text-gray-600" />
+                <EyeOffIcon className="h-4 w-4" />
               ) : (
-                <EyeIcon className="h-4 w-4 text-gray-600" />
+                <EyeIcon className="h-4 w-4" />
               )}
             </Button>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+            className="relative"
+          >
+            <label className="block text-gray-700 font-semibold mb-2">
+              Confirm Password
+            </label>
+            <Input
+              type={showConfirmPassword ? "text" : "password"}
+              name="confirmPassword"
+              placeholder="Confirm your password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+              className="w-full pr-10"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute right-0 top-7 h-full px-3"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {showConfirmPassword ? (
+                <EyeOffIcon className="h-4 w-4" />
+              ) : (
+                <EyeIcon className="h-4 w-4" />
+              )}
+            </Button>
+          </motion.div>
+
+          <div className="text-sm text-gray-600">
+            <p>Password must be at least 6 characters long.</p>
+            <div className="flex items-center mt-2">
+              {isPasswordValid ? (
+                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+              ) : (
+                <XCircle className="h-4 w-4 text-red-500 mr-2" />
+              )}
+              <span>Password meets requirements</span>
+            </div>
+            <div className="flex items-center mt-2">
+              {doPasswordsMatch ? (
+                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+              ) : (
+                <XCircle className="h-4 w-4 text-red-500 mr-2" />
+              )}
+              <span>Passwords match</span>
+            </div>
           </div>
 
-          <div>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
             <label className="block text-gray-700 font-semibold mb-2">
               Upload Business Logo
             </label>
@@ -180,28 +242,34 @@ export default function SupplierSignupForm() {
               onChange={handleFileChange}
               className="w-full"
             />
-          </div>
+          </motion.div>
 
-          <Button
-            type="submit"
-            disabled={signupMutation.isPending}
-            className="w-full py-3 bg-[#ffa459] hover:bg-[#fc8f37] text-white font-bold rounded-lg"
-          >
-            {signupMutation.isPending
-              ? "Signing Up..."
-              : "Create Supplier Account"}
-          </Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              type="submit"
+              disabled={
+                signupMutation.isPending ||
+                !isPasswordValid ||
+                !doPasswordsMatch
+              }
+              className="w-full py-3 bg-[#ffa459] hover:bg-[#fc8f37] text-white font-bold rounded-lg transition-colors duration-300"
+            >
+              {signupMutation.isPending
+                ? "Signing Up..."
+                : "Create Supplier Account"}
+            </Button>
+          </motion.div>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-500">
           Back to
-          <a href="/" className="text-[#ffa459]">
+          <a href="/" className="text-[#ffa459] hover:underline">
             {" "}
             Home Page
           </a>
           .
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }
