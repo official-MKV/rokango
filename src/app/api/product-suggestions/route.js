@@ -1,4 +1,3 @@
-// app/api/product-suggestions/route.js
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -20,9 +19,9 @@ export async function GET(request) {
 
   try {
     const { data, error } = await supabase
-      .from("products")
+      .from("product_images")
       .select("id, name, image_url")
-      .ilike("name", `${query}%`)
+      .ilike("name", `%${query}%`)
       .limit(5);
 
     if (error) throw error;

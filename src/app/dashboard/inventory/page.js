@@ -155,10 +155,13 @@ const InventoryPage = () => {
       description: "",
       Categories: [],
       image: null,
-      supplier: { name: user?.businesName, id: user?.uid },
+      supplier: { name: user?.businessName, id: user?.uid },
     });
     const [isLoading, setIsLoading] = useState(false);
     const [selected, setSelected] = useState([]);
+    const [suggestions, setSuggestions] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const queryClient = useQueryClient();
 
     const handleInputChange = (e) => {
       const { name, value } = e.target;
@@ -173,9 +176,42 @@ const InventoryPage = () => {
       }));
     };
 
+    const handleSearchChange = async (value) => {
+      setSearchTerm(value);
+      setNewProduct((prev) => ({ ...prev, name: value }));
+      if (value.length > 1) {
+        try {
+          const response = await fetch(
+            `/api/product-suggestions?query=${encodeURIComponent(value)}`
+          );
+          if (!response.ok) throw new Error("Failed to fetch suggestions");
+          const data = await response.json();
+          setSuggestions(data);
+        } catch (error) {
+          console.error("Error fetching suggestions:", error);
+          setSuggestions([]);
+        }
+      } else {
+        setSuggestions([]);
+      }
+    };
+
+    const handleProductSelection = (selectedProduct) => {
+      setNewProduct({
+        ...newProduct,
+        name: selectedProduct.name,
+        image: selectedProduct.image_url || null,
+        supplier: { name: user?.businessName, id: user?.uid },
+      });
+      setSearchTerm(selectedProduct.name);
+      setSuggestions([]);
+    };
+
     const handleImageUpload = (e) => {
       const file = e.target.files[0];
-      setNewProduct((prev) => ({ ...prev, image: file }));
+      if (file) {
+        setNewProduct((prev) => ({ ...prev, image: file }));
+      }
     };
 
     const handleSubmit = async (e) => {
@@ -183,8 +219,8 @@ const InventoryPage = () => {
       setIsLoading(true);
 
       try {
-        let imageUrl = "";
-        if (newProduct.image) {
+        let imageUrl = newProduct.image;
+        if (newProduct.image instanceof File) {
           const imageRef = ref(
             storage,
             `product-images/${Date.now()}_${newProduct.image.name}`
@@ -201,10 +237,8 @@ const InventoryPage = () => {
           supplier: { name: user.businessName, id: user.uid },
           createdAt: new Date(),
         };
-        console.log(productData);
 
         const docRef = await addDoc(collection(db, "products"), productData);
-        delete productData.image;
         queryClient.invalidateQueries(["products", user.businessName]);
         toast({
           title: "Product Added",
@@ -218,9 +252,11 @@ const InventoryPage = () => {
           quantity: "",
           inStock: true,
           description: "",
-          categories: [],
+          Categories: [],
           image: null,
         });
+        setSelected([]);
+        setSearchTerm("");
       } catch (error) {
         console.error("Error adding product: ", error);
         toast({
@@ -249,15 +285,35 @@ const InventoryPage = () => {
             <DialogTitle>Add New Product</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="name">Name</Label>
+            <div className="relative">
+              <Label htmlFor="name">Product Name</Label>
               <Input
                 id="name"
                 name="name"
-                value={newProduct.name}
-                onChange={handleInputChange}
-                required
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="Search for a product or enter new name"
               />
+              {suggestions.length > 0 && (
+                <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                  {suggestions.map((suggestion) => (
+                    <li
+                      key={suggestion.id}
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
+                      onClick={() => handleProductSelection(suggestion)}
+                    >
+                      {suggestion.image_url && (
+                        <img
+                          src={suggestion.image_url}
+                          alt={suggestion.name}
+                          className="w-10 h-10 object-cover rounded mr-2"
+                        />
+                      )}
+                      <span>{suggestion.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
             <div>
               <Label htmlFor="brand">Brand</Label>
@@ -320,6 +376,20 @@ const InventoryPage = () => {
                 accept="image/*"
               />
             </div>
+            {newProduct.image && (
+              <div>
+                <Label>Current Image</Label>
+                <img
+                  src={
+                    newProduct.image instanceof File
+                      ? URL.createObjectURL(newProduct.image)
+                      : newProduct.image
+                  }
+                  alt={newProduct.name}
+                  className="w-full h-48 object-cover rounded mt-2"
+                />
+              </div>
+            )}
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="inStock"
@@ -343,7 +413,6 @@ const InventoryPage = () => {
       </Dialog>
     );
   };
-
   const ProductDetailsDialog = ({ product }) => {
     if (!product) return null;
     const [formInputs, setFormInputs] = useState({ ...product });
