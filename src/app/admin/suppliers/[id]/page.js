@@ -60,7 +60,7 @@ export default function UserDetailPage() {
           title: "Success",
           description: "Supplier account and related data have been deleted",
         });
-        router.push("/suppliers");
+        router.push("/admin/suppliers");
         queryClient.invalidateQueries(["users", { role: "supplier" }]);
       } else {
         throw new Error(result.message || "Deletion failed");
@@ -181,13 +181,13 @@ export default function UserDetailPage() {
       queryClient.invalidateQueries(["users", { role: "supplier" }]);
       toast({
         title: "Success",
-        description: "User account deactivated",
+        description: "User account Activated",
       });
     } catch (error) {
-      console.error("Error deactivating user:", error);
+      console.error("Error activating user:", error);
       toast({
         title: "Error",
-        description: "Failed to deactivate user account",
+        description: "Failed to activate user account",
         variant: "destructive",
       });
     }

@@ -5,10 +5,12 @@ import { useMutation } from "@tanstack/react-query";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function AddSupplierForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const queryClient = useQueryClient();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -37,6 +39,7 @@ export default function AddSupplierForm() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries(["users", { role: "supplier" }]);
       router.push("/admin/suppliers");
     },
   });

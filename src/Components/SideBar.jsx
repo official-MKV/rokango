@@ -59,7 +59,6 @@ const SideBar = () => {
     }
 
     if (user?.uid) {
-      console.log(user.uid);
       const q = query(
         collection(db, "notifications"),
         where("recipient", "==", user.uid),
