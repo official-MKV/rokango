@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/Components/ui/dialog";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "@/lib/firebase"; // Ensure this path is correct for your Firebase configuration
 
