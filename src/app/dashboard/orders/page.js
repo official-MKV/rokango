@@ -165,7 +165,7 @@ const OrderCard = ({ order, onToggleDelivered }) => {
 };
 
 const OrdersPage = () => {
-  const user = useAuth();
+  const { user } = useAuth();
   const [filters, setFilters] = useState({ retailer_name: "", order_id: "" });
   const [showRecent, setShowRecent] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -176,12 +176,13 @@ const OrdersPage = () => {
     isLoading,
     error,
   } = useFirebaseQuery("orders", {
-    filters: { "supplier.id": user?.uid },
+    filters: { supplier: user?.id },
     page: currentPage,
     limit: itemsPerPage,
     searchField: "name",
     searchTerm: "",
   });
+
   const { items: orders, totalPages } = ordersData || {};
   const queryClient = useQueryClient();
 
@@ -265,7 +266,7 @@ const OrdersPage = () => {
           ))}
         </div>
       ) : (
-        <div className="text-center p-4 bg-gray-100 rounded-md">
+        <div className="text-center p-4  text-[#ffa458] rounded-md">
           No orders found.
         </div>
       )}

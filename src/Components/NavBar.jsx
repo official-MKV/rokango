@@ -187,11 +187,10 @@ export function NavBar() {
                 className=" md:flex items-center cursor-pointer py-[2px] pl-[2px] gap-3 hover:bg-[#ffa459] rounded-full pr-[2px]"
               >
                 <Avatar className=" ">
-                  <AvatarImage
-                    src="https://github.com/shadcn.png"
-                    alt="@shadcn"
-                  />
-                  <AvatarFallback>CN</AvatarFallback>
+                  <AvatarImage src={user?.picture} alt={user?.businessName} />
+                  <AvatarFallback>
+                    {user?.businessName?.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
                 <div className=" hidden md:flex px-[10px] py-[3px] text-[12px] font-medium gap-5 rounded-full bg-[#faf0e4] text-nowrap">
                   {user.businessName}

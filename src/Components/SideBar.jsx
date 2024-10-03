@@ -83,8 +83,11 @@ const SideBar = () => {
   const NotificationDialog = () => (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="relative cursor-pointer">
+        <div className="relative cursor-pointer flex  gap-3 hover:bg-[#faf0e4]  realtive w-full py-[5px]  px-[5px] rounded-md">
           <Bell size={24} color="#ffa459" />
+          <span className={`${isOpen ? "block" : "hidden"} lg:block`}>
+            Notifications
+          </span>
           {unreadCount > 0 && (
             <Badge className="absolute -top-2 -right-2 px-[2px] py-[1px] text-[8px] bg-red-500 text-white rounded-full">
               {unreadCount}
@@ -120,20 +123,20 @@ const SideBar = () => {
     <div className="bg-white z-40 fixed lg:ml-[50px] shadow-xl lg:w-[250px] md:w-[100px] w-[100vw] lg:top-auto lg:bottom-auto top-auto bottom-5 rounded-[30px] lg:min-h-[80vh] md:h-[80vh] h-[10vh] ">
       <nav className="flex lg:flex-col md:flex-col flex-row md:pt-[50px] pt-[20px] px-[30px] items-center lg:justify-center md:justify-center justify-between">
         <div className="mb-[20px] w-full fixed md:relative top-3 flex transition-all bg-white duration-500 ease-in-out items-center md:justify-center md:w-full gap-3 px-[10px] py-[2px] rounded-full hover:shadow-lg hover:bg-[#ffa459] cursor-pointer">
-          <Avatar>
-            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>CN</AvatarFallback>
+          <Avatar className=" ">
+            <AvatarImage src={user?.picture} alt={user?.businessName} />
+            <AvatarFallback>{user?.businessName?.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="px-[10px] py-[3px] text-[12px] font-medium md:flex gap-5 rounded-full bg-[#faf0e4] text-nowrap">
             {user?.businessName}
           </div>
         </div>
 
-        <div className="fixed left-[60vw] md:top-0 md:left-0 md:relative top-4  md:flex lg:flex md:w-full hover:bg-[#faf0e4] text-black md:justify-start justify-center font-light mb-10 px-[5px] py-[5px] gap-5 rounded-full md:rounded-md lg:mb-4">
+        <div className="fixed left-[60vw] md:top-0 md:left-0 md:relative top-4 md:w-full  md:flex lg:flex  text-black md:justify-start justify-center font-light mb-10 px-[5px] py-[5px] gap-5 rounded-full md:rounded-md lg:mb-4">
           <NotificationDialog />
-          <span className={`${isOpen ? "block" : "hidden"} lg:block`}>
+          {/* <span className={`${isOpen ? "block" : "hidden"} lg:block`}>
             Notifications
-          </span>
+          </span> */}
         </div>
         {menuItems.map((item, index) => {
           const isActive = pathname.split("/")[2] === item.href.split("/")[2];

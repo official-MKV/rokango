@@ -49,6 +49,7 @@ export function useFirebaseQuery(collectionName, options = {}) {
       let q = collection(db, collectionName);
 
       // Apply filters
+      console.log(`filters:${filters}`);
       Object.entries(filters).forEach(([key, value]) => {
         console.log(`${key}:${value}`);
         if (value !== undefined && value !== null && value !== "") {
