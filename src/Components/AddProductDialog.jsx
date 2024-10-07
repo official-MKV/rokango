@@ -6,8 +6,6 @@ import { db, storage } from "@/lib/firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "@/Components/ui/use-toast";
-import { MultiSelect } from "react-multi-select-component";
-
 import {
   Dialog,
   DialogContent,
@@ -16,11 +14,11 @@ import {
   DialogTrigger,
 } from "@/Components/ui/dialog";
 import { Label } from "@/Components/ui/label";
-
 import { Textarea } from "@/Components/ui/textarea";
-
 import { useQueryClient } from "@tanstack/react-query";
 import { CategoriesLocal } from "@/data/Categories";
+import MultiSelectWithSearch from "./MultiSelectWithSearch"; // Use your custom component
+import { StethoscopeIcon } from "lucide-react";
 
 const AddProductDialog = ({ user }) => {
   const [newProduct, setNewProduct] = useState({
@@ -39,6 +37,7 @@ const AddProductDialog = ({ user }) => {
   const [selected, setSelected] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [open, setOpen] = useState("");
   const queryClient = useQueryClient();
 
   const handleInputChange = (e) => {
@@ -148,11 +147,12 @@ const AddProductDialog = ({ user }) => {
       });
     } finally {
       setIsLoading(false);
+      StethoscopeIcon(false);
     }
   };
 
   return (
-    <Dialog>
+    <Dialog className="min-h-screen" open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           className="mb-4"
@@ -161,7 +161,7 @@ const AddProductDialog = ({ user }) => {
           Add New Product
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Product</DialogTitle>
         </DialogHeader>
@@ -231,11 +231,11 @@ const AddProductDialog = ({ user }) => {
           </div>
           <div>
             <Label htmlFor="Categories">Categories</Label>
-            <MultiSelect
+            {/* Replacing MultiSelect with MultiSelectWithSearch */}
+            <MultiSelectWithSearch
               options={CategoriesLocal}
               value={selected}
               onChange={handleCategoriesChange}
-              labelledBy="Select"
             />
           </div>
           <div>
@@ -267,7 +267,7 @@ const AddProductDialog = ({ user }) => {
                     : newProduct.image
                 }
                 alt={newProduct.name}
-                className="w-full h-48 object-cover rounded mt-2"
+                className="w-24 h-24 object-cover rounded mt-2"
               />
             </div>
           )}

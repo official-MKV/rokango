@@ -2,16 +2,14 @@
 import React from "react";
 import SideBar from "@/Components/SideBar";
 import withRoleGuard from "../HOC";
-const Layout = ({ children }) => {
+
+function DashboardLayout({ children }) {
   return (
-    <div className="flex w-full h-full pt-[50px]">
-      <div className="md:w-[350px] w-0" />
+    <div className=" flex min-h-screen relative ">
       <SideBar />
-      <div className="flex-1 h-full px-[20px] md:px-0 pb-[100px]">
-        {children}
-      </div>
+      <main className="flex-1 p-4 lg:ml-64 relative lg:mb-4">{children}</main>
     </div>
   );
-};
+}
 
-export default withRoleGuard(Layout, ["supplier", "admin"]);
+export default withRoleGuard(DashboardLayout, ["supplier", "admin"]);

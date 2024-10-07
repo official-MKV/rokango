@@ -1,24 +1,8 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Input } from "@/Components/ui/input";
-import { Button } from "@/Components/ui/button";
-import { db, storage } from "@/lib/firebase";
-import {
-  collection,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
-import {
-  getStorage,
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
-import { toast } from "@/Components/ui/use-toast";
-import { MultiSelect } from "react-multi-select-component";
+
+import React, { useState, useCallback } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -26,35 +10,23 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/Components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/Components/ui/dialog";
-import { Label } from "@/Components/ui/label";
-import { Checkbox } from "@/Components/ui/checkbox";
-import { Badge } from "@/Components/ui/badge";
-import { Textarea } from "@/Components/ui/textarea";
+} from "@/components/ui/table";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { useAuth, useFirebaseQuery } from "@/hooks/firebase";
 import { useQueryClient } from "@tanstack/react-query";
-import { CategoriesLocal } from "../../../data/Categories";
 import { Eye, Trash2, Edit } from "lucide-react";
-import { Switch } from "@/Components/ui/switch";
-import Loader from "@/Components/Loader";
+import Loader from "@/components/Loader";
 import { useSupabaseQuery } from "@/hooks/supabase";
-import AddProductDialog from "@/Components/AddProductDialog";
-import ProductDetailsDialog from "@/Components/ProductDetailsDialog";
+import AddProductDialog from "@/components/AddProductDialog";
+import ProductDetailsDialog from "@/components/ProductDetailsDialog";
 
 const InventoryPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedProduct, setEditedProduct] = useState(null);
-  const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
 
   const itemsPerPage = 20;
@@ -64,7 +36,6 @@ const InventoryPage = () => {
     data: productData,
     error,
     isLoading,
-    refetch,
   } = useSupabaseQuery("products", {
     filters: { "supplier.id": user?.uid },
     page: currentPage,
@@ -74,7 +45,9 @@ const InventoryPage = () => {
     orderByField: "name",
     orderDirection: "asc",
   });
-
+  const handlePageChange = useCallback((newPage) => {
+    setCurrentPage(newPage);
+  }, []);
   const { items: products, totalPages } = productData || {};
 
   const filteredProducts = products?.filter(
@@ -84,65 +57,9 @@ const InventoryPage = () => {
       (!inStockOnly || product.inStock)
   );
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const imageRef = ref(
-        storage,
-        `product-images/${Date.now()}_${file.name}`
-      );
-      await uploadBytes(imageRef, file);
-      const imageUrl = await getDownloadURL(imageRef);
-      setEditedProduct((prev) => ({ ...prev, image: imageUrl }));
-    }
-  };
-
   const handleDeleteProduct = async (productId, productName) => {
     if (window.confirm(`Are you sure you want to delete ${productName}?`)) {
-      try {
-        await deleteDoc(doc(db, "products", productId));
-        queryClient.invalidateQueries(["products", user.businessName]);
-        toast({
-          title: "Product Deleted",
-          description: `Product ${productName} has been deleted successfully.`,
-        });
-        setSelectedProduct(null);
-      } catch (error) {
-        console.error("Error deleting product: ", error);
-        toast({
-          title: "Error",
-          description:
-            "There was an error deleting the product. Please try again.",
-          variant: "destructive",
-        });
-      }
-    }
-  };
-
-  const handleInStockChange = async (checked) => {
-    try {
-      const updatedProduct = { ...editedProduct, inStock: checked };
-      if (!checked) {
-        updatedProduct.quantity = 0;
-      }
-      const productRef = doc(db, "products", editedProduct.id);
-      await updateDoc(productRef, updatedProduct);
-      setEditedProduct(updatedProduct);
-      queryClient.invalidateQueries(["products", user.businessName]);
-      toast({
-        title: "Stock Status Updated",
-        description: `${editedProduct.name} is now ${
-          checked ? "in stock" : "out of stock"
-        }.`,
-      });
-    } catch (error) {
-      console.error("Error updating stock status: ", error);
-      toast({
-        title: "Error",
-        description:
-          "There was an error updating the stock status. Please try again.",
-        variant: "destructive",
-      });
+      // Implement delete functionality
     }
   };
 
@@ -155,10 +72,12 @@ const InventoryPage = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Inventory Management</h1>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 mb-2 sm:mb-0">
+    <div className=" relative container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6 text-gray-900">
+        Inventory Management
+      </h1>
+      <div className="flex bg-white w-full z-30 sticky top-5  flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
           <Input
             type="text"
             placeholder="Search products..."
@@ -179,10 +98,10 @@ const InventoryPage = () => {
         </div>
         <AddProductDialog user={user} />
       </div>
-      <div className="mt-6 pb-[100px]">
+      <div className="mt-6 pb-20 sm:pb-0">
         {/* Desktop view */}
         <div className="hidden sm:block overflow-x-auto">
-          <Table className="w-full">
+          <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Image</TableHead>
@@ -204,7 +123,7 @@ const InventoryPage = () => {
                       className="w-10 h-10 object-cover rounded"
                     />
                   </TableCell>
-                  <TableCell>{product.name}</TableCell>
+                  <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>{product.id}</TableCell>
                   <TableCell>₦{product.price.toFixed(2)}</TableCell>
                   <TableCell>{product.quantity}</TableCell>
@@ -228,7 +147,6 @@ const InventoryPage = () => {
                         onClick={() => {
                           setSelectedProduct(product);
                           setIsEditing(true);
-                          setEditedProduct({ ...product });
                         }}
                         size="sm"
                         variant="ghost"
@@ -295,7 +213,6 @@ const InventoryPage = () => {
                   onClick={() => {
                     setSelectedProduct(product);
                     setIsEditing(true);
-                    setEditedProduct({ ...product });
                   }}
                   size="sm"
                   variant="ghost"
@@ -314,9 +231,28 @@ const InventoryPage = () => {
           ))}
         </div>
       </div>
+      {3 > 1 && (
+        <div className="mt-4 flex justify-center space-x-2">
+          <Button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="bg-[#ffa458]"
+          >
+            Previous
+          </Button>
+          <span>{`Page ${currentPage} of ${totalPages}`}</span>
+          <Button
+            className="bg-[#ffa458]"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      )}
       <ProductDetailsDialog
         product={selectedProduct}
-        isEditting={isEditing}
+        isEditing={isEditing}
         setIsEditing={setIsEditing}
       />
     </div>

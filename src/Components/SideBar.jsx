@@ -13,17 +13,17 @@ import {
   AreaChart,
   Bell,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
   DialogTrigger,
   DialogTitle,
   DialogHeader,
-} from "@/Components/ui/dialog";
-import { Badge } from "@/Components/ui/badge";
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { onSnapshot, query, collection, where } from "firebase/firestore";
-import { db } from "@/lib/firebase"; // Adjust this import based on your Firebase setup
+import { db } from "@/lib/firebase";
 
 const SupplierMenuItems = [
   { label: "Inventory", icon: Package, href: "/dashboard/inventory" },
@@ -42,7 +42,6 @@ const RetailerMenuItems = [
 ];
 
 const SideBar = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const [menuItems, setMenuItems] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -83,13 +82,11 @@ const SideBar = () => {
   const NotificationDialog = () => (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="relative cursor-pointer flex  gap-3 hover:bg-[#faf0e4]  realtive w-full py-[5px]  px-[5px] rounded-md">
-          <Bell size={24} color="#ffa459" />
-          <span className={`${isOpen ? "block" : "hidden"} lg:block`}>
-            Notifications
-          </span>
+        <div className="relative cursor-pointer flex items-center gap-2 hover:bg-[#faf0e4] w-full py-2 px-3 rounded-md">
+          <Bell size={20} color="#ffa459" />
+          <span className="hidden lg:block">Notifications</span>
           {unreadCount > 0 && (
-            <Badge className="absolute -top-2 -right-2 px-[2px] py-[1px] text-[8px] bg-red-500 text-white rounded-full">
+            <Badge className="absolute top-0 right-0 px-1 py-px text-[8px] bg-red-500 text-white rounded-full">
               {unreadCount}
             </Badge>
           )}
@@ -119,44 +116,41 @@ const SideBar = () => {
       </DialogContent>
     </Dialog>
   );
+
   return (
-    <div className="bg-white z-40 fixed lg:ml-[50px] shadow-xl lg:w-[250px] md:w-[100px] w-[100vw] lg:top-auto lg:bottom-auto top-auto bottom-5 rounded-[30px] lg:min-h-[80vh] md:h-[80vh] h-[10vh] ">
-      <nav className="flex lg:flex-col md:flex-col flex-row md:pt-[50px] pt-[20px] px-[30px] items-center lg:justify-center md:justify-center justify-between">
-        <div className="mb-[20px] w-full fixed md:relative top-3 flex transition-all bg-white duration-500 ease-in-out items-center md:justify-center md:w-full gap-3 px-[10px] py-[2px] rounded-full hover:shadow-lg hover:bg-[#ffa459] cursor-pointer">
-          <Avatar className=" ">
+    <div className="fixed z-50 bg-white  lg:left-0 lg:top-0 lg:bottom-auto bottom-4 rounded-full md:rounded px-1 shadow-xl lg:w-64 w-full lg:h-full h-16 items-center justify-center">
+      <nav className="flex lg:flex-col flex-row lg:h-full h-full items-center lg:items-start lg:pt-8 px-4">
+        <div className="lg:mb-8 lg:w-full flex items-center justify-center lg:justify-start gap-3 py-2 px-3 rounded-full hover:bg-[#faf0e4] cursor-pointer md:relative fixed top-0 right-8">
+          <Avatar>
             <AvatarImage src={user?.picture} alt={user?.businessName} />
             <AvatarFallback>{user?.businessName?.charAt(0)}</AvatarFallback>
           </Avatar>
-          <div className="px-[10px] py-[3px] text-[12px] font-medium md:flex gap-5 rounded-full bg-[#faf0e4] text-nowrap">
+          <div className="hidden lg:block px-2 py-1 text-sm font-medium rounded-full bg-[#faf0e4]">
             {user?.businessName}
           </div>
         </div>
 
-        <div className="fixed left-[60vw] md:top-0 md:left-0 md:relative top-4 md:w-full  md:flex lg:flex  text-black md:justify-start justify-center font-light mb-10 px-[5px] py-[5px] gap-5 rounded-full md:rounded-md lg:mb-4">
+        <div className="lg:mb-4 lg:w-full md:relative fixed top-2 right-2">
           <NotificationDialog />
-          {/* <span className={`${isOpen ? "block" : "hidden"} lg:block`}>
-            Notifications
-          </span> */}
         </div>
-        {menuItems.map((item, index) => {
-          const isActive = pathname.split("/")[2] === item.href.split("/")[2];
 
-          return (
-            <Link
-              key={index}
-              href={item.href}
-              className={`md:w-full hover:bg-[#faf0e4] text-black md:justify-start justify-center font-light flex mb-10 px-[5px] py-[5px] gap-5 rounded-full md:rounded-md
-                lg:mb-4 ${
-                  isActive ? "bg-[#ffa459] font-medium text-white" : ""
-                }`}
-            >
-              <item.icon size={24} color={isActive ? "white" : "#ffa459"} />
-              <span className={`${isOpen ? "block" : "hidden"} lg:block`}>
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
+        <div className="flex lg:flex-col flex-row lg:space-y-2 space-x-4 lg:space-x-0 lg:w-full overflow-x-auto lg:overflow-x-visible bg-white z-50 justify-center items-center w-full">
+          {menuItems.map((item, index) => {
+            const isActive = pathname.split("/")[2] === item.href.split("/")[2];
+
+            return (
+              <Link
+                key={index}
+                href={item.href}
+                className={`flex items-center lg:w-full hover:bg-[#faf0e4] text-black font-light py-3 px-3 md:rounded-md rounded-full
+                  ${isActive ? "bg-[#ffa459] font-medium text-white" : ""}`}
+              >
+                <item.icon size={20} color={isActive ? "white" : "#ffa459"} />
+                <span className="hidden lg:block ml-3">{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
       </nav>
     </div>
   );
