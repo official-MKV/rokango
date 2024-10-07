@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Button } from "@/Components/ui/button";
 import {
   Table,
   TableBody,
@@ -10,17 +10,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
+} from "@/Components/ui/table";
+import { Label } from "@/Components/ui/label";
+import { Checkbox } from "@/Components/ui/checkbox";
+import { Badge } from "@/Components/ui/badge";
 import { useAuth, useFirebaseQuery } from "@/hooks/firebase";
 import { useQueryClient } from "@tanstack/react-query";
 import { Eye, Trash2, Edit } from "lucide-react";
-import Loader from "@/components/Loader";
+import Loader from "@/Components/Loader";
 import { useSupabaseQuery } from "@/hooks/supabase";
-import AddProductDialog from "@/components/AddProductDialog";
-import ProductDetailsDialog from "@/components/ProductDetailsDialog";
+import AddProductDialog from "@/Components/AddProductDialog";
+import ProductDetailsDialog from "@/Components/ProductDetailsDialog";
 
 const InventoryPage = () => {
   const [searchTerm, setSearchTerm] = useState("");

@@ -2,18 +2,18 @@
 
 import React, { useState, useCallback } from "react";
 import { useAuth, useFirebaseQuery } from "@/hooks/firebase";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Switch } from "@/Components/ui/switch";
+import { Input } from "@/Components/ui/input";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/Components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -21,7 +21,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/Components/ui/table";
 import { Loader2, Download, Search, X, CircleCheck } from "lucide-react";
 import { format, differenceInHours } from "date-fns";
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
