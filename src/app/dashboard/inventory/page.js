@@ -20,7 +20,19 @@ import { Eye, Trash2, Edit } from "lucide-react";
 import Loader from "@/Components/Loader";
 import { useSupabaseQuery } from "@/hooks/supabase";
 import AddProductDialog from "@/Components/AddProductDialog";
+import { toast } from "@/Components/ui/use-toast";
 import ProductDetailsDialog from "@/Components/ProductDetailsDialog";
+import { ref } from "firebase/storage";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/Components/ui/alert-dialog";
 
 const InventoryPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,7 +40,11 @@ const InventoryPage = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-
+  const [refetch, setRefetch] = useState();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
+  const queryClient = useQueryClient();
   const itemsPerPage = 20;
   const { user } = useAuth();
 
@@ -45,6 +61,9 @@ const InventoryPage = () => {
     orderByField: "name",
     orderDirection: "asc",
   });
+  if (refetch) {
+    queryClient.invalidateQueries(["products"]);
+  }
   const handlePageChange = useCallback((newPage) => {
     setCurrentPage(newPage);
   }, []);
@@ -56,10 +75,117 @@ const InventoryPage = () => {
         product.id.toLowerCase().includes(searchTerm.toLowerCase())) &&
       (!inStockOnly || product.inStock)
   );
-
   const handleDeleteProduct = async (productId, productName) => {
-    if (window.confirm(`Are you sure you want to delete ${productName}?`)) {
-      // Implement delete functionality
+    try {
+      const response = await fetch("/api/delete-product", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId, supplierId: user.uid }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        if (result.hasOrders) {
+          setProductToDelete({ id: productId, name: productName });
+          setShowDeactivateDialog(true);
+        } else {
+          setProductToDelete({ id: productId, name: productName });
+          setShowDeleteDialog(true);
+        }
+      } else {
+        throw new Error(result.error || "Failed to process delete request");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast({
+        title: "Error",
+        description:
+          "There was an error processing your request. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const confirmDeactivate = async () => {
+    try {
+      await deactivateProduct(productToDelete.id);
+      toast({
+        title: "Product Deactivated",
+        description: `${productToDelete.name} has been deactivated.`,
+      });
+      queryClient.invalidateQueries(["products"]);
+    } catch (error) {
+      console.error("Error deactivating product:", error);
+      toast({
+        title: "Error",
+        description: "Failed to deactivate product. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setShowDeactivateDialog(false);
+      setProductToDelete(null);
+    }
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await deleteProduct(productToDelete.id);
+      toast({
+        title: "Product Deleted",
+        description: `${productToDelete.name} has been deleted.`,
+      });
+      queryClient.invalidateQueries(["products"]);
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete product. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setShowDeleteDialog(false);
+      setProductToDelete(null);
+    }
+  };
+
+  const deactivateProduct = async (productId) => {
+    try {
+      const response = await fetch("/api/deactivate-product", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to deactivate product");
+      }
+    } catch (error) {
+      console.error("Error deactivating product:", error);
+      throw error;
+    }
+  };
+
+  const deleteProduct = async (productId) => {
+    try {
+      const response = await fetch("/api/delete-product", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete product");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      throw error;
     }
   };
 
@@ -73,6 +199,50 @@ const InventoryPage = () => {
 
   return (
     <div className=" relative container mx-auto px-4 py-8">
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              product "{productToDelete?.name}" from your inventory.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-[#cf0202]">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={showDeactivateDialog}
+        onOpenChange={setShowDeactivateDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deactivate Product</AlertDialogTitle>
+            <AlertDialogDescription>
+              {productToDelete?.name} is present in existing orders. It will be
+              deactivated and no longer added to carts, but you have a legal
+              obligation to fulfill already paid orders containing this product.
+              Contact customer support at 09056595381 for more information and
+              assistance. Do you want to continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeactivate}
+              className="bg-[#cf0202]"
+            >
+              Deactivate
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <h1 className="text-2xl font-bold mb-6 text-gray-900">
         Inventory Management
       </h1>
@@ -96,7 +266,11 @@ const InventoryPage = () => {
             </Label>
           </div>
         </div>
-        <AddProductDialog user={user} />
+        <AddProductDialog
+          user={user}
+          queryClient={queryClient}
+          refetch={setRefetch}
+        />
       </div>
       <div className="mt-6 pb-20 sm:pb-0">
         {/* Desktop view */}

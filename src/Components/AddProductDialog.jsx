@@ -1,10 +1,8 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
-import { db, storage } from "@/lib/firebase";
-import { collection, addDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "@/Components/ui/use-toast";
 import {
   Dialog,
@@ -17,10 +15,10 @@ import { Label } from "@/Components/ui/label";
 import { Textarea } from "@/Components/ui/textarea";
 import { useQueryClient } from "@tanstack/react-query";
 import { CategoriesLocal } from "@/data/Categories";
-import MultiSelectWithSearch from "./MultiSelectWithSearch"; // Use your custom component
+import MultiSelectWithSearch from "./MultiSelectWithSearch";
 import { StethoscopeIcon } from "lucide-react";
 
-const AddProductDialog = ({ user }) => {
+const AddProductDialog = ({ user, queryClient }) => {
   const [newProduct, setNewProduct] = useState({
     name: "",
     brand: "",
@@ -30,15 +28,26 @@ const AddProductDialog = ({ user }) => {
     active: true,
     description: "",
     Categories: [],
-    image: null,
     supplier: { name: user?.businessName, id: user?.uid },
   });
+  const [imageFile, setImageFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selected, setSelected] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [open, setOpen] = useState("");
-  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  useEffect(() => {
+    const { name, brand, price, quantity, Categories } = newProduct;
+    const isValid =
+      name.trim() !== "" &&
+      brand.trim() !== "" &&
+      price !== null &&
+      quantity !== null &&
+      Categories.length > 0;
+    setIsFormValid(isValid);
+  }, [newProduct]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -83,7 +92,6 @@ const AddProductDialog = ({ user }) => {
       quantity: selectedProduct.quantity || 1,
       description: selectedProduct.description,
       Categories: selectedProduct.categories || [],
-      image: selectedProduct.image_url || null,
     });
     setSearchTerm(selectedProduct.name);
     setSuggestions([]);
@@ -92,34 +100,42 @@ const AddProductDialog = ({ user }) => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setNewProduct((prev) => ({ ...prev, image: file }));
+      setImageFile(file);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isFormValid) return;
     setIsLoading(true);
     try {
-      let imageUrl = newProduct.image;
-      if (newProduct.image instanceof File) {
-        const imageRef = ref(
-          storage,
-          `product-images/${Date.now()}_${newProduct.image.name}`
-        );
-        await uploadBytes(imageRef, newProduct.image);
-        imageUrl = await getDownloadURL(imageRef);
+      const formData = new FormData();
+      formData.append(
+        "productData",
+        JSON.stringify({
+          ...newProduct,
+          price: parseFloat(newProduct.price),
+          quantity: parseInt(newProduct.quantity),
+          createdAt: new Date().toISOString(),
+        })
+      );
+
+      if (imageFile) {
+        formData.append("image", imageFile);
       }
 
-      const productData = {
-        ...newProduct,
-        image: imageUrl,
-        price: parseFloat(newProduct.price),
-        quantity: parseInt(newProduct.quantity),
-        createdAt: new Date(),
-      };
+      const response = await fetch("/api/add-product", {
+        method: "POST",
+        body: formData,
+      });
 
-      await addDoc(collection(db, "products"), productData);
-      queryClient.invalidateQueries(["products", user.businessName]);
+      if (!response.ok) {
+        throw new Error("Failed to add product");
+      }
+
+      const result = await response.json();
+
+      queryClient.invalidateQueries(["products"]);
 
       toast({
         title: "Product Added",
@@ -134,8 +150,9 @@ const AddProductDialog = ({ user }) => {
         inStock: true,
         description: "",
         Categories: [],
-        image: null,
+        supplier: { name: user?.businessName, id: user?.uid },
       });
+      setImageFile(null);
       setSelected([]);
       setSearchTerm("");
     } catch (error) {
@@ -147,7 +164,7 @@ const AddProductDialog = ({ user }) => {
       });
     } finally {
       setIsLoading(false);
-      StethoscopeIcon(false);
+      setOpen(false);
     }
   };
 
@@ -174,6 +191,7 @@ const AddProductDialog = ({ user }) => {
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="Search for a product or enter new name"
+              required
             />
             {suggestions.length > 0 && (
               <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
@@ -231,7 +249,6 @@ const AddProductDialog = ({ user }) => {
           </div>
           <div>
             <Label htmlFor="Categories">Categories</Label>
-            {/* Replacing MultiSelect with MultiSelectWithSearch */}
             <MultiSelectWithSearch
               options={CategoriesLocal}
               value={selected}
@@ -257,16 +274,12 @@ const AddProductDialog = ({ user }) => {
               accept="image/*"
             />
           </div>
-          {newProduct.image && (
+          {imageFile && (
             <div>
-              <Label>Current Image</Label>
+              <Label>Selected Image</Label>
               <img
-                src={
-                  newProduct.image instanceof File
-                    ? URL.createObjectURL(newProduct.image)
-                    : newProduct.image
-                }
-                alt={newProduct.name}
+                src={URL.createObjectURL(imageFile)}
+                alt="Selected product image"
                 className="w-24 h-24 object-cover rounded mt-2"
               />
             </div>
@@ -274,7 +287,7 @@ const AddProductDialog = ({ user }) => {
           <Button
             type="submit"
             style={{ backgroundColor: "#ffa459", color: "white" }}
-            disabled={isLoading}
+            disabled={isLoading || !isFormValid}
           >
             {isLoading ? "Adding..." : "Add Product"}
           </Button>
