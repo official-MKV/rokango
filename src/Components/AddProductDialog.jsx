@@ -92,7 +92,9 @@ const AddProductDialog = ({ user, queryClient }) => {
       quantity: selectedProduct.quantity || 1,
       description: selectedProduct.description,
       Categories: selectedProduct.categories || [],
+      image: selectedProduct.image_url,
     });
+    setImageFile(null);
     setSearchTerm(selectedProduct.name);
     setSuggestions([]);
   };
@@ -101,6 +103,7 @@ const AddProductDialog = ({ user, queryClient }) => {
     const file = e.target.files[0];
     if (file) {
       setImageFile(file);
+      setNewProduct((prev) => ({ ...prev, image: null })); // Clear any existing image URL
     }
   };
 
@@ -274,11 +277,13 @@ const AddProductDialog = ({ user, queryClient }) => {
               accept="image/*"
             />
           </div>
-          {imageFile && (
+          {(imageFile || newProduct.image) && (
             <div>
               <Label>Selected Image</Label>
               <img
-                src={URL.createObjectURL(imageFile)}
+                src={
+                  imageFile ? URL.createObjectURL(imageFile) : newProduct.image
+                }
                 alt="Selected product image"
                 className="w-24 h-24 object-cover rounded mt-2"
               />
