@@ -85,6 +85,13 @@ const AddProductDialog = ({ user, queryClient }) => {
   };
 
   const handleProductSelection = (selectedProduct) => {
+    const selectedCategories = selectedProduct.categories
+      ? selectedProduct.categories.map((category) => ({
+          value: category,
+          label: category,
+        }))
+      : [];
+
     setNewProduct({
       ...newProduct,
       name: selectedProduct.name,
@@ -95,6 +102,9 @@ const AddProductDialog = ({ user, queryClient }) => {
       image: selectedProduct.image_url,
     });
     setImageFile(null);
+    setSelected(selectedCategories);
+    console.log(newProduct);
+    console.log(selectedProduct);
     setSearchTerm(selectedProduct.name);
     setSuggestions([]);
   };

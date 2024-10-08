@@ -20,7 +20,7 @@ export async function GET(request) {
   try {
     const { data, error } = await supabase
       .from("product_images")
-      .select("id, name, image_url")
+      .select("id, name, image_url, description,categories")
       .ilike("name", `%${query}%`)
       .limit(5);
 
