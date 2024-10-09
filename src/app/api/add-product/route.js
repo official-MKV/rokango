@@ -24,13 +24,13 @@ export async function POST(request) {
     const imageFile = formData.get("image");
 
     console.log(productData);
-    let imageUrl = null;
+    let imageUrl = productData.image || null; // Use existing image URL if product is selected
 
     // Generate a Firebase-like ID
     const productId = generateFirebaseId();
 
-    // Upload image if provided
-    if (imageFile) {
+    // Upload image only if no image URL exists (i.e., product is not selected)
+    if (!imageUrl && imageFile) {
       const fileName = `${productId}_${imageFile.name}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from("product-images-uploaded")
@@ -43,7 +43,9 @@ export async function POST(request) {
       // Get public URL for the uploaded image
       const {
         data: { publicUrl },
-      } = supabase.storage.from("product-images").getPublicUrl(fileName);
+      } = supabase.storage
+        .from("product-images-uploaded")
+        .getPublicUrl(fileName);
 
       imageUrl = publicUrl;
     }

@@ -99,12 +99,11 @@ const AddProductDialog = ({ user, queryClient }) => {
       quantity: selectedProduct.quantity || 1,
       description: selectedProduct.description,
       Categories: selectedProduct.categories || [],
-      image: selectedProduct.image_url,
+      image: selectedProduct.image_url, // Use selected product's image URL
     });
-    setImageFile(null);
+    setImageFile(null); // Clear any image file if product is selected
+
     setSelected(selectedCategories);
-    console.log(newProduct);
-    console.log(selectedProduct);
     setSearchTerm(selectedProduct.name);
     setSuggestions([]);
   };
