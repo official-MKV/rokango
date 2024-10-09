@@ -312,7 +312,7 @@ const OrdersPage = () => {
       </div>
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <Loader2 className="w-8 h-8 animate-spin text-primary text-[#ffa458]" />
         </div>
       ) : error ? (
         <div className="text-center p-4 text-red-500">
