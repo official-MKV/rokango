@@ -1,165 +1,97 @@
 "use client";
+
 import React, { useState } from "react";
-import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
-import { db } from "@/lib/firebase";
-import { updateDoc, doc } from "firebase/firestore";
-
-import { toast } from "@/Components/ui/use-toast";
-import { MultiSelect } from "react-multi-select-component";
-
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/Components/ui/dialog";
-import { Label } from "@/Components/ui/label";
+import EditProductDialog from "./EditProductDialog";
 
-import { Textarea } from "@/Components/ui/textarea";
-
-import { CategoriesLocal } from "@/data/Categories";
-
-const ProductDetailsDialog = ({ product, isEditing, setIsEditing }) => {
+const ProductDetailsDialog = ({
+  product,
+  onClose,
+  isEditing,
+  setIsEditing,
+}) => {
   if (!product) return null;
-  const [formInputs, setFormInputs] = useState({ ...product });
 
-  const handleInStockChange = (checked) => {
-    setFormInputs((prev) => ({
-      ...prev,
-      inStock: checked,
-      quantity: checked ? Math.max(1, prev.quantity) : 0,
-    }));
-  };
-
-  const handleInputChangeLocal = (e) => {
-    const { name, value, type } = e.target;
-    let newValue = type === "number" ? Math.max(0, parseFloat(value)) : value;
-
-    setFormInputs((prev) => ({
-      ...prev,
-      [name]: newValue,
-      inStock: name === "quantity" && newValue > 0,
-    }));
-  };
-
-  const handleCategoriesChange = (selectedOptions) => {
-    setFormInputs((prev) => ({
-      ...prev,
-      Categories: selectedOptions.map((option) => option.value),
-    }));
-  };
-
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      const productRef = doc(db, "products", formInputs.id);
-      const updatedProduct = {
-        ...formInputs,
-        price: parseFloat(formInputs.price),
-        quantity: parseInt(formInputs.quantity),
-      };
-
-      await updateDoc(productRef, updatedProduct);
-      queryClient.invalidateQueries(["products", user.businessName]);
-
-      toast({
-        title: "Product Updated",
-        description: `Product ${updatedProduct.name} has been updated successfully.`,
-      });
-
-      setIsEditing(false);
-      setSelected(null);
-    } catch (error) {
-      console.error("Error updating product: ", error);
-      toast({
-        title: "Error",
-        description:
-          "There was an error updating the product. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+  const renderProductDetails = () => (
+    <div className="space-y-6">
+      <div className="flex items-center space-x-4">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="w-32 h-32 object-cover rounded-lg"
+        />
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">{product.name}</h2>
+          <p className="text-lg text-gray-600">{product.brand}</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-sm font-medium text-gray-500">Price</p>
+          <p className="text-lg font-semibold text-gray-900">
+            ₦{product.price.toFixed(2)}
+          </p>
+        </div>
+        <div>
+          <p className="text-sm font-medium text-gray-500">Quantity</p>
+          <p className="text-lg font-semibold text-gray-900">
+            {product.quantity}
+          </p>
+        </div>
+        <div>
+          <p className="text-sm font-medium text-gray-500">Status</p>
+          <p
+            className={`text-lg font-semibold ${
+              product.inStock ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            {product.inStock ? "In Stock" : "Out of Stock"}
+          </p>
+        </div>
+        <div>
+          <p className="text-sm font-medium text-gray-500">Categories</p>
+          <p className="text-lg text-gray-900">
+            {product.Categories.join(", ")}
+          </p>
+        </div>
+      </div>
+      <div>
+        <p className="text-sm font-medium text-gray-500">Description</p>
+        <p className="text-gray-700 mt-1">{product.description}</p>
+      </div>
+      <Button
+        onClick={() => setIsEditing(true)}
+        className="w-full"
+        style={{ backgroundColor: "#ffa458", color: "white" }}
+      >
+        Edit Product
+      </Button>
+    </div>
+  );
 
   return (
-    <Dialog open={isEditing} onOpenChange={() => setIsEditing(false)}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Update Product</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleFormSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="name">Product Name</Label>
-            <Input
-              id="name"
-              name="name"
-              value={formInputs.name}
-              onChange={handleInputChangeLocal}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="brand">Brand</Label>
-            <Input
-              id="brand"
-              name="brand"
-              value={formInputs.brand}
-              onChange={handleInputChangeLocal}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="price">Price</Label>
-            <Input
-              id="price"
-              name="price"
-              type="number"
-              step="0.01"
-              value={formInputs.price}
-              onChange={handleInputChangeLocal}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="quantity">Quantity</Label>
-            <Input
-              id="quantity"
-              name="quantity"
-              type="number"
-              value={formInputs.quantity}
-              onChange={handleInputChangeLocal}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="Categories">Categories</Label>
-            <MultiSelect
-              options={CategoriesLocal}
-              value={formInputs.Categories}
-              onChange={handleCategoriesChange}
-              labelledBy="Select"
-            />
-          </div>
-          <div>
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              name="description"
-              value={formInputs.description}
-              onChange={handleInputChangeLocal}
-            />
-          </div>
-          <Button
-            type="submit"
-            style={{ backgroundColor: "#ffa459", color: "white" }}
-          >
-            Update Product
-          </Button>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <>
+      <Dialog open={product !== null && !isEditing} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Product Details</DialogTitle>
+          </DialogHeader>
+          {renderProductDetails()}
+        </DialogContent>
+      </Dialog>
+      {/* {isEditing && (
+        <EditProductDialog
+          product={product}
+          onClose={() => setIsEditing(false)}
+        />
+      )} */}
+    </>
   );
 };
 

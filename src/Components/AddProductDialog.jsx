@@ -102,7 +102,7 @@ const AddProductDialog = ({ user, queryClient }) => {
       image: selectedProduct.image_url, // Use selected product's image URL
     });
     setImageFile(null); // Clear any image file if product is selected
-
+    console.log(newProduct);
     setSelected(selectedCategories);
     setSearchTerm(selectedProduct.name);
     setSuggestions([]);

@@ -16,15 +16,28 @@ export async function GET(request) {
       { status: 400 }
     );
   }
-
+  console.log(query);
   try {
+    // Use ILIKE for partial matching, but also use similarity for fuzzy matching.
     const { data, error } = await supabase
       .from("product_images")
-      .select("id, name, image_url, description,categories")
-      .ilike("name", `%${query}%`)
-      .limit(5);
+      .select("id, name, image_url, description, categories")
+      .or(`name.ilike.%${query}%, description.ilike.%${query}%`) // Partial matching across name, description, and categories
+      .limit(10);
 
     if (error) throw error;
+
+    // Perform a fuzzy search using similarity if no results found from ILIKE
+    if (data.length === 0) {
+      const { data: fuzzyData, error: fuzzyError } = await supabase.rpc(
+        "fuzzy_search_products", // Custom function we will create in PostgreSQL
+        { query }
+      );
+
+      if (fuzzyError) throw fuzzyError;
+
+      return NextResponse.json(fuzzyData);
+    }
 
     return NextResponse.json(data);
   } catch (error) {
