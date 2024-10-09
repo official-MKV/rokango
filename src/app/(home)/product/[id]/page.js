@@ -1,19 +1,18 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { useFirebaseQuery, useCart } from "@/hooks/firebase";
+import { useCart } from "@/hooks/firebase"; // Still using Firebase for cart management
 import { useToast } from "@/Components/ui/use-toast";
 import { Button } from "@/Components/ui/button";
-import { Plus, Minus, Star } from "lucide-react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/firebase";
-import { Loader2 } from "lucide-react";
+import { Plus, Minus, Star, Loader2 } from "lucide-react";
+import { useSupabaseQuery } from "@/hooks/supabase"; // Supabase hook for product details
+
+import { useAuth } from "@/hooks/firebase"; // Still using Firebase for Auth
+import { useFirebaseQuery } from "@/hooks/firebase"; // Firebase hook for reviews
 
 const ProductPage = () => {
   const pathname = usePathname();
-  const id = pathname.split("/").pop();
+  const id = pathname.split("/").pop(); // Get product ID from URL
   const { toast } = useToast();
 
   const { user, loading: authLoading } = useAuth();
@@ -25,54 +24,49 @@ const ProductPage = () => {
     addToCart,
     updateQuantity,
   } = useCart(user?.uid);
+
   const [quantity, setQuantity] = useState(cart[id]?.quantity || 0);
 
   const {
     data: product,
     isLoading: productLoading,
     error: productError,
-  } = useQuery({
-    queryKey: ["product", id],
-    queryFn: async () => {
-      const docRef = doc(db, "products", id);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() };
-      } else {
-        throw new Error("Product not found");
-      }
-    },
+  } = useSupabaseQuery("products", {
+    filters: { id: id },
   });
 
   const {
     data: reviews,
     isLoading: reviewsLoading,
     error: reviewsError,
-  } = useFirebaseQuery("reviews", { productId: id });
+  } = useFirebaseQuery("reviews", {
+    filters: { productId: id }, // Filter reviews by product ID
+  });
 
   const handleQuantityChange = (change) => {
     setQuantity((prev) => Math.max(1, prev + change));
     updateQuantity(id, change);
     toast({
       title: "Cart Item updated",
-      description: `${quantity + change} x ${product.name} added to your cart.`,
+      description: `${quantity + change} x ${
+        product.items[0].name
+      } added to your cart.`,
     });
   };
 
   const handleAddToCart = () => {
-    if (product) {
-      addToCart({ ...product, quantity });
-      console.log(quantity);
+    if (product.items[0]) {
+      addToCart({ ...product.items[0], quantity });
       toast({
         title: "Added to cart",
-        description: `${quantity} x ${product.name} added to your cart.`,
+        description: `${quantity} x ${product.items[0].name} added to your cart.`,
       });
     }
   };
 
   useEffect(() => {
-    if (cart && product) {
-      const cartItem = cart.find((item) => item.id === product.id);
+    if (cart && product.items[0]) {
+      const cartItem = cart.find((item) => item.id === product.items[0].id);
       if (cartItem) {
         setQuantity(cartItem.quantity);
       }
@@ -95,26 +89,31 @@ const ProductPage = () => {
   const averageRating = reviews?.length
     ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length
     : 0;
+
   return (
     <div className="relative w-full min-h-screen p-8">
       <div className="w-full flex md:flex-row flex-col mb-12">
         <div className="md:w-2/3 relative h-[50vh] w-full pr-8">
           <div className="w-full h-[50vh] relative rounded-[30px] flex items-center justify-center bg-[#faf0e4]">
             <img
-              src={product.image || "/assets/earphones_b_1.webp"}
-              alt={product.name}
+              src={product.items[0].image || "/assets/earphones_b_1.webp"}
+              alt={product.items[0].name}
               className="w-full h-full object-contain"
             />
           </div>
         </div>
-        <div className="md:w-1/3 relative  w-full flex flex-col justify-between">
+        <div className="md:w-1/3 relative w-full flex flex-col justify-between">
           <div>
-            <span className="text-sm text-gray-500">{product.brand}</span>
-            <span className="ml-4 text-sm text-gray-500">ID: {product.id}</span>
+            <span className="text-sm text-gray-500">
+              {product.items[0].brand}
+            </span>
+            <span className="ml-4 text-sm text-gray-500">
+              ID: {product.items[0].id}
+            </span>
           </div>
           <div>
-            <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-            <p className="text-gray-700 mb-4">{product.description}</p>
+            <h1 className="text-3xl font-bold mb-2">{product.items[0].name}</h1>
+            <p className="text-gray-700 mb-4">{product.items[0].description}</p>
             <div className="flex items-center mb-4">
               {[...Array(5)].map((_, i) => (
                 <Star
@@ -132,7 +131,7 @@ const ProductPage = () => {
             </div>
           </div>
           <div>
-            <p className="text-2xl font-bold mb-4">₦{product.price}</p>
+            <p className="text-2xl font-bold mb-4">₦{product.items[0].price}</p>
             <div className="flex items-center mb-4">
               <Button
                 variant="outline"
