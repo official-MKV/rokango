@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/firebase";
 import {
   Settings,
@@ -12,6 +12,7 @@ import {
   ShoppingCart,
   AreaChart,
   Bell,
+  LogOut,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 import {
@@ -46,6 +47,7 @@ const SideBar = () => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const pathname = usePathname();
+  const router = useRouter();
   const { user } = useAuth();
 
   useEffect(() => {
@@ -150,6 +152,25 @@ const SideBar = () => {
               </Link>
             );
           })}
+        </div>
+        <div
+          id="other_functions"
+          className="lg:absolute lg:bottom-8 lg:left-0 lg:right-0 lg:px-4 fixed bottom-20 left-1/2 -translate-x-1/2 lg:translate-x-0 flex flex-col gap-3 w-full max-w-[250px] lg:max-w-none"
+        >
+          <button
+            onClick={() => router.push("/")}
+            className="w-full px-4 py-3 text-white bg-[#ffa458] rounded-md hover:scale-105 transition-all duration-500 cursor-pointer hover:bg-[#f19950] text-center"
+          >
+            Go back shopping page
+          </button>
+
+          <button
+            onClick={() => router.push("/")}
+            className="hidden lg:flex w-full items-center justify-center gap-2 px-4 py-3 border-2 border-[#ffa458] rounded-md text-[#ffa458] hover:bg-gray-100 hover:scale-105 transition-all duration-500"
+          >
+            <LogOut size={20} />
+            <span>Logout</span>
+          </button>
         </div>
       </nav>
     </div>
