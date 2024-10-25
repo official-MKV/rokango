@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { withRoleGuard } from "../HOC";
+import { withRoleGuard } from "../../HOC";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 

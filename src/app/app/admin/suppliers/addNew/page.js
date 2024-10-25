@@ -64,7 +64,14 @@ export default function AddSupplierForm() {
 
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-2xl font-bold mb-5">Add New Supplier</h1>
+      <Button
+        onClick={() => {
+          router.push("/admin/suppliers");
+        }}
+      >
+        Go back
+      </Button>
+      <h1 className="text-2xl font-bold mb-5 mt-5">Add New Supplier</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           name="name"

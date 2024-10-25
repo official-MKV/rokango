@@ -1,35 +1,56 @@
+// HOC.js
 "use client";
-import { useAuth } from "@/hooks/firebase"; // Adjust the import path as needed
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import LoadingPage from "@/Components/LoadingPage";
 
-export function withRoleGuard(WrappedComponent, allowedRoles) {
-  return function RoleGuard(props) {
+import { useAuth } from "@/hooks/firebase";
+import { useRouter } from "next/navigation";
+import PendingApprovalMessage from "@/Components/PendingApproval";
+import SideBar from "@/Components/SideBar";
+
+export const withRoleGuard = (WrappedComponent, allowedRoles) => {
+  const ProtectedComponent = ({ children, ...props }) => {
     const { user, loading } = useAuth();
     const router = useRouter();
 
-    useEffect(() => {
-      if (!loading && (!user || !allowedRoles.includes(user.role))) {
-        router.push("/unauthorized"); // Redirect to an unauthorized page
-      }
-    }, [user, loading, router]);
-
     if (loading) {
       return (
-        <div>
-          <LoadingPage />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
         </div>
       );
     }
 
-    if (!user || !allowedRoles.includes(user.role)) {
-      return null; // Or a proper unauthorized component
+    // Check if user is not authenticated
+    if (!user) {
+      router.push("/login");
+      return null;
     }
 
-    return <WrappedComponent {...props} />;
-  };
-}
+    // Check if user has the required role
+    if (!allowedRoles.includes(user.role)) {
+      router.push("/unauthorized");
+      return null;
+    }
 
-// Make sure to export the function as default as well
+    // Pending Approval Message Component
+
+    // Check if user is approved and active
+    if (
+      user.role === "supplier" &&
+      (!user.status || user.status !== "approved" || !user.active)
+    ) {
+      return (
+        <>
+          <SideBar disabled={true} />
+          <PendingApprovalMessage />
+        </>
+      );
+    }
+
+    return <WrappedComponent {...props}>{children}</WrappedComponent>;
+  };
+
+  return ProtectedComponent;
+};
+
+// Make sure to export withRoleGuard as the default export
 export default withRoleGuard;

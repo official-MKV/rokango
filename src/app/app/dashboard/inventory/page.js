@@ -16,7 +16,7 @@ import { Checkbox } from "@/Components/ui/checkbox";
 import { Badge } from "@/Components/ui/badge";
 import { useAuth, useFirebaseQuery } from "@/hooks/firebase";
 import { useQueryClient } from "@tanstack/react-query";
-import { Eye, Trash2, Edit } from "lucide-react";
+import { Eye, Trash2, Edit, AlertCircle } from "lucide-react";
 import Loader from "@/Components/Loader";
 import { useSupabaseQuery } from "@/hooks/supabase";
 import AddProductDialog from "@/Components/AddProductDialog";
@@ -35,6 +35,13 @@ import {
   AlertDialogTitle,
 } from "@/Components/ui/alert-dialog";
 import EditProductDialog from "@/Components/EditProductDialog";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 
 const InventoryPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -52,6 +59,7 @@ const InventoryPage = () => {
   const queryClient = useQueryClient();
   const itemsPerPage = 20;
   const { user } = useAuth();
+  const isUserApproved = user?.status === "approved" && user?.active === true;
 
   const {
     data: productData,
@@ -322,6 +330,7 @@ const InventoryPage = () => {
             </Label>
           </div>
         </div>
+
         <AddProductDialog
           user={user}
           queryClient={queryClient}

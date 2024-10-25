@@ -26,6 +26,7 @@ export default function SupplierSignupForm() {
     confirmPassword: "",
     picture: null,
     active: true,
+    status: "pending",
   });
 
   const signupMutation = useMutation({
