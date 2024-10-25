@@ -35,13 +35,6 @@ import {
   AlertDialogTitle,
 } from "@/Components/ui/alert-dialog";
 import EditProductDialog from "@/Components/EditProductDialog";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
 
 const InventoryPage = () => {
   const [searchTerm, setSearchTerm] = useState("");

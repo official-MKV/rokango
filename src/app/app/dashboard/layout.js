@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import SideBar from "@/Components/SideBar";
-import withRoleGuard from "../HOC";
+import withRoleGuard from "@/app/HOC";
 
 import { useAuth } from "@/hooks/firebase";
 

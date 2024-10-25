@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Navbar from "@/Components/AdminNavBar";
-import withRoleGuard from "../HOC";
+import withRoleGuard from "@/app/HOC";
 
 const Layout = ({ children }) => {
   return (

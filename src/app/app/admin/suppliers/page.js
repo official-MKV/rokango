@@ -9,7 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/Components/ui/table";
 import { Skeleton } from "@/Components/ui/skeleton";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
@@ -20,8 +20,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
   DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
+} from "@/Components/ui/dropdown-menu";
+import { Badge } from "@/Components/ui/badge";
 import {
   CheckCircle2,
   XCircle,
