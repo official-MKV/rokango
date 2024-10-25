@@ -4,7 +4,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from "@/components/ui/card";
+} from "@/Components/ui/card";
 import { AlertCircle } from "lucide-react";
 const PendingApprovalMessage = () => (
   <div className="flex min-h-screen bg-gray-50 items-center justify-center ">
