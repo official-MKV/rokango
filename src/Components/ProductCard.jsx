@@ -1,14 +1,14 @@
 import React from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+} from "@/Components/ui/card";
+import { Badge } from "@/Components/ui/badge";
 
 export const ProductCard = ({ product, onAddToCart }) => {
   return (
