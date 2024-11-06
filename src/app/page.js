@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import Marquee from "@/Components/magicui/marquee";
 import value from "@/data/valueProposition.json";
 import { MagicCard } from "@/Components/magicui/magic-card";
