@@ -1,14 +1,48 @@
 import { NextResponse } from "next/server";
 
-export function middleware(req) {
-  const host = req.headers.get("host");
+// Add routes that should be public on the app subdomain
+const publicRoutes = [
+  "/app", // app subdomain home page
+  "/app/login", // login page
+  "/app/signup", // if you have a signup page
+  "/app/reset-password", // if you have a reset password page
+];
 
-  // Check if the request is from app.domain.com
-  if (host.startsWith("app.")) {
-    // Redirect or rewrite to the app section
-    return NextResponse.rewrite(new URL("/app", req.url));
+export function middleware(req) {
+  const url = req.nextUrl.clone();
+  const host = req.headers.get("host") || "";
+  const isAppSubdomain = host.startsWith("app.");
+
+  // Skip middleware for static files and API routes
+  if (
+    url.pathname.startsWith("/_next/") ||
+    url.pathname.startsWith("/static/") ||
+    url.pathname.startsWith("/api/") ||
+    url.pathname.includes(".")
+  ) {
+    return NextResponse.next();
   }
 
-  // Default behavior for the main landing page (domain.com)
+  // Handle app subdomain
+  if (isAppSubdomain) {
+    // If already has /app prefix, just continue
+    if (url.pathname.startsWith("/app")) {
+      return NextResponse.next();
+    }
+
+    // Handle root path and other paths
+    if (url.pathname === "/") {
+      url.pathname = "/app";
+    } else {
+      url.pathname = `/app${url.pathname}`;
+    }
+
+    return NextResponse.rewrite(url);
+  }
+
   return NextResponse.next();
 }
+
+export const config = {
+  matcher: ["/((?!_next/|static/|api/|.*\\.).*)"],
+};
