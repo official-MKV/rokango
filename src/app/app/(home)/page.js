@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/Components/ui/use-toast";
 import { useAuth } from "@/hooks/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { ProductRow } from "@/components/ProductRow";
-import { Button } from "@/components/ui/button";
+import { ProductRow } from "@/Components/ProductRow";
+import { Button } from "@/Components/ui/button";
 import { ArrowRight } from "lucide-react";
-import LoadingPage from "@/components/LoadingPage";
+import LoadingPage from "@/Components/LoadingPage";
 
 export default function Home() {
   const router = useRouter();
