@@ -1,24 +1,14 @@
 import React from "react";
-import { ProductCard } from "./ProductCard";
 import { Skeleton } from "@/Components/ui/skeleton";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import { useSupabaseQuery } from "@/hooks/supabase";
 
-export function ProductRow({
-  title,
-  tableName = "products",
-  categoryId,
-  itemsToShow,
-}) {
-  // Define filters to include category
-  const filters = categoryId ? { category_id: categoryId } : {};
-
-  const { data, isLoading, error } = useSupabaseQuery(tableName, {
-    filters,
+export function CategoryRow({ title, itemsToShow }) {
+  const { data, isLoading, error } = useSupabaseQuery("categories", {
     pageSize: itemsToShow,
-    orderByField: "created_at",
-    orderDirection: "desc",
+    orderByField: "name",
+    orderDirection: "asc",
   });
 
   if (isLoading) {
@@ -29,10 +19,9 @@ export function ProductRow({
           {Array(itemsToShow)
             .fill(0)
             .map((_, index) => (
-              <div key={index} className="space-y-2 w-48 shrink-0">
-                <Skeleton className="h-[200px] w-full" />
+              <div key={index} className="space-y-2 w-32 shrink-0">
+                <Skeleton className="h-[100px] w-full" />
                 <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-2/3" />
               </div>
             ))}
         </div>
@@ -56,9 +45,14 @@ export function ProductRow({
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">{title}</h2>
       <div className="flex gap-4 overflow-x-auto">
-        {data?.items.map((product) => (
-          <div key={product.id} className="w-48 shrink-0">
-            <ProductCard product={product} onAddToCart={() => {}} />
+        {data?.items.map((category) => (
+          <div key={category.id} className="w-32 shrink-0 text-center">
+            <img
+              src={category.image_url}
+              alt={category.label}
+              className="h-[100px] w-full object-cover rounded-md"
+            />
+            <p className="text-sm font-semibold mt-2">{category.label}</p>
           </div>
         ))}
       </div>

@@ -16,41 +16,40 @@ export async function POST(request) {
     searchTerm,
     orderByField,
     orderDirection,
+    relations = [],
   } = await request.json();
 
+  // Create initial query
   let query = supabase.from(tableName).select("*", { count: "exact" });
 
+  // Apply joins for related tables
+  if (relations.length > 0) {
+    const relatedSelects = relations.map(
+      (rel) => `${rel.field} (${rel.table} (id, name, slug, image))`
+    );
+    query = query.select(`*, ${relatedSelects.join(", ")}`, { count: "exact" });
+  }
+
   // Apply filters
-  console.log(`filters: ${JSON.stringify(filters)}`);
   Object.entries(filters).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
-      if (key === "Categories") {
-        // Ensure the value is an array and use contains for the Categories array
-        const categoryArray = Array.isArray(value) ? value : [value];
-        console.log(`Categories:${categoryArray}`);
-        query = query.contains(key, categoryArray);
-      } else if (key === "active") {
-        // Handle boolean values
-        query = query.eq(key, value === "true" || value === true);
-      } else if (key.includes(".")) {
-        // Handle JSONB fields
-        const [jsonField, jsonKey] = key.split(".");
-        query = query.eq(`${jsonField}->>${jsonKey}`, value);
+      if (Array.isArray(value)) {
+        query = query.contains(key, value);
       } else {
         query = query.eq(key, value);
       }
     }
   });
+
   // Apply search if searchField and searchTerm are provided
   if (searchField && searchTerm && searchTerm.trim() !== "") {
-    const trimmedSearchTerm = searchTerm.trim().toLowerCase();
-    query = query.ilike(searchField, `%${trimmedSearchTerm}%`);
+    query = query.ilike(searchField, `%${searchTerm.trim().toLowerCase()}%`);
   }
 
   // Apply ordering
-  //   if (orderByField) {
-  //     query = query.order(orderByField, { ascending: orderDirection === "asc" });
-  //   }
+  // if (orderByField) {
+  //   query = query.order(orderByField, { ascending: orderDirection === "asc" });
+  // }
 
   // Apply pagination
   const from = (page - 1) * pageSize;
@@ -59,8 +58,7 @@ export async function POST(request) {
 
   // Execute the query
   const { data, error, count } = await query;
-  console.log(`error:${JSON.stringify(error)}`);
-  //   console.log(`data:${JSON.stringify(data)}`);
+
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -1,42 +1,40 @@
+"use client";
 import React from "react";
-import { ProductCard } from "./ProductCard";
 import { Skeleton } from "@/Components/ui/skeleton";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import { useSupabaseQuery } from "@/hooks/supabase";
+import { useRouter } from "next/navigation";
 
-export function ProductRow({
-  title,
-  tableName = "products",
-  categoryId,
-  itemsToShow,
+export function BrandRow({
+  title = "Featured Brands",
+  tableName = "brands",
+  itemsToShow = 15,
 }) {
-  // Define filters to include category
-  const filters = categoryId ? { category_id: categoryId } : {};
-
   const { data, isLoading, error } = useSupabaseQuery(tableName, {
-    filters,
-    pageSize: itemsToShow,
-    orderByField: "created_at",
-    orderDirection: "desc",
+    pageSize: 15,
+    orderByField: "name",
+    orderDirection: "asc",
   });
+  const router = useRouter();
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <section className="space-y-4">
         <h2 className="text-2xl font-bold">{title}</h2>
-        <div className="flex gap-4 overflow-x-auto">
+        <div className="flex overflow-x-auto gap-4 max-w-full">
           {Array(itemsToShow)
             .fill(0)
             .map((_, index) => (
-              <div key={index} className="space-y-2 w-48 shrink-0">
-                <Skeleton className="h-[200px] w-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-2/3" />
+              <div
+                key={index}
+                className="bg-[#ffa4581a] aspect-video rounded-lg flex items-center justify-center p-4"
+              >
+                <Skeleton className="h-16 w-16 rounded-full" />
               </div>
             ))}
         </div>
-      </div>
+      </section>
     );
   }
 
@@ -53,15 +51,13 @@ export function ProductRow({
   }
 
   return (
-    <div className="space-y-4">
+    <section className=" relative w-[50%]">
       <h2 className="text-2xl font-bold">{title}</h2>
-      <div className="flex gap-4 overflow-x-auto">
-        {data?.items.map((product) => (
-          <div key={product.id} className="w-48 shrink-0">
-            <ProductCard product={product} onAddToCart={() => {}} />
-          </div>
+      <div className="flex flex-row overflow-x- gap-4 p-2 max-w-full">
+        {data?.items.map((brand) => (
+          <div className="w-[200px] bg-black h-[50px] relative">puppy</div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

@@ -10,6 +10,8 @@ import { ProductRow } from "@/Components/ProductRow";
 import { Button } from "@/Components/ui/button";
 import { ArrowRight } from "lucide-react";
 import LoadingPage from "@/Components/LoadingPage";
+import { CategoryRow } from "@/Components/CategoryRow";
+import { BrandRow } from "@/Components/BrandRow";
 
 export default function Home() {
   const router = useRouter();
@@ -72,8 +74,8 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col gap-12">
-      <section className="bg-[#faf0e4] py-16">
+    <div className=" relative w-full flex flex-col gap-12">
+      <section className="bg-[#faf0e4] py-16 relative w-full">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 text-center md:text-left mb-8 md:mb-0">
@@ -100,17 +102,17 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 space-y-12">
-        <ProductRow
+      <div className="container  px-4 space-y-12">
+        <BrandRow title="Featured Brands" itemsToShow={6} />
+        <CategoryRow
           title="All Categories"
-          tableName="products"
+          tableName="categories"
           itemsToShow={8}
         />
 
         <ProductRow
           title="Electronics"
-          tableName="products"
-          filters={{ category: "Electronics" }}
+          categoryId="c51b35fe-85e0-4826-9196-cb038c0c74d3"
           itemsToShow={4}
         />
 
@@ -133,24 +135,6 @@ export default function Home() {
           tableName="group_buys"
           itemsToShow={4}
         />
-
-        <section className="space-y-4">
-          <h2 className="text-2xl font-bold">Featured Brands</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {Array(6)
-              .fill(0)
-              .map((_, index) => (
-                <div
-                  key={index}
-                  className="bg-muted aspect-video rounded-lg flex items-center justify-center"
-                >
-                  <span className="text-2xl font-bold text-muted-foreground">
-                    Brand {index + 1}
-                  </span>
-                </div>
-              ))}
-          </div>
-        </section>
 
         <section className="space-y-4">
           <h2 className="text-2xl font-bold">Featured Retailers</h2>

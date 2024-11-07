@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-
 export function useSupabaseQuery(tableName, options = {}) {
   const {
     filters = {},
@@ -9,6 +8,7 @@ export function useSupabaseQuery(tableName, options = {}) {
     searchTerm,
     orderByField = "created_at",
     orderDirection = "desc",
+    relations = [], // New option for specifying related tables
   } = options;
 
   return useQuery({
@@ -21,6 +21,7 @@ export function useSupabaseQuery(tableName, options = {}) {
       searchTerm,
       orderByField,
       orderDirection,
+      relations, // Include relations in the query key
     ],
     queryFn: async () => {
       const response = await fetch("/api/supabase-query", {
@@ -37,6 +38,7 @@ export function useSupabaseQuery(tableName, options = {}) {
           searchTerm,
           orderByField,
           orderDirection,
+          relations, // Send relations to the API
         }),
       });
 

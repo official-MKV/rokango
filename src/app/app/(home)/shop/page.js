@@ -64,13 +64,16 @@ const FullShoppingSection = () => {
     data: productData,
     error,
     refetch,
+    isLoading,
   } = useSupabaseQuery("products", {
     filters,
     page: currentPage,
     pageSize: itemsPerPage,
     searchField: "name",
     searchTerm,
+    orderByField: "created_at",
     orderDirection: "desc",
+    relations: [{ field: "product_categories", table: "categories" }], // Fetch associated categories
   });
 
   const { data: suppliersData } = useFirebaseQuery("users", {
