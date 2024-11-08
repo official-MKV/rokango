@@ -120,7 +120,7 @@ export default function Home() {
         />
 
         <ProductRow
-          title="Electronics"
+          title="Foods and Beverages"
           categoryId="c51b35fe-85e0-4826-9196-cb038c0c74d3"
           itemsToShow={4}
         />
