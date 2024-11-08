@@ -19,6 +19,7 @@ export function ProductRow({
     pageSize: itemsToShow,
     orderByField: "created_at",
     orderDirection: "desc",
+    relation: ["product_categories"],
   });
 
   if (isLoading) {

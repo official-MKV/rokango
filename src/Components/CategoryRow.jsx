@@ -48,7 +48,7 @@ export function CategoryRow({ title, itemsToShow }) {
         {data?.items.map((category) => (
           <div key={category.id} className="w-32 shrink-0 text-center">
             <img
-              src={category.image_url}
+              src={category.image}
               alt={category.label}
               className="h-[100px] w-full object-cover rounded-md"
             />

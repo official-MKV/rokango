@@ -75,33 +75,42 @@ export default function Home() {
 
   return (
     <div className=" relative w-full flex flex-col gap-12">
-      <section className="bg-[#faf0e4] py-16 relative w-full">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="md:w-1/2 text-center md:text-left mb-8 md:mb-0">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
+      <section className="relative h-[60vh] w-full overflow-hidden">
+        {/* Background Image with Enhanced Gradient Overlay */}
+        <div className="absolute inset-0">
+          <img
+            src="/FMCG.png"
+            alt="Background"
+            className="h-full w-full object-cover object-center"
+          />
+          <div
+            className="absolute inset-0 bg-gradient-to-t from-[#ffa458] via-[#ffa458]/70 to-transparent"
+            style={{ backdropFilter: "brightness(0.9)" }}
+          />
+        </div>
+
+        {/* Content */}
+        <div className="relative h-full container mx-auto px-4">
+          <div className="flex h-full items-end justify-center pb-12 md:pb-16">
+            <div className="max-w-2xl text-center">
+              <h1 className="text-3xl md:text-5xl font-bold mb-4 text-white">
                 Connecting Retailers with the Best Local Suppliers
               </h1>
-              <p className="text-lg mb-6">
+              <p className="text-lg md:text-xl mb-6 text-white/95">
                 Get the best products at the best prices from local suppliers
                 with fast deliveries and unmatched customer support.
               </p>
-              <Button
-                size="lg"
-                onClick={() => router.push("/shop")}
-                className="bg-primary hover:bg-primary/90"
+              <button
+                onClick={() => (window.location.href = "/shop")}
+                className="inline-flex items-center px-6 py-3 text-base font-medium text-[#ffa458] bg-white hover:bg-white/90 transition-colors rounded-lg shadow-lg hover:shadow-xl"
               >
                 Shop Now
                 <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-            <div className="md:w-1/2">
-              <img src="/hero-img.png" alt="Hero" className="w-full h-auto" />
+              </button>
             </div>
           </div>
         </div>
       </section>
-
       <div className="container  px-4 space-y-12">
         <BrandRow title="Featured Brands" itemsToShow={6} />
         <CategoryRow

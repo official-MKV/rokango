@@ -19,18 +19,34 @@ export async function POST(request) {
     relations = [],
   } = await request.json();
 
-  // Create initial query
-  let query = supabase.from(tableName).select("*", { count: "exact" });
+  let productIds = [];
+  if (filters.category_id && relations.includes("product_categories")) {
+    // Fetch product IDs associated with the specified category from `product_categories`
+    const { data: categoryData, error: categoryError } = await supabase
+      .from("product_categories")
+      .select("product_id")
+      .eq("category_id", filters.category_id);
 
-  // Apply joins for related tables
-  if (relations.length > 0) {
-    const relatedSelects = relations.map(
-      (rel) => `${rel.field} (${rel.table} (id, name, slug, image))`
-    );
-    query = query.select(`*, ${relatedSelects.join(", ")}`, { count: "exact" });
+    if (categoryError) {
+      return NextResponse.json(
+        { error: categoryError.message },
+        { status: 500 }
+      );
+    }
+
+    productIds = categoryData.map((item) => item.product_id);
+    delete filters.category_id; // Remove category filter from main query
   }
 
-  // Apply filters
+  // Create initial query for the specified `tableName`
+  let query = supabase.from(tableName).select("*", { count: "exact" });
+
+  // Apply the product ID filter if productIds array is populated
+  if (productIds.length > 0) {
+    query = query.in("id", productIds);
+  }
+
+  // Apply other filters
   Object.entries(filters).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
       if (Array.isArray(value)) {

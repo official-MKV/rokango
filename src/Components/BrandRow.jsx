@@ -12,7 +12,7 @@ export function BrandRow({
   itemsToShow = 15,
 }) {
   const { data, isLoading, error } = useSupabaseQuery(tableName, {
-    pageSize: 15,
+    pageSize: 6,
     orderByField: "name",
     orderDirection: "asc",
   });
@@ -51,11 +51,27 @@ export function BrandRow({
   }
 
   return (
-    <section className=" relative w-[50%]">
+    <section className="space-y-4 w-full overflow-x-hidden">
       <h2 className="text-2xl font-bold">{title}</h2>
-      <div className="flex flex-row overflow-x- gap-4 p-2 max-w-full">
+      <div className="flex overflow-x-auto gap-4 p-2 max-w-full">
         {data?.items.map((brand) => (
-          <div className="w-[200px] bg-black h-[50px] relative">puppy</div>
+          <div
+            key={brand.id}
+            onClick={() => router.push(`/shop?brand=${brand.slug}`)}
+            className="bg-[#ffa4581a] aspect-video rounded-lg w-[100px] flex items-center justify-center p-4 cursor-pointer transition-transform transform hover:scale-105"
+          >
+            {brand.logo_url ? (
+              <img
+                src={brand.logo_url}
+                alt={brand.name}
+                className="h-24 w-24 object-contain"
+              />
+            ) : (
+              <span className="text-2xl font-bold text-muted-foreground">
+                {brand.name}
+              </span>
+            )}
+          </div>
         ))}
       </div>
     </section>
