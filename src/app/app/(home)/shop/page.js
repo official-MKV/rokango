@@ -4,16 +4,16 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSupabaseQuery } from "@/hooks/supabase";
 import { useFilters } from "@/hooks/useFilters";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Button } from "@/Components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { ProductCard } from "@/components/ShoppingSection";
+} from "@/Components/ui/select";
+import { ProductCard } from "@/Components/ShoppingSection";
 import {
   PackageSearch,
   ShoppingCart,
@@ -22,7 +22,7 @@ import {
   X,
   ChevronDown,
 } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/Components/ui/sheet";
 
 export default function ShoppingPage() {
   const router = useRouter();
