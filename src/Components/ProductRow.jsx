@@ -12,7 +12,7 @@ export function ProductRow({
   itemsToShow,
 }) {
   // Define filters to include category
-  const filters = categoryId ? { category_id: categoryId } : {};
+  const filters = categoryId ? { category: categoryId } : {};
 
   const { data, isLoading, error } = useSupabaseQuery(tableName, {
     filters,

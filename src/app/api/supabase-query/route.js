@@ -20,12 +20,17 @@ export async function POST(request) {
   } = await request.json();
 
   let productIds = [];
-  if (filters.category_id && relations.includes("product_categories")) {
-    // Fetch product IDs associated with the specified category from `product_categories`
+  console.log(`filters:${JSON.stringify(filters)}`);
+
+  if (filters.category && relations.includes("product_categories")) {
+    // Check if `filters.category` is a slug or an ID
+    const isSlug = typeof filters.category === "string";
+
+    // Query product IDs associated with the specified category (by slug or ID)
     const { data: categoryData, error: categoryError } = await supabase
       .from("product_categories")
-      .select("product_id")
-      .eq("category_id", filters.category_id);
+      .select("product, category!inner(slug, id)") // Use foreign key relationship
+      .eq(isSlug ? "category.slug" : "category.id", filters.category);
 
     if (categoryError) {
       return NextResponse.json(
@@ -34,8 +39,9 @@ export async function POST(request) {
       );
     }
 
-    productIds = categoryData.map((item) => item.product_id);
-    delete filters.category_id; // Remove category filter from main query
+    // Extract product IDs
+    productIds = categoryData.map((item) => item.product);
+    delete filters.category; // Remove category filter from main query
   }
 
   // Create initial query for the specified `tableName`
@@ -48,11 +54,12 @@ export async function POST(request) {
 
   // Apply other filters
   Object.entries(filters).forEach(([key, value]) => {
+    console.log(`key:${value}`);
     if (value !== undefined && value !== null && value !== "") {
       if (Array.isArray(value)) {
         query = query.contains(key, value);
       } else {
-        query = query.eq(key, value);
+        query = query.ilike(key, value.toLowerCase());
       }
     }
   });

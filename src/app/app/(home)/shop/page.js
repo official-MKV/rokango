@@ -1,19 +1,19 @@
 "use client";
-import React, { useState, useEffect, Suspense } from "react";
+
+import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useFirebaseQuery, useCart, useAuth } from "@/hooks/firebase";
-import { Input } from "@/Components/ui/input";
-import { Button } from "@/Components/ui/button";
-import { CategoriesLocal } from "@/data/Categories";
+import { useSupabaseQuery } from "@/hooks/supabase";
+import { useFilters } from "@/hooks/useFilters";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/Components/ui/select";
-import { ProductCard } from "@/Components/ShoppingSection";
-import Loader from "@/Components/Loader";
+} from "@/components/ui/select";
+import { ProductCard } from "@/components/ShoppingSection";
 import {
   PackageSearch,
   ShoppingCart,
@@ -21,45 +21,29 @@ import {
   Loader2,
   X,
   ChevronDown,
-  ChevronUp,
 } from "lucide-react";
-import { useSupabaseQuery } from "@/hooks/supabase";
-import { Sheet, SheetContent, SheetTrigger } from "@/Components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function ShoppingPage() {
-  return (
-    <Suspense fallback={<Loader />}>
-      <FullShoppingSection />
-    </Suspense>
-  );
-}
-
-const FullShoppingSection = () => {
   const router = useRouter();
-  const user = useAuth();
   const searchParams = useSearchParams();
 
-  const [filters, setFilters] = useState({
-    Categories: searchParams.get("categories") || "",
-    supplier: searchParams.get("supplier") || "",
-    brand: searchParams.get("brand") || "",
-    active: true,
-  });
   const [searchTerm, setSearchTerm] = useState(
     searchParams.get("search") || ""
   );
   const [searchInputValue, setSearchInputValue] = useState(searchTerm);
-
   const [currentPage, setCurrentPage] = useState(1);
   const [isSearching, setIsSearching] = useState(false);
   const itemsPerPage = 20;
 
-  const [suggestions, setSuggestions] = useState({
-    Categories: [],
-    supplier: [],
-    brand: [],
-  });
+  const initialFilters = {
+    category: searchParams.get("category")?.split(",") || "",
+    brand: searchParams.get("brand") || "",
+  };
 
+  const { filters, handleFilterChange, suggestions } =
+    useFilters(initialFilters);
+  console.log(suggestions);
   const {
     data: productData,
     error,
@@ -71,58 +55,37 @@ const FullShoppingSection = () => {
     pageSize: itemsPerPage,
     searchField: "name",
     searchTerm,
-    orderByField: "created_at",
-    orderDirection: "desc",
-    relations: [{ field: "product_categories", table: "categories" }], // Fetch associated categories
+    // orderByField: "created_at",
+    // orderDirection: "desc",
+    relations: ["product_categories"], // Fetch associated categories
   });
+  if (!isLoading) {
+    console.log(productData);
+  }
 
-  const { data: suppliersData } = useFirebaseQuery("users", {
-    filters: { role: "supplier" },
-  });
-
-  const { items: products, totalPages } = productData || {};
-  const { cart, addToCart } = useCart(user?.uid);
+  const { items: products, totalPages } = productData || {
+    items: [],
+    totalPages: 0,
+  };
 
   useEffect(() => {
-    const queryParams = new URLSearchParams();
+    const queryParams = new URLSearchParams(searchParams);
     Object.entries(filters).forEach(([key, value]) => {
-      if (value) {
-        queryParams.set(key, value);
+      if (value && value.length > 0) {
+        queryParams.set(key, Array.isArray(value) ? value.join(",") : value);
+      } else {
+        queryParams.delete(key);
       }
     });
     if (searchTerm) {
       queryParams.set("search", searchTerm);
+    } else {
+      queryParams.delete("search");
     }
     router.push(`/shop?${queryParams.toString()}`, undefined, {
       shallow: true,
     });
-  }, [filters, searchTerm, router]);
-
-  useEffect(() => {
-    const fetchSuggestions = async () => {
-      setSuggestions({
-        Categories: CategoriesLocal.reduce((a, item) => {
-          a.push(item.label);
-          return a;
-        }, []),
-        supplier:
-          suppliersData?.items?.reduce((list, supplier) => {
-            list.push(supplier.name);
-            return list;
-          }, []) || [],
-        brand: ["Brand 1", "Brand 2"], // Replace with actual brand data
-      });
-    };
-    fetchSuggestions();
-  }, [suppliersData]);
-
-  const handleFilterChange = (key, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [key]: key === "Categories" ? [value] : value,
-    }));
-    setCurrentPage(1);
-  };
+  }, [filters, searchTerm, router, searchParams]);
 
   const handleSearch = () => {
     setIsSearching(true);
@@ -144,7 +107,11 @@ const FullShoppingSection = () => {
 
   const FilterSelect = ({ filterKey }) => (
     <Select
-      value={filters[filterKey]}
+      value={
+        Array.isArray(filters[filterKey])
+          ? filters[filterKey][0]
+          : filters[filterKey]
+      }
       onValueChange={(value) => handleFilterChange(filterKey, value)}
     >
       <SelectTrigger className="w-full">
@@ -153,9 +120,9 @@ const FullShoppingSection = () => {
         />
       </SelectTrigger>
       <SelectContent>
-        {suggestions[filterKey].map((item) => (
-          <SelectItem key={item} value={item}>
-            {item}
+        {suggestions[filterKey]?.map((item) => (
+          <SelectItem key={item.value} value={item.value}>
+            {item.label}
           </SelectItem>
         ))}
       </SelectContent>
@@ -164,7 +131,7 @@ const FullShoppingSection = () => {
 
   const FiltersContent = () => (
     <>
-      {["Categories", "supplier", "brand"].map((filterKey) => (
+      {["category", "brand"].map((filterKey) => (
         <div key={filterKey} className="mb-2">
           <FilterSelect filterKey={filterKey} />
         </div>
@@ -174,7 +141,9 @@ const FullShoppingSection = () => {
 
   return (
     <div className="container mx-auto p-4">
+      {/* Filters Section */}
       <div className="mb-4 sticky top-0 bg-white z-30 p-4">
+        {/* Search */}
         <div className="flex flex-col md:flex-row gap-2 mb-2">
           <div className="flex-grow relative">
             <Input
@@ -206,12 +175,10 @@ const FullShoppingSection = () => {
           </Button>
         </div>
 
-        {/* Desktop Filters */}
-        <div className="hidden md:grid md:grid-cols-3 gap-2">
+        {/* Filters */}
+        <div className="hidden md:grid md:grid-cols-2 gap-2">
           <FiltersContent />
         </div>
-
-        {/* Mobile Filters */}
         <div className="md:hidden">
           <Sheet>
             <SheetTrigger asChild>
@@ -227,16 +194,13 @@ const FullShoppingSection = () => {
         </div>
       </div>
 
+      {/* Products Section */}
       {error ? (
         <div>Error: {error.message}</div>
       ) : products && products.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onAddToCart={addToCart}
-            />
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       ) : (
@@ -246,6 +210,7 @@ const FullShoppingSection = () => {
         </div>
       )}
 
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className="mt-4 flex justify-center space-x-2">
           <Button
@@ -263,15 +228,6 @@ const FullShoppingSection = () => {
           </Button>
         </div>
       )}
-
-      {cart && cart.length > 0 && (
-        <Button
-          className="fixed bottom-4 right-4 z-10 bg-[#ffa459] hover:bg-[#fc7b12]"
-          onClick={() => router.push("/cart")}
-        >
-          <ShoppingCart className="mr-2 h-4 w-4" /> View Cart ({cart.length})
-        </Button>
-      )}
     </div>
   );
-};
+}

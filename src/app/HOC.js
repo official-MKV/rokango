@@ -6,7 +6,7 @@ import PendingApprovalMessage from "@/Components/PendingApproval";
 import SideBar from "@/Components/SideBar";
 
 // Define public routes that don't need authentication
-const PUBLIC_ROUTES = ["/app", "/app/login"];
+const PUBLIC_ROUTES = ["/app", "/login"];
 
 export const withRoleGuard = (WrappedComponent, allowedRoles) => {
   const ProtectedComponent = ({ children, ...props }) => {
@@ -14,13 +14,13 @@ export const withRoleGuard = (WrappedComponent, allowedRoles) => {
     const router = useRouter();
     const pathname = usePathname();
 
-    // Check if current route is public
+    // Check if current route is publi
     const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
 
     if (loading) {
       return (
         <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#ffa458]"></div>
         </div>
       );
     }
@@ -33,13 +33,13 @@ export const withRoleGuard = (WrappedComponent, allowedRoles) => {
     // For protected routes, check authentication
     if (!user) {
       // Redirect to login page on the app subdomain
-      router.push("/app/login");
+      router.push("/login");
       return null;
     }
 
     // Check if user has the required role
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-      router.push("/app/unauthorized");
+      router.push("/unauthorized");
       return null;
     }
 

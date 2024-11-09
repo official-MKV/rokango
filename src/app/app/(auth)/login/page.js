@@ -37,8 +37,10 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      setIsLoading(false);
-      router.push("/");
+      setTimeout(() => {
+        setIsLoading(false);
+        router.push("/");
+      }, 4000);
     } catch (error) {
       setIsLoading(false);
 
