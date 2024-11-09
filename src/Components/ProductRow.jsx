@@ -11,7 +11,6 @@ export function ProductRow({
   categoryId,
   itemsToShow,
 }) {
-  // Define filters to include category
   const filters = categoryId ? { category: categoryId } : {};
 
   const { data, isLoading, error } = useSupabaseQuery(tableName, {
@@ -25,12 +24,12 @@ export function ProductRow({
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">{title}</h2>
-        <div className="flex gap-4 overflow-x-auto">
+        <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {Array(itemsToShow)
             .fill(0)
             .map((_, index) => (
-              <div key={index} className="space-y-2 w-48 shrink-0">
+              <div key={index} className="space-y-2">
                 <Skeleton className="h-[200px] w-full" />
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-2/3" />
@@ -55,12 +54,14 @@ export function ProductRow({
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">{title}</h2>
-      <div className="flex gap-4 overflow-x-auto">
+      <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {data?.items.map((product) => (
-          <div key={product.id} className="w-48 shrink-0">
-            <ProductCard product={product} onAddToCart={() => {}} />
-          </div>
+          <ProductCard
+            key={product.id}
+            product={product}
+            onAddToCart={() => {}}
+          />
         ))}
       </div>
     </div>

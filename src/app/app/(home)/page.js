@@ -74,9 +74,8 @@ export default function Home() {
   }
 
   return (
-    <div className=" relative w-full flex flex-col gap-12">
-      <section className="relative h-[60vh] w-full overflow-hidden">
-        {/* Background Image with Enhanced Gradient Overlay */}
+    <div className="relative w-full flex flex-col gap-8 md:gap-12">
+      <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden">
         <div className="absolute inset-0">
           <img
             src="/FMCG.png"
@@ -89,20 +88,19 @@ export default function Home() {
           />
         </div>
 
-        {/* Content */}
         <div className="relative h-full container mx-auto px-4">
-          <div className="flex h-full items-end justify-center pb-12 md:pb-16">
+          <div className="flex h-full items-end justify-center pb-8 md:pb-16">
             <div className="max-w-2xl text-center">
-              <h1 className="text-3xl md:text-5xl font-bold mb-4 text-white">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4 text-white">
                 Connecting Retailers with the Best Local Suppliers
               </h1>
-              <p className="text-lg md:text-xl mb-6 text-white/95">
+              <p className="text-base sm:text-lg md:text-xl mb-4 md:mb-6 text-white/95">
                 Get the best products at the best prices from local suppliers
                 with fast deliveries and unmatched customer support.
               </p>
               <button
                 onClick={() => (window.location.href = "/shop")}
-                className="inline-flex items-center px-6 py-3 text-base font-medium text-[#ffa458] bg-white hover:bg-white/90 transition-colors rounded-lg shadow-lg hover:shadow-xl"
+                className="inline-flex items-center px-4 py-2 md:px-6 md:py-3 text-sm md:text-base font-medium text-[#ffa458] bg-white hover:bg-white/90 transition-colors rounded-lg shadow-lg hover:shadow-xl"
               >
                 Shop Now
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -111,7 +109,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      <div className="container  px-4 space-y-12">
+      <div className="container px-4 space-y-8 md:space-y-12">
         <BrandRow title="Featured Brands" itemsToShow={6} />
         <CategoryRow
           title="All Categories"
@@ -121,7 +119,7 @@ export default function Home() {
 
         <ProductRow
           title="Foods and Beverages"
-          categoryId="c51b35fe-85e0-4826-9196-cb038c0c74d3"
+          categoryId="food_and_beverages"
           itemsToShow={4}
         />
 
@@ -146,16 +144,16 @@ export default function Home() {
         />
 
         <section className="space-y-4">
-          <h2 className="text-2xl font-bold">Featured Retailers</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <h2 className="text-xl md:text-2xl font-bold">Featured Retailers</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array(4)
               .fill(0)
               .map((_, index) => (
                 <div key={index} className="bg-muted p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-2">
+                  <h3 className="text-base md:text-lg font-semibold mb-2">
                     Retailer {index + 1}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs md:text-sm text-muted-foreground">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                   </p>
                 </div>

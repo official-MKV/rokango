@@ -14,12 +14,12 @@ export function CategoryRow({ title, itemsToShow }) {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">{title}</h2>
-        <div className="flex gap-4 overflow-x-auto">
+        <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4">
           {Array(itemsToShow)
             .fill(0)
             .map((_, index) => (
-              <div key={index} className="space-y-2 w-32 shrink-0">
+              <div key={index} className="space-y-2">
                 <Skeleton className="h-[100px] w-full" />
                 <Skeleton className="h-4 w-full" />
               </div>
@@ -43,16 +43,18 @@ export function CategoryRow({ title, itemsToShow }) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">{title}</h2>
-      <div className="flex gap-4 overflow-x-auto">
+      <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4">
         {data?.items.map((category) => (
-          <div key={category.id} className="w-32 shrink-0 text-center">
+          <div key={category.id} className="text-center">
             <img
               src={category.image}
               alt={category.label}
               className="h-[100px] w-full object-cover rounded-md"
             />
-            <p className="text-sm font-semibold mt-2">{category.label}</p>
+            <p className="text-xs sm:text-sm font-semibold mt-2">
+              {category.label}
+            </p>
           </div>
         ))}
       </div>

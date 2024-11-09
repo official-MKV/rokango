@@ -21,8 +21,8 @@ export function BrandRow({
   if (isLoading) {
     return (
       <section className="space-y-4">
-        <h2 className="text-2xl font-bold">{title}</h2>
-        <div className="flex overflow-x-auto gap-4 max-w-full">
+        <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {Array(itemsToShow)
             .fill(0)
             .map((_, index) => (
@@ -30,7 +30,7 @@ export function BrandRow({
                 key={index}
                 className="bg-[#ffa4581a] aspect-video rounded-lg flex items-center justify-center p-4"
               >
-                <Skeleton className="h-16 w-16 rounded-full" />
+                <Skeleton className="h-12 w-12 md:h-16 md:w-16 rounded-full" />
               </div>
             ))}
         </div>
@@ -51,23 +51,23 @@ export function BrandRow({
   }
 
   return (
-    <section className="space-y-4 w-full overflow-x-hidden">
-      <h2 className="text-2xl font-bold">{title}</h2>
-      <div className="flex overflow-x-auto gap-4 p-2 max-w-full">
+    <section className="space-y-4 w-full">
+      <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {data?.items.map((brand) => (
           <div
             key={brand.id}
             onClick={() => router.push(`/shop?brand=${brand.slug}`)}
-            className="bg-[#ffa4581a] aspect-video rounded-lg w-[100px] flex items-center justify-center p-4 cursor-pointer transition-transform transform hover:scale-105"
+            className="bg-[#ffa4581a] aspect-video rounded-lg flex items-center justify-center p-4 cursor-pointer transition-transform transform hover:scale-105"
           >
             {brand.logo_url ? (
               <img
                 src={brand.logo_url}
                 alt={brand.name}
-                className="h-24 w-24 object-contain"
+                className="h-16 w-16 md:h-24 md:w-24 object-contain"
               />
             ) : (
-              <span className="text-2xl font-bold text-muted-foreground">
+              <span className="text-lg md:text-2xl font-bold text-muted-foreground text-center">
                 {brand.name}
               </span>
             )}
