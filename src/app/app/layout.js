@@ -15,4 +15,4 @@ const Layout = ({ children }) => {
   );
 };
 
-export default withRoleGuard(Layout, ["admin"]);
+export default withRoleGuard(Layout, ["admin", "supplier", "retailer"]);
