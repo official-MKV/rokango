@@ -6,8 +6,8 @@ import navItems from "@/data/navItems.json";
 import { useAuth } from "@/hooks/firebase";
 import { addDoc, collection } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
+import { Button } from "@/Components/ui/button";
 import { useCart } from "@/hooks/firebase";
 import {
   ShoppingCart,
@@ -28,7 +28,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from "@/Components/ui/alert-dialog";
 
 export function NavBar() {
   const router = useRouter();
