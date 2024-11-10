@@ -1,24 +1,19 @@
 "use client";
 import React, { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import navItems from "@/data/navItems.json";
 import { useAuth } from "@/hooks/firebase";
 import { addDoc, collection } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
-import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
-import { Button } from "@/Components/ui/button";
-import { motion } from "framer-motion";
-
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/firebase";
 import {
-  PackageSearch,
   ShoppingCart,
   Plus,
   Minus,
   Trash2,
-  LogOut,
   Menu,
   X,
   ChevronDown,
@@ -33,9 +28,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/Components/ui/alert-dialog";
-import { sub } from "date-fns";
-import { MotionConfig } from "framer-motion";
+} from "@/components/ui/alert-dialog";
 
 export function NavBar() {
   const router = useRouter();
@@ -46,34 +39,12 @@ export function NavBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState({});
 
+  const { cart, cartId, addToCart, updateQuantity, removeItem } = useCart(
+    user?.uid
+  );
+
   const toggleDropdown = (key) => {
-    setOpenDropdowns((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
-
-  const {
-    cart,
-    cartId,
-    isLoading,
-    isError,
-    addToCart,
-    updateQuantity,
-    removeItem,
-  } = useCart(user?.uid);
-
-  const handleAddToCart = (product) => {
-    addToCart(product);
-    setShowAddToCartPopup(true);
-  };
-
-  const handleUpdateQuantity = (productId, change) => {
-    updateQuantity(productId, change);
-  };
-
-  const handleRemoveItem = (productId) => {
-    removeItem(productId);
+    setOpenDropdowns((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const totalPrice = cart.reduce(
@@ -82,11 +53,8 @@ export function NavBar() {
   );
 
   const handleCheckout = async () => {
+    if (!user?.email || !totalPrice) return;
     setCheckingOut(true);
-    if (!user.email || !totalPrice) {
-      console.error("Missing required checkout information");
-      return { error: "Missing required checkout information" };
-    }
 
     try {
       const transactionRef = await addDoc(collection(db, "transactions"), {
@@ -96,11 +64,10 @@ export function NavBar() {
         amount: totalPrice,
         created_at: new Date(),
       });
-      const response = await fetch(`/api/checkout`, {
+
+      const response = await fetch("/api/checkout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: user.email,
           amount: totalPrice,
@@ -108,25 +75,15 @@ export function NavBar() {
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          `HTTP error! status: ${response.status}, message: ${errorData.error}`
-        );
-      }
-
       const data = await response.json();
-
-      if (!data.data || !data.data.authorization_url) {
-        throw new Error("Authorization URL not received from server");
+      if (data.data?.authorization_url) {
+        localStorage.setItem("paymentReference", transactionRef.id);
+        window.location.href = data.data.authorization_url;
       }
-
-      localStorage.setItem("paymentReference", transactionRef.id);
-      setCheckingOut(false);
-      window.location.href = data.data.authorization_url;
     } catch (error) {
-      console.error("There was a problem with the checkout process:", error);
-      return { error: error.message };
+      console.error("Checkout error:", error);
+    } finally {
+      setCheckingOut(false);
     }
   };
 
@@ -135,211 +92,235 @@ export function NavBar() {
       await firebaseSignOut(auth);
       router.push("/login");
     } catch (error) {
-      console.error("Error signing out: ", error);
+      console.error("Sign out error:", error);
     }
   };
 
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
-
   return (
-    <nav className="bg-white fixed z-50 top-0 w-full">
-      <div className="relative md:w-[85vw] w-full py-[10px] md:px-[5px]  px-[5px] flex justify-between items-center">
-        <div
-          className="relative md:h-16 h-10 w-full md:w-[50%] cursor-pointer flex items-start bg-contain bg-no-repeat"
-          id="logo"
-          onClick={() => {
-            router.push("/");
-          }}
-          style={{ backgroundImage: "url('/rokango.png')" }}
-        ></div>
+    <nav className="bg-white md:w-[85 fixed w-full top-0 inset-0 h-fit z-50 shadow-sm">
+      <div className=" mx-auto px-6  sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <div
+            className="flex-shrink-0 cursor-pointer"
+            onClick={() => router.push("/")}
+          >
+            <img src="/rokango.png" alt="Logo" className="h-8 w-auto sm:h-10" />
+          </div>
 
-        <div className="hidden md:flex items-center gap-x-4">
-          {allNavItems.map((item, key) => (
-            <NavLink key={key} item={item} />
-          ))}
-        </div>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            {allNavItems.map((item, index) => (
+              <NavLink key={index} item={item} />
+            ))}
+          </div>
 
-        <div className="flex items-center gap-5 ">
-          {!loading && user ? (
-            <>
-              <div
-                onClick={() => setShowOrderPopup(true)}
-                className="relative p-[10px] rounded-full group transition-all duration-500 ease-in-out hover:shadow-lg flex items-center justify-center hover:text-[white] cursor-pointer hover:bg-[#ffa459]"
-              >
-                <ShoppingCart className="text-gray-400 group-hover:text-[white] w-8 h-8" />
-                <span className="top-0 group-hover:bg-[white] group-hover:text-[#ffa459] right-0 absolute text-white bg-[#ffa459] size-[16px] text-[12px] rounded-full flex items-center justify-center">
-                  {cart.length}
-                </span>
-              </div>
-              <div
-                onClick={() => {
-                  const route =
-                    user.role === "admin"
-                      ? "/admin"
-                      : user.role === "supplier"
-                      ? "/dashboard"
-                      : "/profile";
-                  router.push(route);
-                  setMobileMenuOpen(false);
-                }}
-                className=" md:flex items-center cursor-pointer py-[2px] pl-[2px] gap-3 hover:bg-[#ffa459] rounded-full pr-[2px]"
-              >
-                <Avatar className=" ">
-                  <AvatarImage src={user?.picture} alt={user?.businessName} />
-                  <AvatarFallback>
-                    {user?.businessName?.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className=" hidden md:flex px-[10px] py-[3px] text-[12px] font-medium gap-5 rounded-full bg-[#faf0e4] text-nowrap">
-                  {user.businessName}
+          {/* Right Section */}
+          <div className="flex items-center space-x-4">
+            {!loading && user ? (
+              <>
+                {/* Cart Button */}
+                <button
+                  onClick={() => setShowOrderPopup(true)}
+                  className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
+                >
+                  <ShoppingCart className="w-6 h-6 text-gray-600" />
+                  {cart.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                      {cart.length}
+                    </span>
+                  )}
+                </button>
+
+                {/* User Profile */}
+                <div className="relative group">
+                  <button className="flex items-center space-x-3">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.picture} />
+                      <AvatarFallback>
+                        {user?.businessName?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="hidden md:block text-sm font-medium">
+                      {user.businessName}
+                    </span>
+                  </button>
+
+                  <div className="hidden group-hover:block absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                    <button
+                      onClick={() => {
+                        const route =
+                          user.role === "admin"
+                            ? "/admin"
+                            : user.role === "supplier"
+                            ? "/dashboard"
+                            : "/profile";
+                        router.push(route);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Profile
+                    </button>
+                    <button
+                      onClick={handleSignOut}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div
-                className="px-4 py-2 font-normal hidden md:block text-[15px] hover:bg-[#ffa459] text-black hover:rounded-[5px] transition-all duration-500 ease-in-out hover:text-white  cursor-pointer"
-                onClick={() => {
-                  handleSignOut();
-                  setMobileMenuOpen(false);
-                }}
+              </>
+            ) : !loading ? (
+              <Button
+                onClick={() => router.push("/login")}
+                className="bg-orange-500 hover:bg-orange-600 text-white"
               >
-                Sign Out
-              </div>
-            </>
-          ) : !loading ? (
-            <div
-              onClick={() => router.push("/login")}
-              className="w-[100px] py-[10px] cursor-pointer hover:bg-[#ff9844] bg-[#ffa459] text-center flex items-center justify-center"
-            >
-              <span className="text-[white] font-medium">Login</span>
-            </div>
-          ) : null}
+                Login
+              </Button>
+            ) : null}
 
-          <button onClick={toggleMobileMenu} className="md:hidden">
-            {mobileMenuOpen ? (
-              <X className="h-6 w-6 text-gray-500" />
-            ) : (
-              <Menu className="h-6 w-6 text-gray-500" />
-            )}
-          </button>
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-md hover:bg-gray-100"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white shadow-lg w-full">
-          {allNavItems.map((item, key) => {
-            return (
-              <div key={key}>
-                <div
-                  className="flex justify-between items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={() =>
-                    item.subLinks
-                      ? toggleDropdown(key)
-                      : item.href && router.push(item.href)
-                  }
+        <div className="md:hidden bg-white border-t">
+          <div className="px-2 pt-2 pb-3 space-y-1">
+            {allNavItems.map((item, index) => (
+              <div key={index} className="py-1">
+                <button
+                  onClick={() => {
+                    if (item.href) router.push(item.href);
+                    if (item.subLinks) toggleDropdown(index);
+                  }}
+                  className="w-full flex justify-between items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
                 >
                   {item.label}
                   {item.subLinks &&
-                    (openDropdowns[key] ? (
-                      <ChevronUp className="h-4 w-4" />
+                    (openDropdowns[index] ? (
+                      <ChevronUp className="h-5 w-5" />
                     ) : (
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronDown className="h-5 w-5" />
                     ))}
-                </div>
-                {item.subLinks && openDropdowns[key] && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="flex flex-col w-full pl-4"
-                  >
-                    {item.subLinks.map((sublink, index) => (
-                      <Link
-                        key={index}
-                        href={sublink.href}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {sublink.label}
-                      </Link>
-                    ))}
-                  </motion.div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+                </button>
 
-      <AlertDialog open={showOrderPopup} onOpenChange={setShowOrderPopup}>
-        <AlertDialogContent className="max-w-3xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Your Order</AlertDialogTitle>
-          </AlertDialogHeader>
-          <div className="mt-4">
-            {cart.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between py-2 border-b"
-              >
-                <div className="flex items-center">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-16 h-16 object-cover mr-4"
-                  />
-                  <div>
-                    <h3 className="font-semibold">{item.name}</h3>
-                    <p className="text-sm text-gray-500">₦{item.price}</p>
+                {item.subLinks && openDropdowns[index] && (
+                  <div className="pl-4 space-y-1">
+                    {item.subLinks.map((subItem, subIndex) => (
+                      <button
+                        key={subIndex}
+                        onClick={() => {
+                          router.push(subItem.href);
+                          setMobileMenuOpen(false);
+                        }}
+                        className="block w-full text-left px-3 py-2 rounded-md text-base text-gray-600 hover:bg-gray-100"
+                      >
+                        {subItem.label}
+                      </button>
+                    ))}
                   </div>
-                </div>
-                <div className="flex items-center">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleUpdateQuantity(item.id, -1)}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <span className="mx-2">{item.quantity}</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleUpdateQuantity(item.id, 1)}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveItem(item.id)}
-                    className="ml-2"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                )}
               </div>
             ))}
           </div>
-          <div className="mt-4 text-right">
-            <p className="font-semibold">Total: ₦{totalPrice.toFixed(2)}</p>
+        </div>
+      )}
+
+      {/* Cart Dialog */}
+      <AlertDialog open={showOrderPopup} onOpenChange={setShowOrderPopup}>
+        <AlertDialogContent className="max-w-3xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Your Cart</AlertDialogTitle>
+          </AlertDialogHeader>
+
+          <div className="mt-4 max-h-[60vh] overflow-y-auto">
+            {cart.length === 0 ? (
+              <p className="text-center text-gray-500 py-4">
+                Your cart is empty
+              </p>
+            ) : (
+              cart.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between py-4 border-b"
+                >
+                  <div className="flex items-center space-x-4">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-16 h-16 object-cover rounded-md"
+                    />
+                    <div>
+                      <h3 className="font-medium">{item.name}</h3>
+                      <p className="text-gray-600">
+                        ₦{item.price.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateQuantity(item.id, -1)}
+                      disabled={item.quantity <= 1}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="w-8 text-center">{item.quantity}</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateQuantity(item.id, 1)}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeItem(item.id)}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
-          <AlertDialogFooter>
-            <AlertDialogAction
-              className="bg-transparent border-[2px] border-[black] text-[black] hover:bg-[black] hover:text-[white]"
-              onClick={() => setShowOrderPopup(false)}
-            >
-              Close
-            </AlertDialogAction>
-            <AlertDialogAction
-              className="bg-[#ffa459] hover:bg-[#ff7c11]"
-              onClick={() => {
-                handleCheckout();
-                setShowOrderPopup(false);
-              }}
-            >
-              CheckOut
-            </AlertDialogAction>
-          </AlertDialogFooter>
+
+          <div className="mt-4 flex justify-between items-center">
+            <p className="text-lg font-semibold">
+              Total: ₦{totalPrice.toLocaleString()}
+            </p>
+            <div className="space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowOrderPopup(false)}
+              >
+                Continue Shopping
+              </Button>
+              <Button
+                onClick={handleCheckout}
+                disabled={checkingOut || cart.length === 0}
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+              >
+                {checkingOut ? "Processing..." : "Checkout"}
+              </Button>
+            </div>
+          </div>
         </AlertDialogContent>
       </AlertDialog>
     </nav>
@@ -350,13 +331,6 @@ function NavLink({ item }) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
 
-  const isActive = (path) => router.pathname === path;
-
-  const linkStyle = (path) => ({
-    color: isActive(path) ? "#007bff" : "#333",
-    fontWeight: isActive(path) ? "bold" : "normal",
-  });
-
   if (item.subLinks) {
     return (
       <div
@@ -364,20 +338,20 @@ function NavLink({ item }) {
         onMouseEnter={() => setIsOpen(true)}
         onMouseLeave={() => setIsOpen(false)}
       >
-        <button className="nav-link" style={linkStyle(item.href)}>
+        <button className="text-gray-700 hover:text-orange-500 px-3 py-2 text-sm font-medium">
           {item.label}
         </button>
 
         {isOpen && (
-          <div className="absolute left-0 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-            {item.subLinks.map((subItem) => (
-              <Link
-                key={subItem.href}
-                href={subItem.href}
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          <div className="absolute left-0 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1">
+            {item.subLinks.map((subItem, index) => (
+              <button
+                key={index}
+                onClick={() => router.push(subItem.href)}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 {subItem.label}
-              </Link>
+              </button>
             ))}
           </div>
         )}
@@ -386,13 +360,12 @@ function NavLink({ item }) {
   }
 
   return (
-    <Link
-      href={item.href}
-      className="nav-link group"
-      style={linkStyle(item.href)}
+    <button
+      onClick={() => router.push(item.href)}
+      className="text-gray-700 hover:text-orange-500 px-3 py-2 text-sm font-medium"
     >
       {item.label}
-    </Link>
+    </button>
   );
 }
 

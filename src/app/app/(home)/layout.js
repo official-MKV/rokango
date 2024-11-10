@@ -5,7 +5,7 @@ import Footer from "@/Components/Footer";
 const Layout = ({ children }) => {
   return (
     <div className="w-full h-full relative overflow-hidden">
-      <div className="relative w-full pt-[50px] md:px-[100px]">
+      <div className="relative w-full pt-[50px] md:px-[100px] ">
         <NavBar />
       </div>
       <div

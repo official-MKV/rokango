@@ -1,71 +1,34 @@
 "use client";
-import React, { useRef, useState, useEffect } from "react";
+import React from "react";
 import { Skeleton } from "@/Components/ui/skeleton";
-import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import { useSupabaseQuery } from "@/hooks/supabase";
 import { useRouter } from "next/navigation";
-import { Button } from "@/Components/ui/button";
 
-export default function BrandRow({
-  title = "Featured Brands",
-  tableName = "brands",
-  itemsToShow = 15,
-}) {
-  const { data, isLoading, error } = useSupabaseQuery(tableName, {
+export default function CategoryRow({ title, itemsToShow }) {
+  const { data, isLoading, error } = useSupabaseQuery("categories", {
     pageSize: itemsToShow,
     orderByField: "name",
     orderDirection: "asc",
   });
   const router = useRouter();
-  const scrollContainerRef = useRef(null);
-  const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(false);
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (container) {
-      const handleScroll = () => {
-        setShowLeftArrow(container.scrollLeft > 0);
-        setShowRightArrow(
-          container.scrollLeft < container.scrollWidth - container.clientWidth
-        );
-      };
-
-      container.addEventListener("scroll", handleScroll);
-      handleScroll(); // Check initial state
-
-      return () => container.removeEventListener("scroll", handleScroll);
-    }
-  }, [data]);
-
-  const scroll = (direction) => {
-    const container = scrollContainerRef.current;
-    if (container) {
-      const scrollAmount = direction === "left" ? -300 : 300;
-      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
-    }
-  };
 
   if (isLoading) {
     return (
-      <section className="space-y-4">
+      <div className="space-y-4">
         <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
-        <div className="relative">
-          <div className="flex space-x-4 overflow-x-auto scrollbar-hide pb-4">
-            {Array(itemsToShow)
-              .fill(0)
-              .map((_, index) => (
-                <div
-                  key={index}
-                  className="bg-[#ffa4581a] rounded-lg flex-shrink-0 w-32 h-32 flex items-center justify-center p-4"
-                >
-                  <Skeleton className="h-16 w-16 rounded-full" />
-                </div>
-              ))}
-          </div>
+        <div className="flex overflow-x-auto space-x-4 pb-4">
+          {Array(itemsToShow)
+            .fill(0)
+            .map((_, index) => (
+              <div key={index} className="flex-shrink-0 w-32 space-y-2">
+                <Skeleton className="h-32 w-full" />
+                <Skeleton className="h-4 w-full" />
+              </div>
+            ))}
         </div>
-      </section>
+      </div>
     );
   }
 
@@ -82,54 +45,28 @@ export default function BrandRow({
   }
 
   return (
-    <section className="space-y-4">
+    <div className="space-y-4">
       <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
-      <div className="relative">
-        {showLeftArrow && (
-          <Button
-            variant="outline"
-            size="icon"
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10"
-            onClick={() => scroll("left")}
+      <div className="flex overflow-x-auto space-x-4 pb-4">
+        {data?.items.map((category) => (
+          <div
+            key={category.id}
+            className="flex-shrink-0 w-32 text-center hover:scale-105 cursor-pointer"
+            onClick={() => {
+              router.push(`/shop?category=${data.slug}`);
+            }}
           >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-        )}
-        <div
-          ref={scrollContainerRef}
-          className="flex space-x-4 overflow-x-auto scrollbar-hide pb-4"
-        >
-          {data?.items.map((brand) => (
-            <div
-              key={brand.id}
-              onClick={() => router.push(`/shop?brand=${brand.slug}`)}
-              className="bg-[#ffa4581a] rounded-lg flex-shrink-0 w-32 h-32 flex items-center justify-center p-4 cursor-pointer transition-transform transform hover:scale-105"
-            >
-              {brand.logo_url ? (
-                <img
-                  src={brand.logo_url}
-                  alt={brand.name}
-                  className="h-20 w-20 object-contain"
-                />
-              ) : (
-                <span className="text-sm font-bold text-muted-foreground text-center">
-                  {brand.name}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-        {showRightArrow && (
-          <Button
-            variant="outline"
-            size="icon"
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10"
-            onClick={() => scroll("right")}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        )}
+            <img
+              src={category.image}
+              alt={category.label}
+              className="h-32 w-full object-cover rounded-md"
+            />
+            <p className="text-xs font-semibold mt-2 truncate">
+              {category.label}
+            </p>
+          </div>
+        ))}
       </div>
-    </section>
+    </div>
   );
 }
