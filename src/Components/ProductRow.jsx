@@ -1,11 +1,11 @@
 import React from "react";
-import { ProductCard } from "./ProductCard";
+import { ProductCard } from "./ShoppingSection";
 import { Skeleton } from "@/Components/ui/skeleton";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import { useSupabaseQuery } from "@/hooks/supabase";
 
-export function ProductRow({
+export default function ProductRow({
   title,
   tableName = "products",
   categoryId,
@@ -25,12 +25,12 @@ export function ProductRow({
     return (
       <div className="space-y-4">
         <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div className="flex overflow-x-auto space-x-4 pb-4">
           {Array(itemsToShow)
             .fill(0)
             .map((_, index) => (
-              <div key={index} className="space-y-2">
-                <Skeleton className="h-[200px] w-full" />
+              <div key={index} className="flex-shrink-0 w-64 space-y-2">
+                <Skeleton className="h-48 w-full" />
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-2/3" />
               </div>
@@ -55,13 +55,11 @@ export function ProductRow({
   return (
     <div className="space-y-4">
       <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide">
         {data?.items.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            onAddToCart={() => {}}
-          />
+          <div key={product.id} className="flex-shrink-0 w-64">
+            <ProductCard product={product} onAddToCart={() => {}} />
+          </div>
         ))}
       </div>
     </div>

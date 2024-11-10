@@ -1,31 +1,71 @@
-import React from "react";
+"use client";
+import React, { useRef, useState, useEffect } from "react";
 import { Skeleton } from "@/Components/ui/skeleton";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import { useSupabaseQuery } from "@/hooks/supabase";
+import { useRouter } from "next/navigation";
+import { Button } from "@/Components/ui/button";
 
-export function CategoryRow({ title, itemsToShow }) {
-  const { data, isLoading, error } = useSupabaseQuery("categories", {
+export default function BrandRow({
+  title = "Featured Brands",
+  tableName = "brands",
+  itemsToShow = 15,
+}) {
+  const { data, isLoading, error } = useSupabaseQuery(tableName, {
     pageSize: itemsToShow,
     orderByField: "name",
     orderDirection: "asc",
   });
+  const router = useRouter();
+  const scrollContainerRef = useRef(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      const handleScroll = () => {
+        setShowLeftArrow(container.scrollLeft > 0);
+        setShowRightArrow(
+          container.scrollLeft < container.scrollWidth - container.clientWidth
+        );
+      };
+
+      container.addEventListener("scroll", handleScroll);
+      handleScroll(); // Check initial state
+
+      return () => container.removeEventListener("scroll", handleScroll);
+    }
+  }, [data]);
+
+  const scroll = (direction) => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      const scrollAmount = direction === "left" ? -300 : 300;
+      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <section className="space-y-4">
         <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4">
-          {Array(itemsToShow)
-            .fill(0)
-            .map((_, index) => (
-              <div key={index} className="space-y-2">
-                <Skeleton className="h-[100px] w-full" />
-                <Skeleton className="h-4 w-full" />
-              </div>
-            ))}
+        <div className="relative">
+          <div className="flex space-x-4 overflow-x-auto scrollbar-hide pb-4">
+            {Array(itemsToShow)
+              .fill(0)
+              .map((_, index) => (
+                <div
+                  key={index}
+                  className="bg-[#ffa4581a] rounded-lg flex-shrink-0 w-32 h-32 flex items-center justify-center p-4"
+                >
+                  <Skeleton className="h-16 w-16 rounded-full" />
+                </div>
+              ))}
+          </div>
         </div>
-      </div>
+      </section>
     );
   }
 
@@ -42,22 +82,54 @@ export function CategoryRow({ title, itemsToShow }) {
   }
 
   return (
-    <div className="space-y-4">
+    <section className="space-y-4">
       <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4">
-        {data?.items.map((category) => (
-          <div key={category.id} className="text-center">
-            <img
-              src={category.image}
-              alt={category.label}
-              className="h-[100px] w-full object-cover rounded-md"
-            />
-            <p className="text-xs sm:text-sm font-semibold mt-2">
-              {category.label}
-            </p>
-          </div>
-        ))}
+      <div className="relative">
+        {showLeftArrow && (
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10"
+            onClick={() => scroll("left")}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        )}
+        <div
+          ref={scrollContainerRef}
+          className="flex space-x-4 overflow-x-auto scrollbar-hide pb-4"
+        >
+          {data?.items.map((brand) => (
+            <div
+              key={brand.id}
+              onClick={() => router.push(`/shop?brand=${brand.slug}`)}
+              className="bg-[#ffa4581a] rounded-lg flex-shrink-0 w-32 h-32 flex items-center justify-center p-4 cursor-pointer transition-transform transform hover:scale-105"
+            >
+              {brand.logo_url ? (
+                <img
+                  src={brand.logo_url}
+                  alt={brand.name}
+                  className="h-20 w-20 object-contain"
+                />
+              ) : (
+                <span className="text-sm font-bold text-muted-foreground text-center">
+                  {brand.name}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+        {showRightArrow && (
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10"
+            onClick={() => scroll("right")}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        )}
       </div>
-    </div>
+    </section>
   );
 }

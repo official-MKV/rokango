@@ -6,12 +6,12 @@ import { useToast } from "@/Components/ui/use-toast";
 import { useAuth } from "@/hooks/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { ProductRow } from "@/Components/ProductRow";
+import ProductRow from "@/Components/ProductRow";
 import { Button } from "@/Components/ui/button";
 import { ArrowRight } from "lucide-react";
 import LoadingPage from "@/Components/LoadingPage";
-import { CategoryRow } from "@/Components/CategoryRow";
-import { BrandRow } from "@/Components/BrandRow";
+import CategoryRow from "@/Components/CategoryRow";
+import BrandRow from "@/Components/BrandRow";
 
 export default function Home() {
   const router = useRouter();
@@ -74,8 +74,8 @@ export default function Home() {
   }
 
   return (
-    <div className="relative w-full flex flex-col gap-8 md:gap-12">
-      <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden">
+    <div className="grid grid-cols-1 gap-8 md:gap-12 w-full">
+      <section className="w-full h-[50vh] md:h-[60vh] relative">
         <div className="absolute inset-0">
           <img
             src="/FMCG.png"
@@ -88,8 +88,8 @@ export default function Home() {
           />
         </div>
 
-        <div className="relative h-full container mx-auto px-4">
-          <div className="flex h-full items-end justify-center pb-8 md:pb-16">
+        <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="h-full flex items-end justify-center pb-8 md:pb-16">
             <div className="max-w-2xl text-center">
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4 text-white">
                 Connecting Retailers with the Best Local Suppliers
@@ -109,58 +109,67 @@ export default function Home() {
           </div>
         </div>
       </section>
-      <div className="container px-4 space-y-8 md:space-y-12">
-        <BrandRow title="Featured Brands" itemsToShow={6} />
-        <CategoryRow
-          title="All Categories"
-          tableName="categories"
-          itemsToShow={8}
-        />
 
-        <ProductRow
-          title="Foods and Beverages"
-          categoryId="food_and_beverages"
-          itemsToShow={4}
-        />
+      {/* Content Grid Section */}
+      <section className="w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-8 md:gap-12">
+            <BrandRow title="Featured Brands" itemsToShow={6} />
 
-        <ProductRow
-          title="Sponsored Products"
-          tableName="products"
-          filters={{ sponsored: true }}
-          itemsToShow={4}
-        />
+            <CategoryRow
+              title="All Categories"
+              tableName="categories"
+              itemsToShow={8}
+            />
 
-        <ProductRow
-          title="Top Selling Products"
-          tableName="products"
-          filters={{ topSelling: true }}
-          itemsToShow={4}
-        />
+            <ProductRow
+              title="Foods and Beverages"
+              categoryId="food_and_beverages"
+              itemsToShow={4}
+            />
 
-        <ProductRow
-          title="Group Buy in Your Area"
-          tableName="group_buys"
-          itemsToShow={4}
-        />
+            <ProductRow
+              title="Sponsored Products"
+              tableName="products"
+              filters={{ sponsored: true }}
+              itemsToShow={4}
+            />
 
-        <section className="space-y-4">
-          <h2 className="text-xl md:text-2xl font-bold">Featured Retailers</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {Array(4)
-              .fill(0)
-              .map((_, index) => (
-                <div key={index} className="bg-muted p-4 rounded-lg">
-                  <h3 className="text-base md:text-lg font-semibold mb-2">
-                    Retailer {index + 1}
-                  </h3>
-                  <p className="text-xs md:text-sm text-muted-foreground">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  </p>
-                </div>
-              ))}
+            <ProductRow
+              title="Top Selling Products"
+              tableName="products"
+              filters={{ topSelling: true }}
+              itemsToShow={4}
+            />
+
+            <ProductRow
+              title="Group Buy in Your Area"
+              tableName="group_buys"
+              itemsToShow={4}
+            />
+
+            <div className="grid gap-4">
+              <h2 className="text-xl md:text-2xl font-bold">
+                Featured Retailers
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {Array(4)
+                  .fill(0)
+                  .map((_, index) => (
+                    <div key={index} className="bg-muted p-4 rounded-lg">
+                      <h3 className="text-base md:text-lg font-semibold mb-2">
+                        Retailer {index + 1}
+                      </h3>
+                      <p className="text-xs md:text-sm text-muted-foreground">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                      </p>
+                    </div>
+                  ))}
+              </div>
+            </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </div>
   );
 }

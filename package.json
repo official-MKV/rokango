@@ -43,6 +43,7 @@
     "react-paystack": "^5.0.0",
     "recharts": "^2.12.7",
     "tailwind-merge": "^2.4.0",
+    "tailwind-scrollbar-hide": "^1.1.7",
     "tailwindcss-animate": "^1.0.7",
     "typesense-instantsearch-adapter": "^2.8.0",
     "use-debounce": "^10.0.3"

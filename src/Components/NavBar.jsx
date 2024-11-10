@@ -225,7 +225,7 @@ export function NavBar() {
         </div>
       </div>
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white shadow-lg">
+        <div className="md:hidden bg-white shadow-lg w-full">
           {allNavItems.map((item, key) => {
             return (
               <div key={key}>

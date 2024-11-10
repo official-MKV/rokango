@@ -32,6 +32,7 @@ export async function POST(request) {
       relations,
     });
     let productIds = [];
+    let query = supabase.from(tableName).select("*", { count: "exact" });
     if (filters.category && relations.includes("product_categories")) {
       // Check if filters.category is a slug or an ID
       const isSlug = typeof filters.category === "string";
@@ -58,8 +59,6 @@ export async function POST(request) {
     if (productIds.length > 0) {
       query = query.in("id", productIds);
     }
-
-    let query = supabase.from(tableName).select("*", { count: "exact" });
 
     // Handle supplier.id filter for JSONB column
     if (filters["supplier.id"]) {
