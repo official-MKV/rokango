@@ -98,12 +98,12 @@ export async function POST(request) {
     }
 
     // Apply ordering
-    if (orderByField) {
-      console.log(`Applying ordering: ${orderByField} ${orderDirection}`);
-      query = query.order(orderByField, {
-        ascending: orderDirection === "asc",
-      });
-    }
+    // if (orderByField) {
+    //   console.log(`Applying ordering: ${orderByField} ${orderDirection}`);
+    //   query = query.order(orderByField, {
+    //     ascending: orderDirection === "asc",
+    //   });
+    // }
 
     // Apply pagination
     const from = (page - 1) * pageSize;
