@@ -16,7 +16,7 @@ import { Input } from "@/Components/ui/input";
 import { Loader2 } from "lucide-react"; // Spinner
 import { toast } from "@/Components/ui/use-toast"; // ShadCN Toast
 
-const EditProductDialog = ({ product, isEditing, onClose, onRefetch }) => {
+const EditProductDialog = ({ product, isEditing, onClose }) => {
   const [formInputs, setFormInputs] = useState({ ...product });
   const [loading, setLoading] = useState(false);
   const { data: categoriesData } = useSupabaseQuery("categories", {});
@@ -56,6 +56,20 @@ const EditProductDialog = ({ product, isEditing, onClose, onRefetch }) => {
     setLoading(true);
 
     try {
+      const categorySlugs = formInputs.Categories
+        ? formInputs.Categories.map((cat) => cat?.value).filter(Boolean) // remove null or undefined values
+        : [];
+
+      // Check if there are any valid categories before proceeding
+      if (categorySlugs.length === 0) {
+        console.log(
+          "No valid categories provided, skipping category relationship update."
+        );
+      } else {
+        console.log(
+          "Valid categories found, proceeding with fetch for category IDs."
+        );
+      }
       const response = await fetch("/api/update-product", {
         method: "PUT",
         headers: {
@@ -70,7 +84,7 @@ const EditProductDialog = ({ product, isEditing, onClose, onRefetch }) => {
             quantity: formInputs.quantity,
             description: formInputs.description,
           },
-          categories: formInputs.Categories.map((cat) => cat.value), // sending category slugs
+          categories: categorySlugs.length > 0 ? categorySlugs : null,
         }),
       });
 
@@ -81,7 +95,7 @@ const EditProductDialog = ({ product, isEditing, onClose, onRefetch }) => {
         description: "Product updated successfully!",
         variant: "success",
       });
-      onRefetch();
+
       onClose();
     } catch (error) {
       console.error("Error updating product:", error.message);

@@ -29,81 +29,76 @@ export async function PUT(req) {
     }
     console.log("Product updated successfully");
 
-    if (categories.length > 0) {
-      const { data: categoryData, error: categoryFetchError } = await supabase
-        .from("categories")
-        .select("id, slug")
-        .in("slug", categories);
+    const { data: categoryData, error: categoryFetchError } = await supabase
+      .from("categories")
+      .select("id, slug")
+      .in("slug", categories);
 
-      if (categoryFetchError) {
-        console.error(
-          "Error fetching category IDs:",
-          categoryFetchError.message
-        );
-        throw new Error(categoryFetchError.message);
-      }
-      console.log("Fetched category data:", categoryData);
+    if (categoryFetchError) {
+      console.error("Error fetching category IDs:", categoryFetchError.message);
+      throw new Error(categoryFetchError.message);
+    }
+    console.log("Fetched category data:", categoryData);
 
-      const categoryIds = categoryData.map((category) => category.id);
+    const categoryIds = categoryData.map((category) => category.id);
 
-      // Fetch existing relationships
-      const { data: existingCategories, error: existingFetchError } =
-        await supabase
-          .from("product_categories")
-          .select("category")
-          .eq("product", id);
+    // Fetch existing relationships
+    const { data: existingCategories, error: existingFetchError } =
+      await supabase
+        .from("product_categories")
+        .select("category")
+        .eq("product", id);
 
-      if (existingFetchError) {
-        console.error(
-          "Error fetching existing categories:",
-          existingFetchError.message
-        );
-        throw new Error(existingFetchError.message);
-      }
-      console.log("Existing categories:", existingCategories);
-
-      const existingCategoryIds = existingCategories.map((cat) => cat.category);
-
-      // Calculate categories to add and remove
-      const categoriesToAdd = categoryIds.filter(
-        (catId) => !existingCategoryIds.includes(catId)
+    if (existingFetchError) {
+      console.error(
+        "Error fetching existing categories:",
+        existingFetchError.message
       );
-      const categoriesToRemove = existingCategoryIds.filter(
-        (catId) => !categoryIds.includes(catId)
-      );
+      throw new Error(existingFetchError.message);
+    }
+    console.log("Existing categories:", existingCategories);
 
-      console.log("Categories to add:", categoriesToAdd);
-      console.log("Categories to remove:", categoriesToRemove);
+    const existingCategoryIds = existingCategories.map((cat) => cat.category);
 
-      // Insert new relationships
-      if (categoriesToAdd.length > 0) {
-        const { error: insertError } = await supabase
-          .from("product_categories")
-          .insert(
-            categoriesToAdd.map((catId) => ({ product: id, category: catId }))
-          );
+    // Calculate categories to add and remove
+    const categoriesToAdd = categoryIds.filter(
+      (catId) => !existingCategoryIds.includes(catId)
+    );
+    const categoriesToRemove = existingCategoryIds.filter(
+      (catId) => !categoryIds.includes(catId)
+    );
 
-        if (insertError) {
-          console.error("Error inserting new categories:", insertError.message);
-          throw new Error(insertError.message);
-        }
-        console.log("Inserted new categories successfully");
+    console.log("Categories to add:", categoriesToAdd);
+    console.log("Categories to remove:", categoriesToRemove);
+
+    // Insert new relationships
+    if (categoriesToAdd.length > 0) {
+      const { error: insertError } = await supabase
+        .from("product_categories")
+        .insert(
+          categoriesToAdd.map((catId) => ({ product: id, category: catId }))
+        );
+
+      if (insertError) {
+        console.error("Error inserting new categories:", insertError.message);
+        throw new Error(insertError.message);
       }
+      console.log("Inserted new categories successfully");
+    }
 
-      // Remove outdated relationships
-      if (categoriesToRemove.length > 0) {
-        const { error: deleteError } = await supabase
-          .from("product_categories")
-          .delete()
-          .eq("product", id)
-          .in("category", categoriesToRemove);
+    // Remove outdated relationships
+    if (categoriesToRemove.length > 0) {
+      const { error: deleteError } = await supabase
+        .from("product_categories")
+        .delete()
+        .eq("product", id)
+        .in("category", categoriesToRemove);
 
-        if (deleteError) {
-          console.error("Error deleting old categories:", deleteError.message);
-          throw new Error(deleteError.message);
-        }
-        console.log("Removed old categories successfully");
+      if (deleteError) {
+        console.error("Error deleting old categories:", deleteError.message);
+        throw new Error(deleteError.message);
       }
+      console.log("Removed old categories successfully");
     }
 
     console.log("Product update operation completed successfully");
