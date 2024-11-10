@@ -57,7 +57,7 @@ export default function ProductRow({
       <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
       <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide">
         {data?.items.map((product) => (
-          <div key={product.id} className="flex-shrink-0 w-64">
+          <div key={product.id} className="flex-shrink-0 md:w-64 w-[10rem]">
             <ProductCard product={product} onAddToCart={() => {}} />
           </div>
         ))}

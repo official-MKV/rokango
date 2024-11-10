@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/Components/ui/button";
 import {
   Dialog,
@@ -57,7 +57,7 @@ const ProductDetailsDialog = ({
         <div>
           <p className="text-sm font-medium text-gray-500">Categories</p>
           <p className="text-lg text-gray-900">
-            {product.Categories.join(", ")}
+            {product.categories?.map((category) => category.name).join(", ")}
           </p>
         </div>
       </div>
@@ -85,12 +85,13 @@ const ProductDetailsDialog = ({
           {renderProductDetails()}
         </DialogContent>
       </Dialog>
-      {/* {isEditing && (
+      {isEditing && (
         <EditProductDialog
           product={product}
           onClose={() => setIsEditing(false)}
+          isEditing={isEditing}
         />
-      )} */}
+      )}
     </>
   );
 };

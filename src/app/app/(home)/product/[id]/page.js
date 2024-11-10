@@ -1,20 +1,18 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { useCart } from "@/hooks/firebase"; // Still using Firebase for cart management
+import { useCart } from "@/hooks/firebase";
 import { useToast } from "@/Components/ui/use-toast";
 import { Button } from "@/Components/ui/button";
 import { Plus, Minus, Star, Loader2 } from "lucide-react";
-import { useSupabaseQuery } from "@/hooks/supabase"; // Supabase hook for product details
-
-import { useAuth } from "@/hooks/firebase"; // Still using Firebase for Auth
-import { useFirebaseQuery } from "@/hooks/firebase"; // Firebase hook for reviews
+import { useSupabaseQuery } from "@/hooks/supabase";
+import { useAuth } from "@/hooks/firebase";
+import { useFirebaseQuery } from "@/hooks/firebase";
 
 const ProductPage = () => {
   const pathname = usePathname();
-  const id = pathname.split("/").pop(); // Get product ID from URL
+  const id = pathname.split("/").pop();
   const { toast } = useToast();
-
   const { user, loading: authLoading } = useAuth();
 
   const {
@@ -25,7 +23,8 @@ const ProductPage = () => {
     updateQuantity,
   } = useCart(user?.uid);
 
-  const [quantity, setQuantity] = useState(cart[id]?.quantity || 0);
+  // Initialize quantity state to 1 instead of 0
+  const [quantity, setQuantity] = useState(1);
 
   const {
     data: product,
@@ -40,22 +39,25 @@ const ProductPage = () => {
     isLoading: reviewsLoading,
     error: reviewsError,
   } = useFirebaseQuery("reviews", {
-    filters: { productId: id }, // Filter reviews by product ID
+    filters: { productId: id },
   });
 
   const handleQuantityChange = (change) => {
-    setQuantity((prev) => Math.max(1, prev + change));
-    updateQuantity(id, change);
-    toast({
-      title: "Cart Item updated",
-      description: `${quantity + change} x ${
-        product.items[0].name
-      } added to your cart.`,
-    });
+    const newQuantity = Math.max(1, quantity + change);
+    setQuantity(newQuantity);
+
+    // Only update cart if product exists and is already in cart
+    if (product?.items?.[0] && cart.some((item) => item.id === id)) {
+      updateQuantity(id, change);
+      toast({
+        title: "Cart Item updated",
+        description: `${newQuantity} x ${product.items[0].name} in your cart.`,
+      });
+    }
   };
 
   const handleAddToCart = () => {
-    if (product.items[0]) {
+    if (product?.items?.[0]) {
       addToCart({ ...product.items[0], quantity });
       toast({
         title: "Added to cart",
@@ -64,14 +66,17 @@ const ProductPage = () => {
     }
   };
 
+  // Update quantity when cart changes or product loads
   useEffect(() => {
-    if (cart && product.items[0]) {
-      const cartItem = cart.find((item) => item.id === product.items[0].id);
+    if (cart && cart.length > 0 && product?.items?.[0]) {
+      const cartItem = cart.find((item) => item.id === id);
       if (cartItem) {
         setQuantity(cartItem.quantity);
+      } else {
+        setQuantity(1); // Reset to 1 if item is not in cart
       }
     }
-  }, [cart, product]);
+  }, [cart, product, id]);
 
   if (productLoading || reviewsLoading || authLoading || cartLoading)
     return (
@@ -84,7 +89,7 @@ const ProductPage = () => {
   if (reviewsError)
     return <div>Error loading reviews: {reviewsError.message}</div>;
   if (cartError) return <div>Error loading cart: {cartError.message}</div>;
-  if (!product) return <div>Product not found</div>;
+  if (!product?.items?.[0]) return <div>Product not found</div>;
 
   const averageRating = reviews?.length
     ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length
@@ -155,7 +160,9 @@ const ProductPage = () => {
               className="w-full bg-[#ffa459] hover:bg-[#fc7b12] text-white"
               onClick={handleAddToCart}
             >
-              Add To Cart
+              {cart.some((item) => item.id === id)
+                ? "Update Cart"
+                : "Add To Cart"}
             </Button>
           </div>
         </div>

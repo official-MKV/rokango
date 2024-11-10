@@ -67,7 +67,11 @@ const InventoryPage = () => {
     searchTerm,
     orderByField: "name",
     orderDirection: "asc",
+    relations: ["product_categories"],
   });
+  if (!isLoading) {
+    console.log(productData);
+  }
 
   useEffect(() => {
     if (refetch) {

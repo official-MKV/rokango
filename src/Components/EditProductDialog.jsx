@@ -10,16 +10,27 @@ import {
 } from "@/Components/ui/dialog";
 import { Label } from "@/Components/ui/label";
 import { Textarea } from "@/Components/ui/textarea";
-import { CategoriesLocal } from "@/data/Categories";
 import { MultiSelect } from "react-multi-select-component";
+import { useSupabaseQuery } from "@/hooks/supabase";
 import { Input } from "@/Components/ui/input";
+import { Loader2 } from "lucide-react"; // Spinner
+import { toast } from "@/Components/ui/use-toast"; // ShadCN Toast
 
-const EditProductDialog = ({ product, isEditing, onClose }) => {
+const EditProductDialog = ({ product, isEditing, onClose, onRefetch }) => {
   const [formInputs, setFormInputs] = useState({ ...product });
+  const [loading, setLoading] = useState(false);
+  const { data: categoriesData } = useSupabaseQuery("categories", {});
 
   useEffect(() => {
     if (product) {
-      setFormInputs({ ...product });
+      setFormInputs({
+        ...product,
+        Categories:
+          product.categories?.map((cat) => ({
+            label: cat.name,
+            value: cat.slug,
+          })) || [],
+      });
     }
   }, [product]);
 
@@ -36,15 +47,52 @@ const EditProductDialog = ({ product, isEditing, onClose }) => {
   const handleCategoriesChange = (selectedOptions) => {
     setFormInputs((prev) => ({
       ...prev,
-      Categories: selectedOptions.map((option) => option.value),
+      Categories: selectedOptions,
     }));
   };
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    // Logic to submit edited product to the backend (Supabase or another API)
-    console.log("Submitting updated product:", formInputs);
-    onClose(); // Close the dialog after successful submission
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/update-product", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: formInputs.id,
+          data: {
+            name: formInputs.name,
+            brand: formInputs.brand,
+            price: formInputs.price,
+            quantity: formInputs.quantity,
+            description: formInputs.description,
+          },
+          categories: formInputs.Categories.map((cat) => cat.value), // sending category slugs
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update product");
+
+      toast({
+        title: "Success",
+        description: "Product updated successfully!",
+        variant: "success",
+      });
+      onRefetch();
+      onClose();
+    } catch (error) {
+      console.error("Error updating product:", error.message);
+      toast({
+        title: "Error",
+        description: "Failed to update product.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -100,11 +148,13 @@ const EditProductDialog = ({ product, isEditing, onClose }) => {
           <div>
             <Label htmlFor="Categories">Categories</Label>
             <MultiSelect
-              options={CategoriesLocal}
-              value={formInputs.Categories.map((cat) => ({
-                label: cat,
-                value: cat,
-              }))}
+              options={
+                categoriesData?.items.map((cat) => ({
+                  label: cat.name,
+                  value: cat.slug,
+                })) || []
+              }
+              value={formInputs.Categories}
               onChange={handleCategoriesChange}
               labelledBy="Select"
             />
@@ -120,10 +170,15 @@ const EditProductDialog = ({ product, isEditing, onClose }) => {
           </div>
           <Button
             type="submit"
-            className="w-full"
+            className="w-full flex justify-center items-center"
             style={{ backgroundColor: "#ffa458", color: "white" }}
+            disabled={loading}
           >
-            Update Product
+            {loading ? (
+              <Loader2 className="animate-spin mr-2" />
+            ) : (
+              "Update Product"
+            )}
           </Button>
         </form>
       </DialogContent>

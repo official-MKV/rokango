@@ -27,9 +27,27 @@ import {
 import { useRouter } from "next/navigation";
 import { useDebounce } from "use-debounce";
 import { useSupabaseQuery } from "@/hooks/supabase";
+import { useAuth } from "@/hooks/firebase";
+import { useToast } from "@/Components/ui/use-toast";
 
-export const ProductCard = ({ product, onAddToCart }) => {
-  const router = useRouter();
+export const ProductCard = ({ product }) => {
+  const { user, loading } = useAuth();
+  const { cart, addToCart } = useCart(user?.uid);
+  const { toast } = useToast();
+  const handleAddToCart = useCallback(
+    (product) => {
+      if (user.role === "retailer") {
+        addToCart(product);
+      } else {
+        toast({
+          title: "Unable to Cart",
+          description: `Switch to retailer account to be able to add product`,
+          duration: 2000,
+        });
+      }
+    },
+    [addToCart]
+  );
   return (
     <Link
       href={`/product/${product.id}`}
@@ -74,7 +92,7 @@ export const ProductCard = ({ product, onAddToCart }) => {
         className="w-full py-2 bg-[#ffa459] text-white font-medium hover:bg-[#fc7b12] transition-colors duration-300"
         onClick={(e) => {
           e.preventDefault();
-          onAddToCart(product);
+          handleAddToCart(product);
         }}
       >
         Add To Cart

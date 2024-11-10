@@ -31,33 +31,36 @@ export async function POST(request) {
       orderDirection,
       relations,
     });
-    let productIds = [];
+
     let query = supabase.from(tableName).select("*", { count: "exact" });
-    if (filters.category && relations.includes("product_categories")) {
-      // Check if filters.category is a slug or an ID
+
+    // Check if we need to filter products by a specific category
+    let productIds = [];
+    if (filters.category) {
       const isSlug = typeof filters.category === "string";
 
       // Query product IDs associated with the specified category (by slug or ID)
       const { data: categoryData, error: categoryError } = await supabase
         .from("product_categories")
-        .select("product, category!inner(slug, id)") // Use foreign key relationship
+        .select("product, category!inner(slug, id)")
         .eq(isSlug ? "category.slug" : "category.id", filters.category);
 
       if (categoryError) {
+        console.error("Category query error:", categoryError.message);
         return NextResponse.json(
           { error: categoryError.message },
           { status: 500 }
         );
       }
 
-      // Extract product IDs
+      // Extract product IDs associated with the category
       productIds = categoryData.map((item) => item.product);
       delete filters.category; // Remove category filter from main query
-    }
 
-    // Apply the product ID filter if productIds array is populated
-    if (productIds.length > 0) {
-      query = query.in("id", productIds);
+      // Apply the product ID filter if productIds array is populated
+      if (productIds.length > 0) {
+        query = query.in("id", productIds);
+      }
     }
 
     // Handle supplier.id filter for JSONB column
@@ -95,10 +98,12 @@ export async function POST(request) {
     }
 
     // Apply ordering
-    // if (orderByField) {
-    //   console.log(`Applying ordering: ${orderByField} ${orderDirection}`);
-    //   query = query.order(orderByField, { ascending: orderDirection === "asc" });
-    // }
+    if (orderByField) {
+      console.log(`Applying ordering: ${orderByField} ${orderDirection}`);
+      query = query.order(orderByField, {
+        ascending: orderDirection === "asc",
+      });
+    }
 
     // Apply pagination
     const from = (page - 1) * pageSize;
@@ -106,12 +111,48 @@ export async function POST(request) {
     console.log(`Applying pagination: from ${from} to ${to}`);
     query = query.range(from, to);
 
-    // Execute the query
+    // Execute the product query
     const { data, error, count } = await query;
 
     if (error) {
       console.error("Query execution error:", error.message);
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // If relation includes product_categories, fetch and attach categories for each product
+    if (relations.includes("product_categories")) {
+      const productIdsForCategories = data.map((product) => product.id);
+
+      const { data: allCategoryData, error: allCategoryError } = await supabase
+        .from("product_categories")
+        .select("product, category(id, name)")
+        .in("product", productIdsForCategories);
+
+      if (allCategoryError) {
+        console.error(
+          "Category data retrieval error:",
+          allCategoryError.message
+        );
+        return NextResponse.json(
+          { error: allCategoryError.message },
+          { status: 500 }
+        );
+      }
+
+      // Map categories to products
+      const categoriesMap = allCategoryData.reduce((map, item) => {
+        if (!map[item.product]) map[item.product] = [];
+        map[item.product].push({
+          id: item.category.id,
+          name: item.category.name,
+        });
+        return map;
+      }, {});
+
+      // Append category information to each product
+      data.forEach((product) => {
+        product.categories = categoriesMap[product.id] || [];
+      });
     }
 
     console.log("Query executed successfully. Data count:", count);
