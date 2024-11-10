@@ -114,7 +114,12 @@ export default function Home() {
       <section className="w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 md:gap-12">
-            <BrandRow title="Featured Brands" itemsToShow={6} />
+            <ProductRow
+              title="Sponsored Products"
+              tableName="products"
+              filters={{ sponsored: true }}
+              itemsToShow={4}
+            />
 
             <CategoryRow
               title="All Categories"
@@ -129,24 +134,18 @@ export default function Home() {
             />
 
             <ProductRow
-              title="Sponsored Products"
-              tableName="products"
-              filters={{ sponsored: true }}
-              itemsToShow={4}
-            />
-
-            <ProductRow
               title="Top Selling Products"
               tableName="products"
               filters={{ topSelling: true }}
               itemsToShow={4}
             />
+            <BrandRow title="Featured Brands" itemsToShow={6} />
 
-            <ProductRow
+            {/* <ProductRow
               title="Group Buy in Your Area"
               tableName="group_buys"
               itemsToShow={4}
-            />
+            /> */}
           </div>
         </div>
       </section>

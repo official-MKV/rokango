@@ -109,7 +109,7 @@ export function NavBar() {
   };
 
   return (
-    <nav className="bg-white md:w-[85 fixed w-full top-0 inset-0 h-fit z-50 shadow-sm">
+    <nav className="bg-white  fixed w-full top-0 inset-0 h-[70px] z-50 shadow-sm">
       <div className=" mx-auto px-6  sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -336,21 +336,23 @@ export function NavBar() {
         </AlertDialogContent>
       </AlertDialog>
       <div className="w-full h-full py-[50px]">
-        <CheckoutModal
-          isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-            setShowOrderPopup(false);
-            setCheckingOut(false);
-          }}
-          onConfirm={handlePayStakc}
-          address={{
-            location: user?.businessAddress,
-            phone: user.phone,
-            fullName: user.businessName,
-          }}
-          amount={totalPrice}
-        />
+        {user && (
+          <CheckoutModal
+            isOpen={isModalOpen}
+            onClose={() => {
+              setIsModalOpen(false);
+              setShowOrderPopup(false);
+              setCheckingOut(false);
+            }}
+            onConfirm={handlePayStakc}
+            address={{
+              location: user?.businessAddress,
+              phone: user?.phone,
+              fullName: user?.businessName,
+            }}
+            amount={totalPrice}
+          />
+        )}
       </div>
     </nav>
   );
