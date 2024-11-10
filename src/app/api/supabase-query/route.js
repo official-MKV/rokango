@@ -57,10 +57,19 @@ export async function POST(request) {
       productIds = categoryData.map((item) => item.product);
       delete filters.category; // Remove category filter from main query
 
-      // Apply the product ID filter if productIds array is populated
-      if (productIds.length > 0) {
-        query = query.in("id", productIds);
+      // If no product IDs were found, return an empty result
+      if (productIds.length === 0) {
+        return NextResponse.json({
+          items: [],
+          totalItems: 0,
+          currentPage: page,
+          totalPages: 0,
+          pageSize,
+        });
       }
+
+      // Apply the product ID filter if productIds array is populated
+      query = query.in("id", productIds);
     }
 
     // Handle supplier.id filter for JSONB column

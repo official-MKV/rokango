@@ -147,26 +147,6 @@ export default function Home() {
               tableName="group_buys"
               itemsToShow={4}
             />
-
-            <div className="grid gap-4">
-              <h2 className="text-xl md:text-2xl font-bold">
-                Featured Retailers
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {Array(4)
-                  .fill(0)
-                  .map((_, index) => (
-                    <div key={index} className="bg-muted p-4 rounded-lg">
-                      <h3 className="text-base md:text-lg font-semibold mb-2">
-                        Retailer {index + 1}
-                      </h3>
-                      <p className="text-xs md:text-sm text-muted-foreground">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                      </p>
-                    </div>
-                  ))}
-              </div>
-            </div>
           </div>
         </div>
       </section>

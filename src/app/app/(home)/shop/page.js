@@ -38,7 +38,7 @@ export default function ShoppingPage() {
   const itemsPerPage = 20;
 
   const initialFilters = {
-    category: searchParams.get("category")?.split(",") || "",
+    category: searchParams.get("category") || "",
     brand: searchParams.get("brand") || "",
   };
 

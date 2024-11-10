@@ -13,6 +13,9 @@ export default function CategoryRow({ title, itemsToShow }) {
     orderDirection: "asc",
   });
   const router = useRouter();
+  if (!isLoading) {
+    console.log(data);
+  }
 
   if (isLoading) {
     return (
@@ -53,7 +56,7 @@ export default function CategoryRow({ title, itemsToShow }) {
             key={category.id}
             className="flex-shrink-0 w-32 text-center hover:scale-105 cursor-pointer"
             onClick={() => {
-              router.push(`/shop?category=${data.slug}`);
+              router.push(`/shop?category=${category.slug}`);
             }}
           >
             <img
@@ -61,8 +64,8 @@ export default function CategoryRow({ title, itemsToShow }) {
               alt={category.label}
               className="h-32 w-full object-cover rounded-md"
             />
-            <p className="text-xs font-semibold mt-2 truncate">
-              {category.label}
+            <p className="text-xs font-semibold mt-2 truncate z-30  text-[#ffa458]">
+              {category.name}
             </p>
           </div>
         ))}
