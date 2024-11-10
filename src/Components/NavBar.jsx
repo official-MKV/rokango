@@ -9,6 +9,7 @@ import { db, auth } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 import { Button } from "@/Components/ui/button";
 import { useCart } from "@/hooks/firebase";
+import CheckoutModal from "@/Components/CheckoutModal";
 import {
   ShoppingCart,
   Plus,
@@ -35,6 +36,7 @@ export function NavBar() {
   const allNavItems = [...navItems.common];
   const { user, loading } = useAuth();
   const [checkingOut, setCheckingOut] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [showOrderPopup, setShowOrderPopup] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState({});
@@ -51,11 +53,7 @@ export function NavBar() {
     (total, item) => total + item.price * item.quantity,
     0
   );
-
-  const handleCheckout = async () => {
-    if (!user?.email || !totalPrice) return;
-    setCheckingOut(true);
-
+  const handlePayStakc = async () => {
     try {
       const transactionRef = await addDoc(collection(db, "transactions"), {
         status: "pending",
@@ -85,6 +83,20 @@ export function NavBar() {
     } finally {
       setCheckingOut(false);
     }
+  };
+  const handleCheckout = async () => {
+    if (!user?.email || !totalPrice) return;
+    setCheckingOut(true);
+    setIsModalOpen(true);
+  };
+
+  const address = {
+    fullName: "John Doe",
+    phone: "+234 801 234 5678",
+    street: "123 Main Street",
+    city: "Lagos",
+    state: "Lagos State",
+    country: "Nigeria",
   };
 
   const handleSignOut = async () => {
@@ -323,6 +335,23 @@ export function NavBar() {
           </div>
         </AlertDialogContent>
       </AlertDialog>
+      <div className="w-full h-full py-[50px]">
+        <CheckoutModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setShowOrderPopup(false);
+            setCheckingOut(false);
+          }}
+          onConfirm={handlePayStakc}
+          address={{
+            location: user?.businessAddress,
+            phone: user.phone,
+            fullName: user.businessName,
+          }}
+          amount={totalPrice}
+        />
+      </div>
     </nav>
   );
 }
