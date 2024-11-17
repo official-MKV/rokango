@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/firebase";
+import { getAuth, signOut } from "firebase/auth";
 import {
   Settings,
   Package,
@@ -24,6 +25,7 @@ import {
 } from "@/Components/ui/dialog";
 import { Badge } from "@/Components/ui/badge";
 import { onSnapshot, query, collection, where } from "firebase/firestore";
+
 import { db } from "@/lib/firebase";
 
 const SupplierMenuItems = [
@@ -49,6 +51,17 @@ const SideBar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useAuth();
+
+  const auth = getAuth(); // Get the Firebase Auth instance
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth); // Sign out the user
+      router.push("/"); // Redirect to the home page
+    } catch (error) {
+      console.error("Error signing out:", error); // Handle any errors
+    }
+  };
 
   useEffect(() => {
     if (user?.role === "retailer") {
@@ -122,17 +135,17 @@ const SideBar = () => {
   return (
     <div className="fixed z-50 bg-white  lg:left-0 lg:top-0 lg:bottom-auto bottom-4 rounded-full md:rounded px-1 shadow-xl lg:w-64 w-full lg:h-full h-16 items-center justify-center">
       <nav className="flex lg:flex-col flex-row lg:h-full h-full items-center lg:items-start lg:pt-8 px-4">
-        <div className="lg:mb-8 lg:w-full flex items-center justify-center lg:justify-start gap-3 py-2 px-3 rounded-full hover:bg-[#faf0e4] cursor-pointer md:relative fixed top-0 right-8">
+        <div className="lg:mb-8 lg:w-full flex items-center justify-center lg:justify-start gap-3 py-2 px-3 rounded-full hover:bg-[#faf0e4] cursor-pointer md:relative fixed top-0 ">
           <Avatar>
             <AvatarImage src={user?.picture} alt={user?.businessName} />
             <AvatarFallback>{user?.businessName?.charAt(0)}</AvatarFallback>
           </Avatar>
-          <div className="hidden lg:block px-2 py-1 text-sm font-medium rounded-full bg-[#faf0e4]">
+          <div className="hidden lg:block px-2 py-1 text-sm font-medium rounded-full bg-[#faf0e4] text-nowrap whitespace-nowrap overflow-clip text-ellipsis">
             {user?.businessName}
           </div>
         </div>
 
-        <div className="lg:mb-4 lg:w-full md:relative fixed top-2 right-2">
+        <div className="lg:mb-4 lg:w-full md:relative fixed top-2 md:right-0 right-2">
           <NotificationDialog />
         </div>
 
@@ -165,7 +178,9 @@ const SideBar = () => {
           </button>
 
           <button
-            onClick={() => router.push("/")}
+            onClick={() => {
+              handleLogout();
+            }}
             className="hidden lg:flex w-full items-center justify-center gap-2 px-4 py-3 border-2 border-[#ffa458] rounded-md text-[#ffa458] hover:bg-gray-100 hover:scale-105 transition-all duration-500"
           >
             <LogOut size={20} />

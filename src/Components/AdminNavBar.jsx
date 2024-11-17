@@ -1,9 +1,9 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/firebase";
+import { getAuth, signOut } from "firebase/auth";
 import {
   Store,
   Truck,
@@ -13,56 +13,155 @@ import {
   Settings,
   Box,
   Bell,
+  LogOut,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+  DialogHeader,
+} from "@/Components/ui/dialog";
+import { Badge } from "@/Components/ui/badge";
+import { onSnapshot, query, collection, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+
+const menuItems = [
+  { label: "Dashboard", icon: BarChart, href: "/admin/dashboard" },
+  { label: "Retailers", icon: Store, href: "/admin/retailers" },
+  { label: "Suppliers", icon: Truck, href: "/admin/suppliers" },
+  { label: "Transactions", icon: CreditCard, href: "/admin/transactions" },
+  { label: "Users", icon: Users, href: "/admin/users" },
+  { label: "Inventory", icon: Box, href: "/admin/inventory" },
+  { label: "Settings", icon: Settings, href: "/admin/settings" },
+];
 
 const SideBar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuItems = [
-    { label: "Dashboard", icon: BarChart, href: "/admin/dashboard" },
-    { label: "Retailers", icon: Store, href: "/admin/retailers" },
-    { label: "Suppliers", icon: Truck, href: "/admin/suppliers" },
-    { label: "Transactions", icon: CreditCard, href: "/admin/transactions" },
-    { label: "Users", icon: Users, href: "/admin/users" },
-    { label: "Inventory", icon: Box, href: "/admin/inventory" },
-    { label: "Notifications", icon: Bell, href: "/admin/notifications" },
-    { label: "Settings", icon: Settings, href: "/admin/settings" },
-  ];
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const pathname = usePathname();
+  const router = useRouter();
   const { user } = useAuth();
+  const auth = getAuth();
 
-  if (!user) return null; // Don't render anything if user is not authenticated
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.push("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.uid) {
+      const q = query(
+        collection(db, "notifications"),
+        where("recipient", "==", user.uid),
+        where("read", "==", false)
+      );
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const newNotifications = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setNotifications(newNotifications);
+        setUnreadCount(newNotifications.length);
+      });
+
+      return () => unsubscribe();
+    }
+  }, [user]);
+
+  if (!user) return null;
+
+  const NotificationDialog = () => (
+    <Dialog>
+      <DialogTrigger asChild>
+        <div className="relative cursor-pointer flex items-center gap-2 hover:bg-[#faf0e4] w-full py-2 px-3 rounded-md">
+          <Bell size={20} color="#ffa459" />
+          <span className="hidden lg:block">Notifications</span>
+          {unreadCount > 0 && (
+            <Badge className="absolute top-0 right-0 px-1 py-px text-[8px] bg-red-500 text-white rounded-full">
+              {unreadCount}
+            </Badge>
+          )}
+        </div>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px] max-h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="font-semibold text-lg">
+            Notifications
+          </DialogTitle>
+        </DialogHeader>
+        <div className="flex-grow overflow-y-auto">
+          <div className="grid gap-4 p-4">
+            {notifications.map((notification) => (
+              <div key={notification.id} className="bg-gray-100 p-3 rounded-md">
+                <p className="text-sm">{notification.message}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {new Date(notification.created_at.toDate()).toLocaleString()}
+                </p>
+              </div>
+            ))}
+            {notifications.length === 0 && (
+              <p className="text-sm text-gray-500">No new notifications</p>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 
   return (
-    <div className="bg-white z-40 fixed lg:ml-[50px] shadow-xl lg:w-[250px] md:w-[100px] w-full lg:top-auto lg:bottom-auto top-auto bottom-5 rounded-[30px] lg:min-h-[80vh] md:h-[80vh] h-[10vh]">
-      <nav className="flex lg:flex-col md:flex-col flex-row md:pt-[50px] pt-[20px] px-[30px] items-center lg:justify-center md:justify-center justify-between">
-        <div className=" mb-[20px] w-full   fixed md:relative top-3 flex transition-all bg-white duration-500 ease-in-out items-center md:justify-center md:w-full gap-3 px-[10px] py-[2px] rounded-full hover:shadow-lg hover:bg-[#ffa459] cursor-pointer">
+    <div className="fixed z-50 bg-white lg:left-0 lg:top-0 lg:bottom-auto bottom-4 rounded-full md:rounded px-1 shadow-xl lg:w-64 w-full lg:h-full h-16">
+      <nav className="flex lg:flex-col flex-row lg:h-full h-full items-center lg:items-start lg:pt-8 px-4">
+        {/* Profile Section */}
+        <div className="lg:mb-8 lg:w-full flex items-center justify-center lg:justify-start gap-3 py-2 px-3 rounded-full hover:bg-[#faf0e4] cursor-pointer md:relative fixed top-0">
           <Avatar>
-            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>CN</AvatarFallback>
+            <AvatarImage src={user?.picture} alt={user?.businessName} />
+            <AvatarFallback>{user?.businessName?.charAt(0)}</AvatarFallback>
           </Avatar>
-          <div className="px-[10px] py-[3px]   text-[12px] font-medium md:flex  gap-5 rounded-full bg-[#faf0e4] text-nowrap">
+          <div className="hidden lg:block px-2 py-1 text-sm font-medium rounded-full bg-[#faf0e4] text-nowrap whitespace-nowrap overflow-clip text-ellipsis">
             {user?.businessName}
           </div>
         </div>
-        {menuItems.map((item, index) => {
-          const isActive = pathname.split("/")[2] === item.href.split("/")[2];
-          return (
-            <Link
-              key={index}
-              href={item.href}
-              className={`md:w-full hover:bg-[#faf0e4] text-black md:justify-start justify-center font-light flex mb-10 px-[5px] py-[5px] gap-5 rounded-full md:rounded-md
-                lg:mb-4 ${
-                  isActive ? "bg-[#ffa459] font-medium text-white" : ""
-                }`}
-            >
-              <item.icon size={24} color={isActive ? "white" : "#ffa459"} />
-              <span className={`${isOpen ? "block" : "hidden"} lg:block`}>
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
+
+        {/* Notifications */}
+        <div className="lg:mb-4 lg:w-full md:relative fixed top-2 md:right-0 right-2">
+          <NotificationDialog />
+        </div>
+
+        {/* Menu Items */}
+        <div className="flex lg:flex-col flex-row lg:space-y-2 space-x-4 lg:space-x-0 lg:w-full overflow-x-auto lg:overflow-x-visible bg-white z-50 justify-center items-center w-full">
+          {menuItems.map((item, index) => {
+            const isActive = pathname.split("/")[2] === item.href.split("/")[2];
+            return (
+              <Link
+                key={index}
+                href={item.href}
+                className={`flex items-center lg:w-full hover:bg-[#faf0e4] text-black font-light py-3 px-3 md:rounded-md rounded-full
+                  ${isActive ? "bg-[#ffa459] font-medium text-white" : ""}`}
+              >
+                <item.icon size={20} color={isActive ? "white" : "#ffa459"} />
+                <span className="hidden lg:block ml-3">{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Logout Section */}
+        <div className="lg:absolute lg:bottom-8 lg:left-0 lg:right-0 lg:px-4 fixed bottom-20 left-1/2 -translate-x-1/2 lg:translate-x-0 flex flex-col gap-3 w-full max-w-[250px] lg:max-w-none">
+          <button
+            onClick={handleLogout}
+            className="hidden lg:flex w-full items-center justify-center gap-2 px-4 py-3 border-2 border-[#ffa458] rounded-md text-[#ffa458] hover:bg-gray-100 hover:scale-105 transition-all duration-500"
+          >
+            <LogOut size={20} />
+            <span>Logout</span>
+          </button>
+        </div>
       </nav>
     </div>
   );

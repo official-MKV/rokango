@@ -6,7 +6,13 @@ import PendingApprovalMessage from "@/Components/PendingApproval";
 import SideBar from "@/Components/SideBar";
 
 // Define public routes that don't need authentication
-const PUBLIC_ROUTES = ["/app", "/login"];
+const PUBLIC_ROUTES = [
+  "/app",
+  "/login",
+  "/register",
+  "/register/supplier",
+  "/register/retailer",
+];
 
 export const withRoleGuard = (WrappedComponent, allowedRoles) => {
   const ProtectedComponent = ({ children, ...props }) => {

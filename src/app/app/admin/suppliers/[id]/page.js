@@ -174,9 +174,9 @@ export default function UserDetailPage() {
   const handleActivate = async () => {
     try {
       const userRef = doc(db, "users", userId);
-      await updateDoc(userRef, { active: true });
-      setUser({ ...user, active: true });
-      setEditedUser({ ...editedUser, active: true });
+      await updateDoc(userRef, { active: true, status: "approved" });
+      setUser({ ...user, active: true, status: "approved" });
+      setEditedUser({ ...editedUser, active: true, status: "approved" });
       await updateInactiveProducts({ userId, state: true });
       queryClient.invalidateQueries(["users", { role: "supplier" }]);
       toast({

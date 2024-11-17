@@ -5,12 +5,10 @@ import withRoleGuard from "@/app/HOC";
 
 const Layout = ({ children }) => {
   return (
-    <div className="flex w-full h-full pt-[50px]">
+    <div className="flex w-full h-full  ">
       {/* <div className="md:w-[350px] w-0" />
       <Navbar /> */}
-      <main className="flex-1  h-full px-[20px] md:px-0  relative mb-[200px] md:mb-[100px]">
-        {children}
-      </main>
+      <main className="flex-1  h-full  md:px-0  relative  ">{children}</main>
     </div>
   );
 };

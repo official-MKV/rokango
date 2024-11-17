@@ -1,14 +1,8 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/Components/ui/button";
 import { CheckCircle2, ArrowRight } from "lucide-react";
-
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true },
-};
+import { Button } from "@/components/ui/button";
 
 const benefits = [
   {
@@ -28,12 +22,28 @@ const benefits = [
   },
 ];
 
+const fadeIn = {
+  initial: { opacity: 0, y: 20 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true },
+};
+
 export default function CallToAction() {
+  const [currentCard, setCurrentCard] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentCard((prev) => (prev + 1) % benefits.length);
+    }, 3000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   return (
-    <section className="w-full py-24 bg-gradient-to-b from-white to-gray-50">
+    <section className="w-full py-24 bg-gradient-to-b from-orange-50/10 to-white">
       <div className="container mx-auto px-4">
         <motion.div
-          className="relative rounded-[40px] bg-gradient-to-r from-[#ffa459] to-[#ff8a2b] overflow-hidden"
+          className="relative rounded-[40px]  bg-gradient-to-b from-[#ffa458] to-[#ff8a2b] overflow-hidden"
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
@@ -102,7 +112,9 @@ export default function CallToAction() {
           <h3 className="text-3xl font-bold mb-12 text-gray-900">
             Why become a Rokango supplier?
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+          {/* Desktop Grid */}
+          <div className="hidden md:grid md:grid-cols-3 gap-8">
             {benefits.map((benefit, index) => (
               <motion.div
                 key={benefit.title}
@@ -114,8 +126,10 @@ export default function CallToAction() {
                 transition={{ delay: index * 0.2 }}
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-[#ffa459]/10 to-transparent rounded-3xl transform group-hover:scale-105 transition-transform duration-300" />
-                <div className="relative bg-white p-8 rounded-3xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                  <div className="mb-6 text-[#ffa459]">{benefit.icon}</div>
+                <div className="relative bg-white/80 backdrop-blur-sm p-8 rounded-3xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                  <div className="size-[60px] rounded-full bg-orange-100 flex items-center justify-center mb-6">
+                    <div className="text-[#ffa459]">{benefit.icon}</div>
+                  </div>
                   <h4 className="font-bold text-xl mb-3 text-gray-900">
                     {benefit.title}
                   </h4>
@@ -123,6 +137,41 @@ export default function CallToAction() {
                 </div>
               </motion.div>
             ))}
+          </div>
+
+          {/* Mobile Carousel */}
+          <div className="md:hidden relative overflow-hidden">
+            <motion.div
+              className="flex transition-transform duration-500 ease-in-out"
+              animate={{ x: `-${currentCard * 100}%` }}
+            >
+              {benefits.map((benefit, index) => (
+                <div key={benefit.title} className="w-full flex-shrink-0 px-4">
+                  <div className="relative bg-white/80 backdrop-blur-sm p-8 rounded-3xl shadow-lg">
+                    <div className="size-[60px] rounded-full bg-orange-100 flex items-center justify-center mb-6">
+                      <div className="text-[#ffa459]">{benefit.icon}</div>
+                    </div>
+                    <h4 className="font-bold text-xl mb-3 text-gray-900">
+                      {benefit.title}
+                    </h4>
+                    <p className="text-gray-600">{benefit.description}</p>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+
+            {/* Carousel Indicators */}
+            <div className="flex justify-center gap-2 mt-6">
+              {benefits.map((_, index) => (
+                <button
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    currentCard === index ? "bg-[#ffa459]" : "bg-gray-300"
+                  }`}
+                  onClick={() => setCurrentCard(index)}
+                />
+              ))}
+            </div>
           </div>
         </motion.div>
       </div>

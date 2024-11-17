@@ -18,7 +18,6 @@ import {
   Menu,
   X,
   ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import { signOut as firebaseSignOut } from "firebase/auth";
 import {
@@ -30,6 +29,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/Components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/Components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose,
+} from "@/Components/ui/sheet";
 
 export function NavBar() {
   const router = useRouter();
@@ -38,21 +49,15 @@ export function NavBar() {
   const [checkingOut, setCheckingOut] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showOrderPopup, setShowOrderPopup] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [openDropdowns, setOpenDropdowns] = useState({});
-
   const { cart, cartId, addToCart, updateQuantity, removeItem } = useCart(
     user?.uid
   );
-
-  const toggleDropdown = (key) => {
-    setOpenDropdowns((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
 
   const totalPrice = cart.reduce(
     (total, item) => total + item.price * item.quantity,
     0
   );
+
   const handlePayStakc = async () => {
     try {
       const transactionRef = await addDoc(collection(db, "transactions"), {
@@ -84,19 +89,11 @@ export function NavBar() {
       setCheckingOut(false);
     }
   };
+
   const handleCheckout = async () => {
     if (!user?.email || !totalPrice) return;
     setCheckingOut(true);
     setIsModalOpen(true);
-  };
-
-  const address = {
-    fullName: "John Doe",
-    phone: "+234 801 234 5678",
-    street: "123 Main Street",
-    city: "Lagos",
-    state: "Lagos State",
-    country: "Nigeria",
   };
 
   const handleSignOut = async () => {
@@ -109,146 +106,158 @@ export function NavBar() {
   };
 
   return (
-    <nav className="bg-white  fixed w-full top-0 inset-0 h-[70px] z-50 shadow-sm">
-      <div className=" mx-auto px-6  sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div
-            className="flex-shrink-0 cursor-pointer"
-            onClick={() => router.push("/")}
-          >
-            <img src="/rokango.png" alt="Logo" className="h-8 w-auto sm:h-10" />
-          </div>
+    <nav className="sticky max-h-[80px]  top-0 z-50 backdrop-blur-sm bg-white/80 border-b border-orange-100 ">
+      <div className="flex  items-center justify-between  ">
+        {/* Logo */}
+        <div
+          className="flex items-center space-x-2 cursor-pointer"
+          onClick={() => router.push("/")}
+        >
+          <img
+            src="/rokango.png"
+            alt="Logo"
+            className="w-36 hover:opacity-90 transition-opacity"
+          />
+        </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {allNavItems.map((item, index) => (
-              <NavLink key={index} item={item} />
-            ))}
-          </div>
-
-          {/* Right Section */}
-          <div className="flex items-center space-x-4">
-            {!loading && user ? (
-              <>
-                {/* Cart Button */}
-                <button
-                  onClick={() => setShowOrderPopup(true)}
-                  className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
-                >
-                  <ShoppingCart className="w-6 h-6 text-gray-600" />
-                  {cart.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                      {cart.length}
-                    </span>
-                  )}
-                </button>
-
-                {/* User Profile */}
-                <div className="relative group">
-                  <button className="flex items-center space-x-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.picture} />
-                      <AvatarFallback>
-                        {user?.businessName?.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="hidden md:block text-sm font-medium">
-                      {user.businessName}
-                    </span>
-                  </button>
-
-                  <div className="hidden group-hover:block absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
-                    <button
-                      onClick={() => {
-                        const route =
-                          user.role === "admin"
-                            ? "/admin"
-                            : user.role === "supplier"
-                            ? "/dashboard"
-                            : "/profile";
-                        router.push(route);
-                      }}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center space-x-8">
+          {allNavItems.map((item, index) =>
+            item.subLinks ? (
+              <DropdownMenu key={index}>
+                <DropdownMenuTrigger className="text-sm font-medium text-neutral-600 hover:text-[#ffa458] transition-colors">
+                  <span className="flex items-center gap-1">
+                    {item.label}
+                    <ChevronDown className="h-4 w-4" />
+                  </span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {item.subLinks.map((subItem, subIndex) => (
+                    <DropdownMenuItem
+                      key={subIndex}
+                      onClick={() => router.push(subItem.href)}
+                      className="cursor-pointer"
                     >
-                      Profile
-                    </button>
-                    <button
-                      onClick={handleSignOut}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              </>
-            ) : !loading ? (
-              <Button
-                onClick={() => router.push("/login")}
-                className="bg-orange-500 hover:bg-orange-600 text-white"
+                      {subItem.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <button
+                key={index}
+                onClick={() => router.push(item.href)}
+                className="text-sm font-medium text-neutral-600 hover:text-[#ffa458] transition-colors"
               >
-                Login
-              </Button>
-            ) : null}
+                {item.label}
+              </button>
+            )
+          )}
+        </div>
 
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-md hover:bg-gray-100"
+        {/* Right Section */}
+        <div className="flex items-center space-x-4">
+          {!loading && user ? (
+            <>
+              {/* Cart Button */}
+              <button
+                onClick={() => setShowOrderPopup(true)}
+                className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <ShoppingCart className="w-6 h-6 text-gray-600" />
+                {cart.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#ffa458] text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                    {cart.length}
+                  </span>
+                )}
+              </button>
+
+              {/* User Profile */}
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center space-x-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user?.picture} />
+                    <AvatarFallback>
+                      {user?.businessName?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden md:block text-sm font-medium">
+                    {user.businessName}
+                  </span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      const route =
+                        user.role === "admin"
+                          ? "/admin"
+                          : user.role === "supplier"
+                          ? "/dashboard"
+                          : "/profile";
+                      router.push(route);
+                    }}
+                  >
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : !loading ? (
+            <Button
+              onClick={() => router.push("/login")}
+              className="bg-[#ffa458] hover:bg-[#fc8e33] shadow-lg shadow-orange-200/50 transition-all duration-300"
             >
-              {mobileMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
+              Login
+            </Button>
+          ) : null}
+
+          {/* Mobile Menu */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" className="p-2 md:hidden" size="icon">
                 <Menu className="h-6 w-6" />
-              )}
-            </button>
-          </div>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right">
+              <div className="flex flex-col gap-4 pt-8">
+                {allNavItems.map((item, index) => (
+                  <div key={index}>
+                    {item.subLinks ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="text-sm font-medium text-neutral-600 hover:text-[#ffa458] transition-colors w-full text-left">
+                          {item.label}
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          {item.subLinks.map((subItem, subIndex) => (
+                            <DropdownMenuItem
+                              key={subIndex}
+                              onClick={() => router.push(subItem.href)}
+                            >
+                              {subItem.label}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
+                      <SheetClose asChild>
+                        <button
+                          onClick={() => router.push(item.href)}
+                          className="text-sm font-medium text-neutral-600 hover:text-[#ffa458] transition-colors w-full text-left"
+                        >
+                          {item.label}
+                        </button>
+                      </SheetClose>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
-
-      {/* Mobile Navigation */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-t">
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            {allNavItems.map((item, index) => (
-              <div key={index} className="py-1">
-                <button
-                  onClick={() => {
-                    if (item.href) router.push(item.href);
-                    if (item.subLinks) toggleDropdown(index);
-                  }}
-                  className="w-full flex justify-between items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                >
-                  {item.label}
-                  {item.subLinks &&
-                    (openDropdowns[index] ? (
-                      <ChevronUp className="h-5 w-5" />
-                    ) : (
-                      <ChevronDown className="h-5 w-5" />
-                    ))}
-                </button>
-
-                {item.subLinks && openDropdowns[index] && (
-                  <div className="pl-4 space-y-1">
-                    {item.subLinks.map((subItem, subIndex) => (
-                      <button
-                        key={subIndex}
-                        onClick={() => {
-                          router.push(subItem.href);
-                          setMobileMenuOpen(false);
-                        }}
-                        className="block w-full text-left px-3 py-2 rounded-md text-base text-gray-600 hover:bg-gray-100"
-                      >
-                        {subItem.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Cart Dialog */}
       <AlertDialog open={showOrderPopup} onOpenChange={setShowOrderPopup}>
@@ -327,7 +336,7 @@ export function NavBar() {
               <Button
                 onClick={handleCheckout}
                 disabled={checkingOut || cart.length === 0}
-                className="bg-orange-500 hover:bg-orange-600 text-white"
+                className="bg-[#ffa458] hover:bg-[#fc8e33] shadow-lg shadow-orange-200/50 transition-all duration-300"
               >
                 {checkingOut ? "Processing..." : "Checkout"}
               </Button>
@@ -335,6 +344,8 @@ export function NavBar() {
           </div>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Checkout Modal */}
       <div className="w-full h-full py-[50px]">
         {user && (
           <CheckoutModal
@@ -355,48 +366,6 @@ export function NavBar() {
         )}
       </div>
     </nav>
-  );
-}
-
-function NavLink({ item }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const router = useRouter();
-
-  if (item.subLinks) {
-    return (
-      <div
-        className="relative group"
-        onMouseEnter={() => setIsOpen(true)}
-        onMouseLeave={() => setIsOpen(false)}
-      >
-        <button className="text-gray-700 hover:text-orange-500 px-3 py-2 text-sm font-medium">
-          {item.label}
-        </button>
-
-        {isOpen && (
-          <div className="absolute left-0 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1">
-            {item.subLinks.map((subItem, index) => (
-              <button
-                key={index}
-                onClick={() => router.push(subItem.href)}
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                {subItem.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <button
-      onClick={() => router.push(item.href)}
-      className="text-gray-700 hover:text-orange-500 px-3 py-2 text-sm font-medium"
-    >
-      {item.label}
-    </button>
   );
 }
 

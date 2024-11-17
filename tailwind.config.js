@@ -19,38 +19,38 @@ module.exports = {
     },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        border: "#e2e8f0", // Light gray border
+        input: "#e2e8f0", // Same as border for consistency
+        ring: "#ffa458", // Primary color for focus rings
+        background: "#ffffff", // White background
+        foreground: "#1e293b", // Dark slate for main text
         primary: {
-          DEFAULT: "#ffa458",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "#ffa458", // Your primary orange
+          foreground: "#ffffff", // White text for primary elements
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: "#475569", // Slate for secondary elements
+          foreground: "#ffffff", // White text for secondary elements
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: "#ef4444", // Red for destructive actions
+          foreground: "#ffffff", // White text for destructive elements
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: "#f1f5f9", // Very light slate for muted backgrounds
+          foreground: "#64748b", // Muted text color
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: "#ffb77a", // Lighter version of your primary color
+          foreground: "#1e293b", // Dark text for accent elements
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: "#ffffff", // White background for popovers
+          foreground: "#1e293b", // Dark text for popovers
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          DEFAULT: "#ffffff", // White background for cards
+          foreground: "#1e293b", // Dark text for cards
         },
       },
       borderRadius: {

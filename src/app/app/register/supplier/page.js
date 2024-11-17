@@ -111,7 +111,9 @@ export default function SupplierSignupForm() {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="text-3xl font-bold text-center mb-6 text-gray-800"
         >
-          Create Your Supplier Account
+          Create Your
+          <span className="px-[1px]  text-[#ffa458]"> Rokango </span>
+          Supplier Account
         </motion.h1>
         <p className="text-center text-gray-500 mb-6">
           Join us and streamline your business by managing your orders,
