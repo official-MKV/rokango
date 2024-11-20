@@ -37,7 +37,10 @@ export default function Component() {
             className="bg-[#ffa458] hover:bg-[#fc8e33] text-white px-8 py-6 text-lg shadow-xl shadow-orange-200/50 transition-all duration-300 hover:transform hover:-translate-y-1"
             size="lg"
             onClick={() => {
-              window.location.href = "http://app.localhost:3000/register";
+              const { protocol, host } = window.location;
+              const baseUrl =
+                process.env.NODE_ENV === "production" ? host : `${host}`;
+              window.location.href = `http://app.${baseUrl}/register`;
             }}
           >
             Try it Now

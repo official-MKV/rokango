@@ -74,7 +74,17 @@ export default function CallToAction() {
                   whileTap={{ scale: 0.95 }}
                 >
                   <a href="/register/supplier">
-                    <Button className="bg-white text-[#ff8a2b] hover:bg-gray-50 font-semibold py-6 px-8 rounded-full text-lg group">
+                    <Button
+                      onClick={() => {
+                        const { protocol, host } = window.location;
+                        const baseUrl =
+                          process.env.NODE_ENV === "production"
+                            ? host
+                            : `${host}`;
+                        window.location.href = `http://app.${baseUrl}/register`;
+                      }}
+                      className="bg-white text-[#ff8a2b] hover:bg-gray-50 font-semibold py-6 px-8 rounded-full text-lg group"
+                    >
                       Register Now
                       <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
                     </Button>

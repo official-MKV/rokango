@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { Button } from "@/Components/ui/button";
 import Footer from "@/Components/Footer";
@@ -40,7 +41,15 @@ const layout = ({ children }) => {
           </a>
         </div>
         <div className="flex items-center space-x-4">
-          <Button className="bg-[#ffa458] hover:bg-[#fc8e33] shadow-lg shadow-orange-200/50 transition-all duration-300">
+          <Button
+            onClick={() => {
+              const { protocol, host } = window.location;
+              const baseUrl =
+                process.env.NODE_ENV === "production" ? host : `${host}`;
+              window.location.href = `http://app.${baseUrl}/register`;
+            }}
+            className="bg-[#ffa458] hover:bg-[#fc8e33] shadow-lg shadow-orange-200/50 transition-all duration-300"
+          >
             Sign Up
           </Button>
         </div>
