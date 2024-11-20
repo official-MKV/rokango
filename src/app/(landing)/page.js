@@ -6,6 +6,7 @@ import ValuePropositionSection from "@/Components/ValueProposition";
 import BrowserMockup from "@/Components/BrowserMockup";
 import FeaturesSection from "@/Components/Features";
 import CallToAction from "@/Components/CallToAction";
+import { split } from "lodash";
 
 export default function Component() {
   return (
@@ -38,9 +39,14 @@ export default function Component() {
             size="lg"
             onClick={() => {
               const { protocol, host } = window.location;
-              const baseUrl =
-                process.env.NODE_ENV === "production" ? host : `${host}`;
-              window.location.href = `http://app.${baseUrl}/register`;
+
+              const cleanedHost = host.startsWith("www.")
+                ? host.slice(4)
+                : host;
+
+              const baseUrl = `app.${cleanedHost}`;
+
+              window.location.href = `${protocol}//${baseUrl}/register`;
             }}
           >
             Try it Now

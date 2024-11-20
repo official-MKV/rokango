@@ -44,9 +44,14 @@ const layout = ({ children }) => {
           <Button
             onClick={() => {
               const { protocol, host } = window.location;
-              const baseUrl =
-                process.env.NODE_ENV === "production" ? host : `${host}`;
-              window.location.href = `http://app.${baseUrl}/register`;
+
+              const cleanedHost = host.startsWith("www.")
+                ? host.slice(4)
+                : host;
+
+              const baseUrl = `app.${cleanedHost}`;
+
+              window.location.href = `${protocol}//${baseUrl}/register`;
             }}
             className="bg-[#ffa458] hover:bg-[#fc8e33] shadow-lg shadow-orange-200/50 transition-all duration-300"
           >
